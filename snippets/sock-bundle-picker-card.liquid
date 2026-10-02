@@ -1,0 +1,105 @@
+{% comment %}
+  Renders one sock card inside the bundle picker.
+
+  Accepts:
+  - sock: the product to render
+  - block: the `sock_bundle` block, for the Add button label
+
+  Usage:
+  {% render 'sock-bundle-picker-card', sock: sock, block: block %}
+{% endcomment %}
+
+{%- liquid
+  assign sock_variant = sock.selected_or_first_available_variant
+-%}
+
+<div
+  class="sock-bundle-picker__card{% unless sock.available %} sock-bundle-picker__card--soldout{% endunless %}"
+  role="listitem"
+  data-picker-card
+  data-product-id="{{ sock.id }}"
+  data-picked="0"
+>
+  <span class="sock-bundle-picker__card-media">
+    {%- if sock.featured_image -%}
+      {%- assign sock_alt = sock.featured_image.alt | default: sock.title | escape -%}
+      <img
+        src="{{ sock.featured_image | image_url: width: 400 }}"
+        srcset="{{ sock.featured_image | image_url: width: 200 }} 200w, {{ sock.featured_image | image_url: width: 400 }} 400w"
+        sizes="(min-width: 750px) 13rem, 11rem"
+        alt="{{ sock_alt }}"
+        width="400"
+        height="400"
+        loading="lazy"
+      >
+    {%- endif -%}
+    <span class="sock-bundle-picker__card-count" data-picker-count>0</span>
+  </span>
+  <span class="sock-bundle-picker__card-title" title="{{ sock.title | escape }}">
+    {{- sock.title | escape -}}
+  </span>
+  <span class="sock-bundle-picker__card-price" data-picker-price>
+  {{- sock_variant.price | money -}}
+</span>
+
+  {%- if sock.variants.size > 1 -%}
+    <select
+      class="sock-bundle-picker__card-variants"
+      data-picker-variant
+      aria-label="{{ 'Options for' | append: ' ' | append: sock.title | escape }}"
+    >
+      {%- for variant in sock.variants -%}
+        <option
+          value="{{ variant.id }}"
+          data-variant-title="{{ variant.title | escape }}"
+          data-variant-price="{{ variant.price }}"
+          data-variant-image="{{ variant.image | default: sock.featured_image | image_url: width: 200 }}"
+          {% unless variant.available %}
+            disabled
+          {% endunless %}
+          {% if variant.id == sock_variant.id %}
+            selected
+          {% endif %}
+        >
+          {{ variant.title }}{% unless variant.available %} - {{ 'products.product.sold_out' | t }}{% endunless %}
+        </option>
+      {%- endfor -%}
+    </select>
+  {%- else -%}
+    <input
+      type="hidden"
+      data-picker-variant
+      value="{{ sock_variant.id }}"
+      data-variant-title="{{ sock_variant.title | escape }}"
+      data-variant-price="{{ sock_variant.price }}"
+      data-variant-image="{{ sock.featured_image | image_url: width: 200 }}"
+    >
+  {%- endif -%}
+
+  <button
+    type="button"
+    class="sock-bundle-picker__card-add"
+    data-picker-add
+    aria-label="{{ block.settings.picker_add_text | default: 'Add' | append: ' ' | append: sock.title | escape }}"
+    {% unless sock.available %}
+      disabled
+      data-soldout="true"
+    {% endunless %}
+  >
+    {%- if sock.available -%}
+      {{ block.settings.picker_add_text | default: 'Add' | escape }}
+    {%- else -%}
+      {{ 'products.product.sold_out' | t }}
+    {%- endif -%}
+  </button>
+
+  <script type="application/json" data-picker-data>
+    {
+      "id": {{ sock.id | json }},
+      "title": {{ sock.title | json }},
+      "handle": {{ sock.handle | json }},
+      "image": {{ sock.featured_image | image_url: width: 200 | json }},
+      "available": {{ sock.available | json }}
+    }
+  </script>
+</div>

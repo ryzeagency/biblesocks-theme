@@ -1,0 +1,241 @@
+{% comment %}
+  Renders the "Sock bundle" pack-size selector for the product page.
+
+  Accepts:
+  - block: the `sock_bundle` block from sections/main-product.liquid
+  - section_id: the main-product section id
+  - product: the current product
+
+  Usage:
+  {% render 'sock-bundle', block: block, section_id: section_id, product: product %}
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+-%}
+
+<sock-bundle
+  class="sock-bundle"
+  id="SockBundle-{{ section_id }}"
+  data-section-id="{{ section_id }}"
+  data-product-id="{{ product.id }}"
+  data-variant-id="{{ current_variant.id }}"
+  data-product-title="{{ product.title | escape }}"
+  data-product-image="{{ product.featured_image | image_url: width: 200 }}"
+  data-product-price="{{ current_variant.price }}"
+  data-picker-replaces-gallery="{{ block.settings.picker_replaces_gallery }}"
+  data-prefill-current="{{ block.settings.prefill_current_product }}"
+  data-single-uses-picker="{{ block.settings.single_uses_picker }}"
+  data-hide-default-atc="{{ block.settings.hide_default_buy_buttons }}"
+  data-after-add="{{ block.settings.after_add_to_cart }}"
+  data-cart-url="{{ routes.cart_url }}"
+  data-slots-heading="{{ block.settings.slots_heading | default: 'Your socks' | escape }}"
+  data-money-format="{{ shop.money_format | strip_html | escape }}"
+  data-free-shipping="{{ block.settings.free_shipping_enable }}"
+  data-free-shipping-threshold="{{ block.settings.free_shipping_threshold | default: 75 | times: 100 }}"
+  data-free-shipping-basis="{{ block.settings.free_shipping_basis | default: 'discounted' }}"
+  data-free-shipping-progress-text="{{ block.settings.free_shipping_progress_text | escape }}"
+  data-reward-discount-text="{{ block.settings.reward_discount_text | escape }}"
+  data-reward-shipping-text="{{ block.settings.reward_shipping_text | escape }}"
+  data-progress-incomplete-text="{{ block.settings.progress_incomplete_text | escape }}"
+  data-progress-complete-text="{{ block.settings.progress_complete_text | escape }}"
+  data-progress-start-text="{{ block.settings.progress_start_text | escape }}"
+  data-sock-word-singular="{{ block.settings.sock_word_singular | escape }}"
+  data-sock-word-plural="{{ block.settings.sock_word_plural | escape }}"
+  style="
+    --sb-badge-bg: {{ block.settings.badge_background }};
+    --sb-badge-text: {{ block.settings.badge_text_color }};
+    --sb-note-bg: {{ block.settings.note_background }};
+    --sb-note-text: {{ block.settings.note_text_color }};
+  "
+  {{ block.shopify_attributes }}
+>
+  <script type="application/json" data-sock-bundle-variants>
+    [
+      {%- for variant in product.variants -%}
+        {
+          "id": {{ variant.id | json }},
+          "title": {{ variant.title | remove: 'Default Title' | json }},
+          "price": {{ variant.price | json }},
+          "image": {{ variant.image | default: product.featured_image | image_url: width: 200 | json }},
+          "available": {{ variant.available | json }}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  </script>
+
+  {%- if block.settings.heading != blank or block.settings.show_step_number -%}
+    <div class="sock-bundle__head">
+      {%- if block.settings.show_step_number -%}
+        <span class="sock-bundle__step">{{ block.settings.step_number | default: 1 }}</span>
+      {%- endif -%}
+      {%- if block.settings.heading != blank -%}
+        <h2 class="sock-bundle__heading">{{ block.settings.heading | escape }}</h2>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="sock-bundle__tiers-wrap">
+    <button
+      type="button"
+      class="sock-bundle__tiers-arrow sock-bundle__tiers-arrow--prev"
+      data-sock-tiers-prev
+      aria-label="Show previous packs"
+      hidden
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div
+      class="sock-bundle__tiers"
+      role="radiogroup"
+      aria-label="{{ block.settings.heading | default: 'Pack size' | escape }}"
+      data-sock-tiers
+    >
+      <button
+        type="button"
+        class="sock-bundle__tier"
+        role="radio"
+        aria-checked="true"
+        data-sock-tier
+        data-qty="1"
+        data-code=""
+        data-discount="0"
+      >
+        <span class="sock-bundle__tier-label">
+          {{- block.settings.single_label | default: 'Single' | escape -}}
+        </span>
+      </button>
+
+      {%- for i in (2..5) -%}
+        {%- liquid
+          case i
+            when 2
+              assign t_enabled = block.settings.tier2_enable
+              assign t_label = block.settings.tier2_label
+              assign t_save = block.settings.tier2_badge
+              assign t_code = block.settings.tier2_code
+              assign t_pct = block.settings.tier2_discount_percent
+              assign t_ship = block.settings.tier2_free_shipping
+            when 3
+              assign t_enabled = block.settings.tier3_enable
+              assign t_label = block.settings.tier3_label
+              assign t_save = block.settings.tier3_badge
+              assign t_code = block.settings.tier3_code
+              assign t_pct = block.settings.tier3_discount_percent
+              assign t_ship = block.settings.tier3_free_shipping
+            when 4
+              assign t_enabled = block.settings.tier4_enable
+              assign t_label = block.settings.tier4_label
+              assign t_save = block.settings.tier4_badge
+              assign t_code = block.settings.tier4_code
+              assign t_pct = block.settings.tier4_discount_percent
+              assign t_ship = block.settings.tier4_free_shipping
+            when 5
+              assign t_enabled = block.settings.tier5_enable
+              assign t_label = block.settings.tier5_label
+              assign t_save = block.settings.tier5_badge
+              assign t_code = block.settings.tier5_code
+              assign t_pct = block.settings.tier5_discount_percent
+              assign t_ship = block.settings.tier5_free_shipping
+          endcase
+
+          capture t_fallback
+            echo i
+            echo ' Pack'
+          endcapture
+          assign t_label = t_label | default: t_fallback
+        -%}
+
+        {%- if t_enabled -%}
+          <button
+            type="button"
+            class="sock-bundle__tier"
+            role="radio"
+            aria-checked="false"
+            data-sock-tier
+            data-qty="{{ i }}"
+            data-code="{{ t_code | strip | escape }}"
+            data-discount="{{ t_pct | default: 0 }}"
+            data-free-ship="{{ t_ship | default: false }}"
+          >
+            <span class="sock-bundle__tier-label">{{ t_label | strip | escape }}</span>
+            {%- if t_save != blank -%}
+              <span class="sock-bundle__tier-save">{{ t_save | escape }}</span>
+            {%- endif -%}
+            {%- if t_ship -%}
+              <span class="sock-bundle__tier-ship">
+                {{- block.settings.tier_free_shipping_label | default: 'Free shipping' | escape -}}
+              </span>
+            {%- endif -%}
+          </button>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    <button
+      type="button"
+      class="sock-bundle__tiers-arrow sock-bundle__tiers-arrow--next"
+      data-sock-tiers-next
+      aria-label="Show more packs"
+      hidden
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="sock-bundle__slots-wrap" data-sock-bundle-slots-wrap hidden>
+    {%- if block.settings.show_progress_bar -%}
+      <div class="sock-bundle__progress" data-sock-bundle-progressbar>
+        <div class="sock-bundle__progress-track">
+          <div class="sock-bundle__progress-fill" data-sock-bundle-progressfill style="width: 0%"></div>
+          {%- if block.settings.free_shipping_enable -%}
+            <span
+              class="sock-bundle__progress-marker"
+              data-sock-bundle-shipmarker
+              hidden
+            >
+              <span class="sock-bundle__progress-marker-dot"></span>
+            </span>
+          {%- endif -%}
+        </div>
+        {%- if block.settings.free_shipping_enable -%}
+          <p class="sock-bundle__progress-note" data-sock-bundle-shipnote></p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="sock-bundle__slots-title">
+      <span>{{ block.settings.slots_heading | default: 'Your socks' | escape }}</span>
+      <span class="sock-bundle__slots-count" data-sock-bundle-progress></span>
+    </div>
+    <div class="sock-bundle__slots" role="list" data-sock-bundle-slots></div>
+
+    {%- comment -%}
+      On mobile the picker is moved in here by sock-bundle.js, so the flow reads
+      packs -> your socks -> pick your socks -> add to cart in one column.
+    {%- endcomment -%}
+    <div class="sock-bundle__picker-slot" data-sock-bundle-picker-slot></div>
+
+    {%- if block.settings.show_total -%}
+      <div class="sock-bundle__summary" data-sock-bundle-summary hidden>
+        <span class="sock-bundle__summary-total" data-sock-bundle-total></span>
+      </div>
+    {%- endif -%}
+
+    <button
+      type="button"
+      class="btn btn--full sock-bundle__atc"
+      data-sock-bundle-atc
+      disabled
+    >
+      {{ block.settings.atc_text | default: 'Add bundle to cart' | escape }}
+    </button>
+
+    <p class="sock-bundle__error" data-sock-bundle-error role="alert"></p>
+  </div>
+</sock-bundle>

@@ -1,0 +1,67 @@
+{% comment %}
+  Renders the sock picker panel that lives in the product media (left) column.
+
+  Accepts:
+  - block: the `sock_bundle` block from sections/main-product.liquid
+  - section_id: the main-product section id (shared with the <sock-bundle> element)
+  - product: the product being viewed, pinned as the first card
+
+  Usage:
+  {% render 'sock-bundle-picker', block: sock_bundle_block, section_id: section_id, product: product %}
+{% endcomment %}
+
+{%- liquid
+  assign bundle_collection = block.settings.bundle_collection
+  assign products_limit = block.settings.products_limit | default: 48
+-%}
+
+<div
+  class="sock-bundle-picker{% if block.settings.single_uses_picker %} sock-bundle-picker--open-on-load{% endif %}"
+  id="SockBundlePicker-{{ section_id }}"
+  data-sock-bundle-picker="{{ section_id }}"
+>
+  <div class="sock-bundle-picker__head">
+    <h3 class="sock-bundle-picker__title">
+      {%- if block.settings.show_step_number -%}
+        <span class="sock-bundle__step">{{ block.settings.picker_step_number | default: 2 }}</span>
+      {%- endif -%}
+      {{ block.settings.picker_heading | escape }}
+    </h3>
+    <span class="sock-bundle-picker__progress" data-picker-progress></span>
+  </div>
+
+  {%- if bundle_collection == blank or bundle_collection.products_count == 0 -%}
+    <p class="sock-bundle-picker__empty">
+      Select a collection in the "Sock bundle" block to let customers pick their socks.
+    </p>
+  {%- else -%}
+    <div class="sock-bundle-picker__grid" role="list">
+      {%- comment -%}
+        The sock being viewed is pinned first, whether or not it is in the chosen
+        collection, so the shopper can always put the one they came for in a pack.
+      {%- endcomment -%}
+      {%- if block.settings.pin_current_product and product.available -%}
+        {%- render 'sock-bundle-picker-card', sock: product, block: block -%}
+      {%- endif -%}
+
+      {%- for sock in bundle_collection.products limit: products_limit -%}
+        {%- unless block.settings.pin_current_product and sock.id == product.id -%}
+          {%- render 'sock-bundle-picker-card', sock: sock, block: block -%}
+        {%- endunless -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  {%- if block.settings.picker_replaces_gallery -%}
+    {%- assign back_text = block.settings.picker_back_text | default: 'Back to product photos' -%}
+    <button
+      type="button"
+      class="sock-bundle-picker__back"
+      data-picker-back
+      data-show-text="{{ back_text | escape }}"
+      data-hide-text="Hide product photos"
+    >
+      {{ back_text | escape }}
+    </button>
+  {%- endif -%}
+</div>

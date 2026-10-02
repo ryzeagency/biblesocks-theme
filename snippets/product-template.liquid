@@ -56,6 +56,20 @@
   endfor
 -%}
 
+{%- liquid
+  # Sock bundle: build-your-own pack. The picker takes over the media column.
+  assign sock_bundle_block = blocks | where: 'type', 'sock_bundle' | first
+  assign sock_bundle_opens_on_load = false
+  if sock_bundle_block and sock_bundle_block.settings.single_uses_picker
+    assign sock_bundle_opens_on_load = true
+  endif
+-%}
+
+{%- if sock_bundle_block -%}
+  {{ 'sock-bundle.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sock-bundle.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
 <div id="ProductSection-{{ section_id }}-{{ product.id }}"
   class="product-section"
   data-section-id="{{ section_id }}"
@@ -78,7 +92,8 @@
 
       <div class="grid{% unless image_position == 'left' %} grid--product-images-right{% endunless %}{% if mobile_layout == 'partial' %} grid--product-images--partial{% endif %}">
         {%- if image_position == 'left' -%}
-          <div class="grid__item {{ product_image_width }} product-single__sticky">
+          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
+            {%- if sock_bundle_block -%}<div class="sock-bundle-gallery">{%- endif -%}
             {%- render 'product-images',
               section_id: section_id,
               product: product,
@@ -98,12 +113,16 @@
               fallback: fallback,
               mobile_layout: mobile_layout,
             -%}
+            {%- if sock_bundle_block -%}
+              </div>
+              {%- render 'sock-bundle-picker', block: sock_bundle_block, section_id: section_id, product: product -%}
+            {%- endif -%}
           </div>
         {%- endif -%}
 
         <div class="grid__item {{ product_description_width }}">
 
-          <div class="product-single__meta">
+          <div class="product-single__meta{% if sock_bundle_opens_on_load and sock_bundle_block.settings.hide_default_buy_buttons %} sock-bundle-mode{% endif %}">
             <div class="product-block product-block--header">
               {%- if settings.show_breadcrumbs and isModal != true -%}
                 {%- render 'breadcrumbs' -%}
@@ -396,6 +415,10 @@
                         </div>
                       </div>
                     </div>
+                  {%- when 'sock_bundle' -%}
+                    <div class="product-block product-block--sock-bundle">
+                      {%- render 'sock-bundle', block: block, section_id: section_id, product: product -%}
+                    </div>
                   {%- when 'custom' -%}
                     <div class="product-block" {{ block.shopify_attributes }}>
                       {{ block.settings.code }}
@@ -424,7 +447,8 @@
         </div>
 
         {%- unless image_position == 'left' -%}
-          <div class="grid__item {{ product_image_width }} product-single__sticky">
+          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
+            {%- if sock_bundle_block -%}<div class="sock-bundle-gallery">{%- endif -%}
             {%- render 'product-images',
               section_id: section_id,
               product: product,
@@ -443,6 +467,10 @@
               fallback: fallback,
               mobile_layout: mobile_layout,
             -%}
+            {%- if sock_bundle_block -%}
+              </div>
+              {%- render 'sock-bundle-picker', block: sock_bundle_block, section_id: section_id, product: product -%}
+            {%- endif -%}
           </div>
         {%- endunless -%}
       </div>

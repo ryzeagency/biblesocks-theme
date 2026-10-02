@@ -164,6 +164,457 @@
   "type": "@app"
 },
 {
+  "type": "sock_bundle",
+  "name": "Sock bundle (pack size)",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Lets shoppers mix and match a 2, 3, 4 or 5 sock pack. Choosing a pack opens a sock picker in the product image column so they can choose which socks go in the pack. Each pack can carry its own Shopify discount code."
+    },
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Mix and match your pack size"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_step_number",
+      "label": "Show step number",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "step_number",
+      "label": "Step number",
+      "default": "1"
+    },
+    {
+      "type": "header",
+      "content": "Sock picker"
+    },
+    {
+      "type": "collection",
+      "id": "bundle_collection",
+      "label": "Socks customers can choose from",
+      "info": "Products in this collection appear in the picker. Required for the multi packs."
+    },
+    {
+      "type": "text",
+      "id": "picker_heading",
+      "label": "Picker heading",
+      "default": "Pick your socks"
+    },
+    {
+      "type": "text",
+      "id": "picker_step_number",
+      "label": "Picker step number",
+      "default": "2"
+    },
+    {
+      "type": "text",
+      "id": "picker_add_text",
+      "label": "Add button text",
+      "default": "Add"
+    },
+    {
+      "type": "range",
+      "id": "products_limit",
+      "min": 8,
+      "max": 50,
+      "step": 2,
+      "label": "Maximum socks to show",
+      "default": 48
+    },
+    {
+      "type": "checkbox",
+      "id": "picker_replaces_gallery",
+      "label": "Hide product photos while picking",
+      "default": true,
+      "info": "The picker takes over the product image column on desktop. Turn off to show the picker below the photos."
+    },
+    {
+      "type": "text",
+      "id": "picker_back_text",
+      "label": "\"Back to photos\" link text",
+      "default": "Back to product photos"
+    },
+    {
+      "type": "checkbox",
+      "id": "single_uses_picker",
+      "label": "Single lets the shopper choose any sock",
+      "default": false,
+      "info": "For a build-your-own product that is not a sock itself. Single becomes a one-slot pack picked from the collection rather than this product."
+    },
+    {
+      "type": "checkbox",
+      "id": "pin_current_product",
+      "label": "Show this product first in the picker",
+      "default": true,
+      "info": "Turn off on a build-your-own product, so the placeholder product cannot be added to a pack."
+    },
+    {
+      "type": "checkbox",
+      "id": "prefill_current_product",
+      "label": "Pre-fill the first slot with this product",
+      "default": false,
+      "info": "Off means every slot starts empty and the shopper picks all of them. The sock being viewed is always the first card in the picker."
+    },
+    {
+      "type": "text",
+      "id": "slots_heading",
+      "label": "Chosen socks heading",
+      "default": "Your socks"
+    },
+    {
+      "type": "header",
+      "content": "Single"
+    },
+    {
+      "type": "text",
+      "id": "single_label",
+      "label": "Label",
+      "default": "Single"
+    },
+    {
+      "type": "header",
+      "content": "2 socks"
+    },
+    {
+      "type": "checkbox",
+      "id": "tier2_enable",
+      "label": "Show this pack",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "tier2_label",
+      "label": "Label",
+      "default": "2 Pack"
+    },
+    {
+      "type": "text",
+      "id": "tier2_badge",
+      "label": "Save text",
+      "default": "Save 10%",
+      "info": "Second line on the card. Leave blank to show only the label."
+    },
+    {
+      "type": "range",
+      "id": "tier2_discount_percent",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "label": "Discount percent",
+      "default": 10,
+      "info": "Used for the running total and the free shipping bar. Must match the discount code below."
+    },
+    {
+      "type": "checkbox",
+      "id": "tier2_free_shipping",
+      "label": "This pack includes free shipping",
+      "default": false,
+      "info": "Adds a free shipping line to the card and to the progress bar reward. Back it with a shipping rule or a free shipping discount."
+    },
+    {
+      "type": "text",
+      "id": "tier2_code",
+      "label": "Discount code",
+      "info": "Shopify discount code applied when this pack is added to cart."
+    },
+    {
+      "type": "header",
+      "content": "3 socks"
+    },
+    {
+      "type": "checkbox",
+      "id": "tier3_enable",
+      "label": "Show this pack",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "tier3_label",
+      "label": "Label",
+      "default": "3 Pack"
+    },
+    {
+      "type": "text",
+      "id": "tier3_badge",
+      "label": "Save text",
+      "default": "Save 15%",
+      "info": "Second line on the card. Leave blank to show only the label."
+    },
+    {
+      "type": "range",
+      "id": "tier3_discount_percent",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "label": "Discount percent",
+      "default": 15,
+      "info": "Used for the running total and the free shipping bar. Must match the discount code below."
+    },
+    {
+      "type": "checkbox",
+      "id": "tier3_free_shipping",
+      "label": "This pack includes free shipping",
+      "default": false,
+      "info": "Adds a free shipping line to the card and to the progress bar reward. Back it with a shipping rule or a free shipping discount."
+    },
+    {
+      "type": "text",
+      "id": "tier3_code",
+      "label": "Discount code",
+      "info": "Shopify discount code applied when this pack is added to cart."
+    },
+    {
+      "type": "header",
+      "content": "4 socks"
+    },
+    {
+      "type": "checkbox",
+      "id": "tier4_enable",
+      "label": "Show this pack",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "tier4_label",
+      "label": "Label",
+      "default": "4 Pack"
+    },
+    {
+      "type": "text",
+      "id": "tier4_badge",
+      "label": "Save text",
+      "default": "Save 20%",
+      "info": "Second line on the card. Leave blank to show only the label."
+    },
+    {
+      "type": "range",
+      "id": "tier4_discount_percent",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "label": "Discount percent",
+      "default": 20,
+      "info": "Used for the running total and the free shipping bar. Must match the discount code below."
+    },
+    {
+      "type": "checkbox",
+      "id": "tier4_free_shipping",
+      "label": "This pack includes free shipping",
+      "default": false,
+      "info": "Adds a free shipping line to the card and to the progress bar reward. Back it with a shipping rule or a free shipping discount."
+    },
+    {
+      "type": "text",
+      "id": "tier4_code",
+      "label": "Discount code",
+      "info": "Shopify discount code applied when this pack is added to cart."
+    },
+    {
+      "type": "header",
+      "content": "5 socks"
+    },
+    {
+      "type": "checkbox",
+      "id": "tier5_enable",
+      "label": "Show this pack",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "tier5_label",
+      "label": "Label",
+      "default": "5 Pack"
+    },
+    {
+      "type": "text",
+      "id": "tier5_badge",
+      "label": "Save text",
+      "default": "Save 20%",
+      "info": "Second line on the card. Leave blank to show only the label."
+    },
+    {
+      "type": "range",
+      "id": "tier5_discount_percent",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "label": "Discount percent",
+      "default": 20,
+      "info": "Used for the running total and the free shipping bar. Must match the discount code below."
+    },
+    {
+      "type": "checkbox",
+      "id": "tier5_free_shipping",
+      "label": "This pack includes free shipping",
+      "default": true,
+      "info": "Adds a free shipping line to the card and to the progress bar reward. Back it with a shipping rule or a free shipping discount."
+    },
+    {
+      "type": "text",
+      "id": "tier5_code",
+      "label": "Discount code",
+      "info": "Shopify discount code applied when this pack is added to cart."
+    },
+    {
+      "type": "header",
+      "content": "Progress bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar",
+      "label": "Show pack progress bar",
+      "default": true,
+      "info": "Fills as slots are picked, so 1 of 2 socks reads 50%."
+    },
+    {
+      "type": "checkbox",
+      "id": "free_shipping_enable",
+      "label": "Show free shipping progress",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "Free shipping threshold",
+      "default": 75,
+      "info": "In your store currency, without the symbol. Must match your shipping rate."
+    },
+    {
+      "type": "select",
+      "id": "free_shipping_basis",
+      "label": "Measure free shipping against",
+      "default": "discounted",
+      "info": "Match this to how your shipping rate is set up. Shopify usually reads the subtotal after discounts.",
+      "options": [
+        {
+          "value": "discounted",
+          "label": "Total after the pack discount"
+        },
+        {
+          "value": "full",
+          "label": "Total before the pack discount"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_progress_text",
+      "label": "Progress text",
+      "default": "[amount] away from free shipping",
+      "info": "Use [amount] where the remaining amount should appear."
+    },
+    {
+      "type": "text",
+      "id": "progress_incomplete_text",
+      "label": "Message pointing at the next saving",
+      "default": "Buy one more, save [reward]",
+      "info": "[reward] is what the next pack size earns. [count] and [socks] are also available, for how many more are needed."
+    },
+    {
+      "type": "text",
+      "id": "progress_start_text",
+      "label": "Message before any sock is picked",
+      "default": "Add [count] [socks] to save [reward]"
+    },
+    {
+      "type": "text",
+      "id": "progress_complete_text",
+      "label": "Message when the pack is full",
+      "default": "[reward] unlocked"
+    },
+    {
+      "type": "text",
+      "id": "reward_discount_text",
+      "label": "Discount reward wording",
+      "default": "[percent]%",
+      "info": "[percent] is the pack's discount percent."
+    },
+    {
+      "type": "text",
+      "id": "tier_free_shipping_label",
+      "label": "Free shipping line on the pack card",
+      "default": "Free shipping"
+    },
+    {
+      "type": "text",
+      "id": "reward_shipping_text",
+      "label": "Free shipping reward wording",
+      "default": "free shipping",
+      "info": "Added to the reward only when the finished pack actually reaches the threshold."
+    },
+    {
+      "type": "text",
+      "id": "sock_word_singular",
+      "label": "Sock word, one",
+      "default": "sock"
+    },
+    {
+      "type": "text",
+      "id": "sock_word_plural",
+      "label": "Sock word, many",
+      "default": "socks"
+    },
+    {
+      "type": "header",
+      "content": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "atc_text",
+      "label": "Button text",
+      "default": "Add bundle to cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_total",
+      "label": "Show bundle total",
+      "default": true,
+      "info": "Uses the discount percent set on each pack."
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_default_buy_buttons",
+      "label": "Hide the normal add to cart while a pack is selected",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "after_add_to_cart",
+      "label": "After adding a pack",
+      "default": "cart",
+      "info": "A discount code always needs a redirect to be applied, so \"Stay on page\" falls back to the cart when a code is set.",
+      "options": [
+        {
+          "value": "cart",
+          "label": "Go to cart"
+        },
+        {
+          "value": "checkout",
+          "label": "Go to checkout"
+        },
+        {
+          "value": "stay",
+          "label": "Stay on page"
+        }
+      ]
+    }
+  ]
+},
+{
   "type": "price",
   "name": "t:product_block.price.name",
   "limit": 1

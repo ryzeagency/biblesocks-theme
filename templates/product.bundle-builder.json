@@ -1,0 +1,241 @@
+{
+  "sections": {
+    "zp-product-header-content": {
+      "type": "product-header-content-zipifypages",
+      "settings": {}
+    },
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "loox_reviews_loox_rating_qk3UVC": {
+          "type": "shopify://apps/loox-reviews/blocks/loox-rating/5c3b337f-fd14-4df5-b1d6-80ec13e6e28e",
+          "settings": {
+            "contentSize": 16,
+            "pattern": "",
+            "hideText": false,
+            "alignment": "",
+            "layout": "",
+            "textColor": "",
+            "starColor": "",
+            "showAllReviews": false,
+            "looxOpenFloatingWidget": false,
+            "emptyRatingWidget": false
+          }
+        },
+        "sock_bundle": {
+          "type": "sock_bundle",
+          "settings": {
+            "heading": "Build your own pack",
+            "show_step_number": true,
+            "step_number": "1",
+            "bundle_collection": "all-socks",
+            "picker_heading": "Pick your socks",
+            "picker_step_number": "2",
+            "picker_add_text": "Add",
+            "products_limit": 48,
+            "picker_replaces_gallery": true,
+            "picker_back_text": "Back to product photos",
+            "single_uses_picker": true,
+            "pin_current_product": false,
+            "prefill_current_product": false,
+            "slots_heading": "Your socks",
+            "single_label": "1 Sock",
+            "tier2_enable": true,
+            "tier2_label": "2 Pack",
+            "tier2_badge": "Save 10%",
+            "tier2_discount_percent": 10,
+            "tier2_free_shipping": false,
+            "tier2_code": "",
+            "tier3_enable": true,
+            "tier3_label": "3 Pack",
+            "tier3_badge": "Save 15%",
+            "tier3_discount_percent": 15,
+            "tier3_free_shipping": false,
+            "tier3_code": "",
+            "tier4_enable": true,
+            "tier4_label": "4 Pack",
+            "tier4_badge": "Save 20%",
+            "tier4_discount_percent": 20,
+            "tier4_free_shipping": false,
+            "tier4_code": "",
+            "tier5_enable": true,
+            "tier5_label": "5 Pack",
+            "tier5_badge": "Save 20%",
+            "tier5_discount_percent": 20,
+            "tier5_free_shipping": true,
+            "tier5_code": "",
+            "show_progress_bar": true,
+            "free_shipping_enable": true,
+            "free_shipping_threshold": 75,
+            "free_shipping_basis": "discounted",
+            "free_shipping_progress_text": "[amount] away from free shipping",
+            "progress_incomplete_text": "Buy one more, save [reward]",
+            "progress_start_text": "Add [count] [socks] to save [reward]",
+            "progress_complete_text": "[reward] unlocked",
+            "reward_discount_text": "[percent]%",
+            "tier_free_shipping_label": "Free shipping",
+            "reward_shipping_text": "free shipping",
+            "sock_word_singular": "sock",
+            "sock_word_plural": "socks",
+            "atc_text": "Add bundle to cart",
+            "show_total": true,
+            "hide_default_buy_buttons": true,
+            "after_add_to_cart": "cart"
+          }
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "surface_pickup_enable": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "sales_point_YTJxiN": {
+          "type": "sales_point",
+          "settings": {
+            "icon": "shield",
+            "text": "100% Satisfaction Guaranteed"
+          }
+        },
+        "sales_point_DRzxDD": {
+          "type": "sales_point",
+          "settings": {
+            "icon": "truck",
+            "text": "Fast Shipping"
+          }
+        },
+        "sales_point_dMy7Df": {
+          "type": "sales_point",
+          "settings": {
+            "icon": "ribbon",
+            "text": "Designer Quality Blend"
+          }
+        },
+        "separator": {
+          "type": "separator",
+          "settings": {}
+        },
+        "description": {
+          "type": "description",
+          "settings": {
+            "is_tab": true
+          }
+        },
+        "tab_terms": {
+          "type": "tab",
+          "settings": {
+            "title": "Terms and conditions",
+            "content": ""
+          }
+        },
+        "contact": {
+          "type": "contact",
+          "settings": {
+            "title": "Ask about this product",
+            "phone": false
+          }
+        },
+        "share": {
+          "type": "share",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "loox_reviews_loox_rating_qk3UVC",
+        "sock_bundle",
+        "buy_buttons",
+        "sales_point_YTJxiN",
+        "sales_point_DRzxDD",
+        "sales_point_dMy7Df",
+        "separator",
+        "description",
+        "tab_terms",
+        "contact",
+        "share"
+      ],
+      "settings": {
+        "sku_enable": false,
+        "image_position": "left",
+        "image_size": "medium",
+        "product_zoom_enable": true,
+        "thumbnail_position": "beside",
+        "thumbnail_height": "fixed",
+        "thumbnail_arrows": false,
+        "mobile_layout": "partial",
+        "enable_video_looping": true,
+        "product_video_style": "muted"
+      }
+    },
+    "sub": {
+      "type": "product-full-width",
+      "disabled": true,
+      "settings": {
+        "max_width": true
+      }
+    },
+    "1710810062a9575abf": {
+      "type": "apps",
+      "blocks": {
+        "loox_reviews_loox_dynamic_section_99Qj8j": {
+          "type": "shopify://apps/loox-reviews/blocks/loox-dynamic-section/5c3b337f-fd14-4df5-b1d6-80ec13e6e28e",
+          "settings": {
+            "only_photos": false,
+            "aggregated": false,
+            "limit": 20,
+            "hide_thumbnails": false,
+            "maxwidth": 1920,
+            "is_sample": false
+          }
+        }
+      },
+      "block_order": [
+        "loox_reviews_loox_dynamic_section_99Qj8j"
+      ],
+      "settings": {
+        "full_width": false,
+        "space_around": true
+      }
+    },
+    "product-recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "product_recommendations_heading": "You may also like",
+        "related_count": 5,
+        "products_per_row": 5
+      }
+    },
+    "recently-viewed": {
+      "type": "recently-viewed",
+      "settings": {
+        "recent_count": 5
+      }
+    },
+    "collection-return": {
+      "type": "collection-return",
+      "settings": {}
+    },
+    "zp-product-footer-content": {
+      "type": "product-footer-content-zipifypages",
+      "settings": {}
+    },
+    "1762911597c03aa905": {
+      "type": "apps",
+      "settings": {
+        "full_width": false,
+        "space_around": true
+      }
+    }
+  },
+  "order": [
+    "zp-product-header-content",
+    "main",
+    "sub",
+    "1710810062a9575abf",
+    "product-recommendations",
+    "recently-viewed",
+    "collection-return",
+    "zp-product-footer-content",
+    "1762911597c03aa905"
+  ]
+}

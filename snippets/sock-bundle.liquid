@@ -40,6 +40,8 @@
   data-progress-incomplete-text="{{ block.settings.progress_incomplete_text | escape }}"
   data-progress-complete-text="{{ block.settings.progress_complete_text | escape }}"
   data-progress-start-text="{{ block.settings.progress_start_text | escape }}"
+  data-progress-shipping-next-text="{{ block.settings.progress_shipping_next_text | escape }}"
+  data-progress-shipping-unlocked-text="{{ block.settings.progress_shipping_unlocked_text | escape }}"
   data-sock-word-singular="{{ block.settings.sock_word_singular | escape }}"
   data-sock-word-plural="{{ block.settings.sock_word_plural | escape }}"
   style="
@@ -193,19 +195,24 @@
       <div class="sock-bundle__progress" data-sock-bundle-progressbar>
         <div class="sock-bundle__progress-track">
           <div class="sock-bundle__progress-fill" data-sock-bundle-progressfill style="width: 0%"></div>
-          {%- if block.settings.free_shipping_enable -%}
-            <span
-              class="sock-bundle__progress-marker"
-              data-sock-bundle-shipmarker
-              hidden
-            >
-              <span class="sock-bundle__progress-marker-dot"></span>
+          {%- comment -%}
+            The free shipping milestone. sock-bundle.js places it at the pack that
+            includes free shipping, or where the total crosses the threshold.
+          {%- endcomment -%}
+          <span class="sock-bundle__progress-marker" data-sock-bundle-shipmarker hidden>
+            <span class="sock-bundle__progress-marker-dot">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <circle cx="7" cy="17" r="1.8" fill="currentColor"/>
+                <circle cx="17" cy="17" r="1.8" fill="currentColor"/>
+              </svg>
             </span>
-          {%- endif -%}
+            <span class="sock-bundle__progress-marker-label">
+              {{- block.settings.progress_shipping_label | default: 'Free shipping' | escape -}}
+            </span>
+          </span>
         </div>
-        {%- if block.settings.free_shipping_enable -%}
-          <p class="sock-bundle__progress-note" data-sock-bundle-shipnote></p>
-        {%- endif -%}
+        <p class="sock-bundle__progress-note" data-sock-bundle-shipnote></p>
       </div>
     {%- endif -%}
 

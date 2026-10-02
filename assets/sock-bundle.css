@@ -387,17 +387,63 @@ sock-bundle {
   display: none;
 }
 
+/* Room under the bar for the milestone label. */
+.sock-bundle__progress.has-milestone .sock-bundle__progress-track {
+  margin-bottom: 22px;
+}
+
 .sock-bundle__progress-marker-dot {
-  width: 14px;
-  height: 14px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   border: 2px solid var(--colorBody);
-  background: color-mix(in srgb, var(--colorTextBody) 35%, transparent);
-  transition: background 0.3s ease;
+  background: color-mix(in srgb, var(--colorTextBody) 22%, var(--colorBody));
+  color: var(--colorBody);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.sock-bundle__progress-marker-dot svg {
+  width: 15px;
+  height: 15px;
+}
+
+.sock-bundle__progress-marker-label {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+/* At the end of the bar the icon sits just inside it, with the label lined up
+   to the right edge, so neither pokes past the column. */
+.sock-bundle__progress-marker--end {
+  transform: translate(-100%, -50%);
+}
+
+.sock-bundle__progress-marker--end .sock-bundle__progress-marker-label {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 .sock-bundle__progress-marker--reached .sock-bundle__progress-marker-dot {
   background: var(--colorTextBody);
+  animation: sock-bundle-pop 0.4s ease;
+}
+
+.sock-bundle__progress-marker--reached .sock-bundle__progress-marker-label {
+  opacity: 1;
 }
 
 .sock-bundle__progress-note {
@@ -420,12 +466,34 @@ sock-bundle {
   font-weight: 700;
 }
 
+/* Free shipping unlocked: the reward people most want to see, so it stands out. */
+.sock-bundle__progress-note--shipping {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--colorTextBody) 7%, transparent);
+}
+
+.sock-bundle__progress-note--shipping::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--colorTextBody)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 12.5 4 4 8-9' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 12px no-repeat;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sock-bundle__progress-fill {
     transition: none;
   }
 
   .sock-bundle__progress-fill::after,
+  .sock-bundle__progress-marker--reached .sock-bundle__progress-marker-dot,
   .sock-bundle__progress-note--pulse {
     animation: none;
   }

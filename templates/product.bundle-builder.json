@@ -89,7 +89,10 @@
             "atc_text": "Add bundle to cart",
             "show_total": true,
             "hide_default_buy_buttons": true,
-            "after_add_to_cart": "cart"
+            "after_add_to_cart": "cart",
+            "progress_shipping_next_text": "Add [count] more [socks] to unlock FREE shipping",
+            "progress_shipping_unlocked_text": "You've unlocked FREE shipping + [percent]% off!",
+            "progress_shipping_label": "Free shipping"
           }
         },
         "buy_buttons": {

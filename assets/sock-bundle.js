@@ -38,6 +38,8 @@ if (!customElements.get('sock-bundle')) {
             freeShipping: button.dataset.freeShip === 'true',
           }))
           .sort((a, b) => a.qty - b.qty);
+        // The smallest pack that ships free, if any. It gets its own milestone on the bar.
+        this.shipTier = this.tiers.find((tier) => tier.freeShipping) || null;
         this.slotsWrap = this.querySelector('[data-sock-bundle-slots-wrap]');
         this.slotsEl = this.querySelector('[data-sock-bundle-slots]');
         this.progressEl = this.querySelector('[data-sock-bundle-progress]');
@@ -52,6 +54,7 @@ if (!customElements.get('sock-bundle')) {
         this.tiersEl = this.querySelector('[data-sock-tiers]');
         this.prevArrow = this.querySelector('[data-sock-tiers-prev]');
         this.nextArrow = this.querySelector('[data-sock-tiers-next]');
+        this.progressBar = this.querySelector('[data-sock-bundle-progressbar]');
         this.progressFill = this.querySelector('[data-sock-bundle-progressfill]');
         this.shipMarker = this.querySelector('[data-sock-bundle-shipmarker]');
         this.shipNote = this.querySelector('[data-sock-bundle-shipnote]');
@@ -68,6 +71,11 @@ if (!customElements.get('sock-bundle')) {
         this.progressCompleteText = this.dataset.progressCompleteText || '[reward] unlocked';
         this.progressStartText =
           this.dataset.progressStartText || 'Add [count] [socks] to save [reward]';
+        this.progressShippingNextText =
+          this.dataset.progressShippingNextText || 'Add [count] more [socks] to unlock FREE shipping';
+        this.progressShippingUnlockedText =
+          this.dataset.progressShippingUnlockedText ||
+          "You've unlocked FREE shipping + [percent]% off!";
         this.sockWordSingular = this.dataset.sockWordSingular || 'sock';
         this.sockWordPlural = this.dataset.sockWordPlural || 'socks';
 
@@ -493,7 +501,9 @@ if (!customElements.get('sock-bundle')) {
 
         // What the pack has actually earned, and what one more sock would earn.
         this.earnedTier = this.tierFor(filled);
-        this.nextTier = this.tiers.find((tier) => tier.qty > filled && tier.percent > 0) || null;
+        this.nextTier =
+          this.tiers.find((tier) => tier.qty > filled && (tier.percent > 0 || tier.freeShipping)) ||
+          null;
         this.discountCode = this.earnedTier ? this.earnedTier.code : '';
         this.discountPercent = this.earnedTier ? this.earnedTier.percent : 0;
         this.tierFreeShipping = this.earnedTier ? this.earnedTier.freeShipping : false;
@@ -573,15 +583,22 @@ if (!customElements.get('sock-bundle')) {
         if (!this.shipNote) return;
 
         let message;
+        let shippingUnlocked = false;
         if (this.nextTier) {
-          // Point at the next rung: "Buy one more, save 15%".
           const more = this.nextTier.qty - filled;
+          const socks = more === 1 ? this.sockWordSingular : this.sockWordPlural;
           const reward = this.rewardFor(this.nextTier);
-          const template = filled === 0 ? this.progressStartText : this.progressIncompleteText;
+          // One step from the free shipping pack gets its own nudge;
+          // otherwise point at the next saving: "Buy one more, save 15%".
+          let template = filled === 0 ? this.progressStartText : this.progressIncompleteText;
+          if (this.nextTier.freeShipping && filled > 0) template = this.progressShippingNextText;
           message = template
             .replace('[count]', more)
-            .replace('[socks]', more === 1 ? this.sockWordSingular : this.sockWordPlural)
+            .replace('[socks]', socks)
             .replace('[reward]', reward);
+        } else if (this.earnedTier?.freeShipping) {
+          shippingUnlocked = true;
+          message = this.progressShippingUnlockedText.replace('[percent]', this.earnedTier.percent);
         } else {
           // Top of the ladder: say what the pack has earned.
           const reward = this.rewardFor(this.earnedTier);
@@ -608,6 +625,7 @@ if (!customElements.get('sock-bundle')) {
           'sock-bundle__progress-note--unlocked',
           !this.nextTier && Boolean(this.earnedTier) && this.earnedTier.percent > 0
         );
+        this.shipNote.classList.toggle('sock-bundle__progress-note--shipping', shippingUnlocked);
         if (changed) this.pulseNote();
       }
 
@@ -622,24 +640,28 @@ if (!customElements.get('sock-bundle')) {
       renderShipMarker(filled, towardsShipping, perSock, packWillShip) {
         if (!this.shipMarker) return;
 
-        this.shipMarker.hidden = !packWillShip;
-        if (!packWillShip) return;
+        let left = null;
+        let reached = false;
 
-        if (this.tierFreeShipping) {
-          this.shipMarker.style.left = '100%';
-          this.shipMarker.classList.toggle(
-            'sock-bundle__progress-marker--reached',
-            filled >= this.maxSlots
-          );
-          return;
+        if (this.shipTier) {
+          // A pack that includes free shipping: the milestone sits at that pack.
+          left = Math.min(100, (this.shipTier.qty / this.maxSlots) * 100);
+          reached = filled >= this.shipTier.qty;
+        } else if (packWillShip) {
+          // Otherwise, at the sock where the running total crosses the threshold.
+          const socksNeeded = Math.ceil(this.shipThreshold / perSock);
+          left = Math.min(100, (socksNeeded / this.maxSlots) * 100);
+          reached = towardsShipping >= this.shipThreshold;
         }
 
-        const socksNeeded = Math.ceil(this.shipThreshold / perSock);
-        this.shipMarker.style.left = `${Math.min(100, (socksNeeded / this.maxSlots) * 100)}%`;
-        this.shipMarker.classList.toggle(
-          'sock-bundle__progress-marker--reached',
-          towardsShipping >= this.shipThreshold
-        );
+        this.shipMarker.hidden = left === null;
+        this.progressBar?.classList.toggle('has-milestone', left !== null);
+        if (left === null) return;
+
+        this.shipMarker.style.left = `${left}%`;
+        // Keep the label inside the bar's edges when the milestone sits at an end.
+        this.shipMarker.classList.toggle('sock-bundle__progress-marker--end', left >= 85);
+        this.shipMarker.classList.toggle('sock-bundle__progress-marker--reached', reached);
       }
 
       /** Brief nudge so a changed reward message is noticed. */

@@ -40,9 +40,21 @@ the free-shipping bar, so keep it equal to the real discount.
   one for how many socks are actually in the pack, not the card that was clicked.
 - Shopify allows one discount code per order; this one replaces any existing code.
 - Discount codes are visible in the page source; the minimum-quantity rule keeps that safe.
-- The free-shipping marker and wording only appear when the maths reaches the threshold,
-  or when a pack has **This pack includes free shipping** ticked (back that with a real
-  shipping rule or free-shipping code).
+- **Free shipping on the progress bar.** When a pack has **This pack includes free
+  shipping** ticked (the 5 Pack by default), a truck milestone labelled "Free shipping"
+  sits on the bar at that pack and fills in once it is reached. The messages run:
+
+  ```
+  Add 2 socks to save 10%                     (nothing picked)
+  Buy one more, save 10% / 15% / 20%          (1–3 socks)
+  Add 1 more sock to unlock FREE shipping     (4 socks)
+  You've unlocked FREE shipping + 20% off!    (5 socks, highlighted)
+  ```
+
+  All three are editable under **Progress bar**. Ticking the box is a promise: back it
+  with a shipping rule or a free-shipping discount, since the bar takes your word for it.
+- With no pack ticked, the milestone instead sits where the total crosses the
+  **Free shipping threshold**, and only appears if a full pack can reach it.
 - On a normal product page the block can also be added: **Single** then means "buy this
   product" and the normal add-to-cart stays; multi-packs switch into the picker.
 - Below 769px the picker moves inline under the chosen-sock slots.

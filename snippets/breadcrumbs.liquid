@@ -1,0 +1,121 @@
+{% if settings.show_breadcrumbs %}
+
+{% unless template.name == 'index' or template.name == 'cart' %}
+  <nav class="breadcrumb" role="navigation" aria-label="breadcrumbs">
+    <a href="{{ routes.root_url }}" title="{{ 'general.breadcrumbs.home_link_title' | t }}">{{ 'general.breadcrumbs.home' | t }}</a>
+
+    {% if template.name == 'product' %}
+
+      {% if collection %}
+        {% if settings.show_breadcrumbs_collection_link %}
+          <span class="breadcrumb__divider" aria-hidden="true">/</span>
+          <a href="{{ routes.collections_url }}">{{ 'general.search.collections' | t | replace: ':', ''}}</a>
+        {% endif %}
+
+        <span class="breadcrumb__divider" aria-hidden="true">/</span>
+        {% if collection.handle %}
+          {% capture url %}{{ routes.collections_url }}/{{ collection.handle }}{% endcapture %}
+          {{ collection.title | link_to: url }}
+        {% endif %}
+      {% endif %}
+      <span class="breadcrumb__divider" aria-hidden="true">/</span>
+
+    {% elsif template.name == 'collection' and collection.handle %}
+      {% if settings.show_breadcrumbs_collection_link %}
+        <span class="breadcrumb__divider" aria-hidden="true">/</span>
+        <a href="{{ routes.collections_url }}">{{ 'general.search.collections' | t | replace: ':', ''}}</a>
+      {% endif %}
+
+      <span class="breadcrumb__divider" aria-hidden="true">/</span>
+
+      {% if current_tags %}
+
+        {% capture url %}{{ routes.collections_url }}/{{ collection.handle }}{% endcapture %}
+        {{ collection.title | link_to: url }}
+
+        <span class="breadcrumb__divider" aria-hidden="true">/</span>
+
+        {% for tag in current_tags %}
+          {% if tag contains "_" %}{%- assign tag_starts_with = tag | slice: 0 -%}{% if tag_starts_with == "_" %}{% if tag_count %}{%- assign tag_count = tag_count | minus: 1 | at_least: 0 -%}{% endif %}{% continue %}{% endif %}{% endif %}
+
+          {% assign tag_name = tag | strip %}
+          {% assign tag_text = tag_name | capitalize %}
+          <span>{{ tag_text }}</span>
+
+          {% unless forloop.last %}
+            <span>+</span>
+          {% endunless %}
+
+        {% endfor %}
+      {% endif %}
+
+    {% elsif template.name == 'blog' %}
+
+      <span class="breadcrumb__divider" aria-hidden="true">/</span>
+      {% if current_tags %}
+        {{ blog.title | link_to: blog.url }}
+        <span class="breadcrumb__divider" aria-hidden="true">/</span>
+        <span>{{ current_tags | join: " + " }}</span>
+      {% endif %}
+
+    {% elsif template.name == 'article' %}
+
+      <span class="breadcrumb__divider" aria-hidden="true">/</span>
+      {{ blog.title | link_to: blog.url }}
+      <span class="breadcrumb__divider" aria-hidden="true">/</span>
+
+    {% elsif template.name == 'page' %}
+
+      <span class="breadcrumb__divider" aria-hidden="true">/</span>
+      <span>{{ page.title }}</span>
+
+    {% elsif template.name == 'search' %}
+
+      <span class="breadcrumb__divider" aria-hidden="true">/</span>
+      <span>{{ page_title | replace: '*', '' }}</span>
+
+    {% else %}
+
+      <span class="breadcrumb__divider" aria-hidden="true">/</span>
+      <span>{{ page_title }}</span>
+
+    {% endif %}
+  </nav>
+{% endunless %}
+
+{% endif %}
+
+{%- comment -%} BreadcrumbList JSON-LD (Ryze, 2026-09-30) {%- endcomment -%}
+{%- if template.name == 'product' or template.name == 'collection' or template.name == 'article' or template.name == 'page' or template.name == 'blog' -%}
+{%- liquid
+  assign bc_items = ''
+  assign bc_pos = 2
+  if template.name == 'product'
+    if collection.handle
+      assign bc_url = shop.url | append: routes.collections_url | append: '/' | append: collection.handle
+      assign bc_name = collection.title | json
+      assign bc_items = bc_items | append: '{"@type":"ListItem","position":2,"name":' | append: bc_name | append: ',"item":"' | append: bc_url | append: '"},'
+      assign bc_pos = 3
+    endif
+    assign bc_name = product.title | json
+    assign bc_items = bc_items | append: '{"@type":"ListItem","position":' | append: bc_pos | append: ',"name":' | append: bc_name | append: ',"item":"' | append: shop.url | append: product.url | append: '"}'
+  elsif template.name == 'collection'
+    assign bc_name = collection.title | json
+    assign bc_items = bc_items | append: '{"@type":"ListItem","position":2,"name":' | append: bc_name | append: ',"item":"' | append: shop.url | append: collection.url | append: '"}'
+  elsif template.name == 'article'
+    assign bc_name = blog.title | json
+    assign bc_items = bc_items | append: '{"@type":"ListItem","position":2,"name":' | append: bc_name | append: ',"item":"' | append: shop.url | append: blog.url | append: '"},'
+    assign bc_name = article.title | json
+    assign bc_items = bc_items | append: '{"@type":"ListItem","position":3,"name":' | append: bc_name | append: ',"item":"' | append: shop.url | append: article.url | append: '"}'
+  elsif template.name == 'blog'
+    assign bc_name = blog.title | json
+    assign bc_items = bc_items | append: '{"@type":"ListItem","position":2,"name":' | append: bc_name | append: ',"item":"' | append: shop.url | append: blog.url | append: '"}'
+  elsif template.name == 'page'
+    assign bc_name = page.title | json
+    assign bc_items = bc_items | append: '{"@type":"ListItem","position":2,"name":' | append: bc_name | append: ',"item":"' | append: shop.url | append: page.url | append: '"}'
+  endif
+-%}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"{{ shop.url }}"},{{ bc_items }}]}
+</script>
+{%- endif -%}

@@ -1,0 +1,298 @@
+{% render 'biblesocks-tokens' %}
+
+<style>
+  .bs-reframe-{{ section.id }} {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bs-reframe-{{ section.id }} .visual {
+    position: relative;
+    min-height: 600px;
+    background-color: #1e1b17;
+    background-size: cover;
+    background-position: center;
+
+    {% if section.settings.image != blank %}
+      background-image:
+        linear-gradient(
+          160deg,
+          rgba(18, 17, 16, 0) 30%,
+          rgba(18, 17, 16, 0.9) 100%
+        ),
+        url('{{ section.settings.image | image_url: width: 1400 }}');
+    {% else %}
+      background-image:
+        linear-gradient(
+          160deg,
+          rgba(18, 17, 16, 0) 30%,
+          rgba(18, 17, 16, 0.9) 100%
+        ),
+        repeating-linear-gradient(
+          70deg,
+          #221e18 0 22px,
+          #181510 22px 44px
+        );
+    {% endif %}
+  }
+
+  .bs-reframe-{{ section.id }} .visual .imglabel {
+    position: absolute;
+    bottom: 20px;
+    left: 24px;
+    max-width: 240px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    color: var(--bs-stone);
+  }
+
+  .bs-reframe-{{ section.id }} .copy {
+    padding: 72px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .bs-reframe-{{ section.id }} .verse {
+    margin-bottom: 22px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11.5px;
+    color: var(--bs-gold);
+    letter-spacing: 0.1em;
+  }
+
+  .bs-reframe-{{ section.id }} h2 {
+    margin-bottom: 22px;
+    font-size: clamp(32px, 4vw, 45px);
+  }
+
+  .bs-reframe-{{ section.id }} p {
+    max-width: 460px;
+    margin-bottom: 20px;
+    color: var(--bs-cream);
+    opacity: 0.85;
+    font-size: 17px;
+  }
+
+  .bs-reframe-{{ section.id }} .button-wrapper {
+    margin-top: {{ section.settings.button_spacing }}px;
+  }
+
+  .bs-reframe-{{ section.id }} .reframe-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 24px;
+
+    background-color: {{ section.settings.button_background_color }};
+    color: {{ section.settings.button_text_color }};
+
+    border:
+      {{ section.settings.button_border_width }}px
+      solid
+      {{ section.settings.button_border_color }};
+    border-radius: {{ section.settings.button_border_radius }}px;
+
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .bs-reframe-{{ section.id }} .reframe-button:hover {
+    background-color: {{ section.settings.button_hover_background_color }};
+    color: {{ section.settings.button_hover_text_color }};
+    border-color: {{ section.settings.button_hover_border_color }};
+    transform: translateY(-2px);
+  }
+
+  .bs-reframe-{{ section.id }} .reframe-button:focus-visible {
+    outline: 2px solid {{ section.settings.button_text_color }};
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 900px) {
+    .bs-reframe-{{ section.id }} {
+      grid-template-columns: 1fr;
+    }
+
+    .bs-reframe-{{ section.id }} .visual {
+      min-height: 340px;
+      border-right: none;
+      border-bottom: 1px solid var(--bs-hairline);
+    }
+
+    .bs-reframe-{{ section.id }} .copy {
+      padding: 52px 24px;
+    }
+  }
+</style>
+
+<div
+  class="bs-section"
+  style="border-bottom: 1px solid var(--bs-hairline);"
+>
+  <div class="bs-reframe-{{ section.id }}">
+    <div class="visual">
+      {%- if section.settings.image == blank -%}
+        <div class="imglabel bs-mono">
+          IMG PLACEHOLDER — upload in section settings
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="copy">
+      {%- if section.settings.verse != blank -%}
+        <div class="verse bs-mono">
+          {{ section.settings.verse }}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.headline != blank -%}
+        <h2>{{ section.settings.headline }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.body != blank -%}
+        <p>{{ section.settings.body }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.button_label != blank -%}
+        <div class="button-wrapper">
+          <a
+            class="reframe-button"
+            href="{{ section.settings.button_link | default: '#' }}"
+          >
+            {{ section.settings.button_label }}
+          </a>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "BS: Reframe / Armor",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "verse",
+      "label": "Verse reference",
+      "default": "Ephesians 6:14–15"
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "Headline",
+      "default": "The First Armor You Put On."
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body copy",
+      "default": "Stand firm, feet fitted and ready. Before the boots, before the day, you put on the ground you stand on. That's not a novelty sock. That's armor you wear where it counts."
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "button_background_color",
+      "label": "Button background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#FFD700"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background_color",
+      "label": "Hover background",
+      "default": "#FFD700"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Hover text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_border_color",
+      "label": "Hover border color",
+      "default": "#FFD700"
+    },
+    {
+      "type": "range",
+      "id": "button_border_width",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "unit": "px",
+      "label": "Button border width",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Button corner radius",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_spacing",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Space above button",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "BS: Reframe / Armor"
+    }
+  ]
+}
+{% endschema %}

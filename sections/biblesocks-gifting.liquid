@@ -1,0 +1,413 @@
+{% render 'biblesocks-tokens' %}
+
+<style>
+  .bs-gifting-{{ section.id }} {
+    background: var(--bs-onyx-2);
+  }
+
+  .bs-gifting-{{ section.id }} .grid {
+    display: grid;
+    grid-template-columns: repeat(
+      {{ section.blocks.size | at_most: 4 }},
+      minmax(0, 1fr)
+    );
+    gap: {{ section.settings.column_gap }}px;
+
+    /* No grid borders or divider lines */
+    background: transparent;
+    border: none;
+  }
+
+  .bs-gifting-{{ section.id }} .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    min-width: 0;
+    padding: {{ section.settings.block_vertical_padding }}px
+      {{ section.settings.block_horizontal_padding }}px;
+
+    background: {{ section.settings.block_background }};
+    border: none;
+    text-align: center;
+  }
+
+  .bs-gifting-{{ section.id }} .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: {{ section.settings.icon_area_height }}px;
+    margin: 0 auto {{ section.settings.icon_bottom_spacing }}px;
+    text-align: center;
+  }
+
+  /* Editable text or symbol icon */
+  .bs-gifting-{{ section.id }} .icon-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    margin: 0;
+
+    color: {{ section.settings.icon_color }};
+    font-family: 'Anton', sans-serif;
+    font-size: {{ section.settings.icon_text_size }}px;
+    font-weight: 400;
+    line-height: 1;
+    text-align: center;
+  }
+
+  /* Uploaded image icon */
+  .bs-gifting-{{ section.id }} .icon-image {
+    display: block;
+    width: {{ section.settings.icon_image_size }}px;
+    height: {{ section.settings.icon_image_size }}px;
+    max-width: 100%;
+    margin: 0 auto;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 50%;
+  }
+
+  .bs-gifting-{{ section.id }} .item h3 {
+    width: 100%;
+    margin: 0 0 10px;
+
+    color: {{ section.settings.title_color }};
+    font-size: 17px;
+    letter-spacing: 0.02em;
+    text-align: center;
+  }
+
+  .bs-gifting-{{ section.id }} .item p {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+
+    color: {{ section.settings.body_color }};
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  @media (max-width: 1000px) {
+    .bs-gifting-{{ section.id }} .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 600px) {
+    .bs-gifting-{{ section.id }} .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .bs-gifting-{{ section.id }} .item {
+      padding: 36px 20px;
+    }
+  }
+</style>
+
+<div
+  class="bs-section bs-gifting-{{ section.id }}"
+  style="
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <!-- Heading and blocks now share the same container -->
+  <div class="bs-wrap">
+    <div
+      class="bs-section-head"
+      style="margin-bottom: {{ section.settings.heading_spacing }}px;"
+    >
+      {%- if section.settings.eyebrow != blank -%}
+        <div class="bs-patch bs-mono">
+          {{ section.settings.eyebrow }}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.headline != blank -%}
+        <h2>{{ section.settings.headline }}</h2>
+      {%- endif -%}
+    </div>
+
+    <div class="grid">
+      {%- for block in section.blocks -%}
+        <div class="item" {{ block.shopify_attributes }}>
+          {%- if block.settings.icon_image != blank -%}
+            {%- assign icon_alt = block.settings.icon_alt | default: block.settings.title | append: ' | BibleSocks' -%}
+            <div class="icon-wrapper">
+              {{
+                block.settings.icon_image
+                | image_url:
+                  width: 400,
+                  height: 400,
+                  crop: 'center'
+                | image_tag:
+                  class: 'icon-image',
+                  loading: 'lazy',
+                  widths: '80, 120, 160, 240, 320, 400',
+                  alt: icon_alt
+              }}
+            </div>
+
+          {%- elsif block.settings.icon != blank -%}
+            <div class="icon-wrapper">
+              <span class="icon-text" aria-hidden="true">
+                {{ block.settings.icon }}
+              </span>
+            </div>
+          {%- endif -%}
+
+          {%- if block.settings.title != blank -%}
+            <h3 class="bs-display">
+              {{ block.settings.title }}
+            </h3>
+          {%- endif -%}
+
+          {%- if block.settings.body != blank -%}
+            <p>{{ block.settings.body }}</p>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "BS: Gifting Made Easy",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow tag",
+      "default": "Gifting Made Easy"
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "Headline",
+      "default": "Buy Now. It'll Land Right."
+    },
+    {
+      "type": "header",
+      "content": "Feature blocks"
+    },
+    {
+      "type": "color",
+      "id": "block_background",
+      "label": "Block background",
+      "default": "#121110"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#F6F1E7"
+    },
+    {
+      "type": "color",
+      "id": "body_color",
+      "label": "Body text color",
+      "default": "#C9C2B6"
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between blocks",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "block_vertical_padding",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Block vertical padding",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "block_horizontal_padding",
+      "min": 16,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Block horizontal padding",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Icon appearance"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Text icon color",
+      "default": "#F4C542"
+    },
+    {
+      "type": "range",
+      "id": "icon_text_size",
+      "min": 24,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Text icon size",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "icon_image_size",
+      "min": 32,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Uploaded icon size",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "icon_area_height",
+      "min": 60,
+      "max": 180,
+      "step": 4,
+      "unit": "px",
+      "label": "Icon area height",
+      "default": 84
+    },
+    {
+      "type": "range",
+      "id": "icon_bottom_spacing",
+      "min": 8,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Space below icon",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "range",
+      "id": "heading_spacing",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below heading",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 20,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 20,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "gift_feature",
+      "name": "Feature",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon_image",
+          "label": "Upload icon",
+          "info": "The uploaded image replaces the text or symbol icon."
+        },
+        {
+          "type": "text",
+          "id": "icon_alt",
+          "label": "Uploaded icon alt text"
+        },
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon text or symbol",
+          "default": "✎",
+          "info": "Examples: ✎, →, ◈, ✓, 01 or FREE."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Gift Note"
+        },
+        {
+          "type": "textarea",
+          "id": "body",
+          "label": "Body copy",
+          "default": "A personal message, included free."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    {
+      "name": "BS: Gifting Made Easy",
+      "blocks": [
+        {
+          "type": "gift_feature",
+          "settings": {
+            "icon": "✎",
+            "title": "Gift Note",
+            "body": "A personal message, included free."
+          }
+        },
+        {
+          "type": "gift_feature",
+          "settings": {
+            "icon": "→",
+            "title": "Ship to Him",
+            "body": "Send it straight to the recipient — even out of town."
+          }
+        },
+        {
+          "type": "gift_feature",
+          "settings": {
+            "icon": "◈",
+            "title": "Gift-Ready Box",
+            "body": "Arrives ready to give, no wrapping needed."
+          }
+        },
+        {
+          "type": "gift_feature",
+          "settings": {
+            "icon": "✓",
+            "title": "Easy Ordering",
+            "body": "Choose his gift and complete your order in just a few steps."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

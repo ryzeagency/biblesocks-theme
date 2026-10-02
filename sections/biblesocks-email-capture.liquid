@@ -1,0 +1,49 @@
+{% render 'biblesocks-tokens' %}
+<style>
+  .bs-capture-{{ section.id }}{ text-align:center; padding:88px 32px; background:var(--bs-gold); color:var(--bs-onyx); }
+  .bs-capture-{{ section.id }} .bs-patch{ border-color:var(--bs-onyx); color:var(--bs-onyx); background:none; }
+  .bs-capture-{{ section.id }} .bs-patch::before{ border-color:var(--bs-onyx); }
+  .bs-capture-{{ section.id }} h2{ color:var(--bs-onyx); font-size:clamp(30px,4.6vw,50px); max-width:640px; margin:0 auto 16px; }
+  .bs-capture-{{ section.id }} p{ max-width:480px; margin:0 auto 32px; font-style:italic; opacity:0.75;color:#000 !important; }
+  .bs-capture-{{ section.id }} form{ display:flex; justify-content:center; gap:0; max-width:420px; margin:0 auto; }
+  .bs-capture-{{ section.id }} input[type="email"]{
+    flex:1; padding:16px 18px; border:2px solid var(--bs-onyx); border-right:none;
+    font-family:'Space Mono',monospace; font-size:13px; background:var(--bs-gold); color:var(--bs-onyx);
+  }
+  .bs-capture-{{ section.id }} input[type="email"]::placeholder{ color:rgba(18,17,16,0.55); }
+  .bs-capture-{{ section.id }} button{
+    padding:16px 24px; border:2px solid var(--bs-onyx); background:var(--bs-onyx); color:var(--bs-gold);
+    font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; cursor:pointer;
+  }
+  .bs-capture-{{ section.id }} .success{ font-family:'Space Mono',monospace; font-size:13px; }
+</style>
+
+<div class="bs-section bs-capture-{{ section.id }}">
+  {%- if section.settings.eyebrow != blank -%}<div class="bs-patch bs-mono">{{ section.settings.eyebrow }}</div>{%- endif -%}
+  <h2>{{ section.settings.headline }}</h2>
+  {%- if section.settings.body != blank -%}<p>{{ section.settings.body }}</p>{%- endif -%}
+
+  {%- form 'customer', id: 'bs-capture-form' -%}
+    <input type="hidden" name="contact[tags]" value="newsletter">
+    {%- if form.posted_successfully? -%}
+      <p class="success">{{ section.settings.success_text }}</p>
+    {%- else -%}
+      <input type="email" name="contact[email]" placeholder="Email address" required>
+      <button type="submit">{{ section.settings.button_text }}</button>
+    {%- endif -%}
+  {%- endform -%}
+</div>
+
+{% schema %}
+{
+  "name": "BS: Email Capture",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow tag", "default": "Stay Ready" },
+    { "type": "text", "id": "headline", "label": "Headline", "default": "Never Miss Father's Day Again." },
+    { "type": "textarea", "id": "body", "label": "Body copy", "default": "We'll remind you before every occasion — Father's Day, Baptism, Christmas, and more." },
+    { "type": "text", "id": "button_text", "label": "Button text", "default": "Remind Me" },
+    { "type": "text", "id": "success_text", "label": "Success message", "default": "You're on the list. We'll be in touch before the next occasion." }
+  ],
+  "presets": [ { "name": "BS: Email Capture" } ]
+}
+{% endschema %}

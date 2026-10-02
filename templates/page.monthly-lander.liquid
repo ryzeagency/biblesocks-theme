@@ -1,0 +1,923 @@
+<!-- ============================================================
+  BIBLESOCKS — Featured Sock Landing Page (v2 / dark edition)
+  Desktop reference: 1920px  ·  all sizes converted to vw (px ÷ 19.2)
+  Container: 77.5vw desktop/tablet · 90% mobile (≤767px)
+  Paste this whole block into a Shopify Custom Liquid section,
+  or save as templates/page.bible-lander.liquid
+============================================================ -->
+
+{%- comment -%}
+  ------------------------------------------------------------
+  EDIT ME — everything swappable lives here.
+  Image URLs marked REPLACE are placeholders pulled from the
+  old lander so the page renders; swap for the new BibleSocks art.
+  ------------------------------------------------------------
+{%- endcomment -%}
+
+{%- assign logo_image        = "https://cdn.shopify.com/s/files/1/0508/3797/9306/files/bible-socks-logo.png?v=1785364401" -%}{%- comment -%} leave blank to use the built-in SVG wordmark {%- endcomment -%}
+{%- assign home_url          = "/" -%}
+{%- assign collection_url    = "/collections/best-sellers" -%}
+
+{%- comment -%} HERO {%- endcomment -%}
+{%- assign hero_image        = "https://cdn.shopify.com/s/files/1/0508/3797/9306/files/wear_your_faith_share_his_word.webp?v=1785364402" -%}{%- comment -%} REPLACE — wide lifestyle shot {%- endcomment -%}
+{%- assign hero_image_alt    = "Man sitting on a bench pulling on God's Love John 3:16 crew socks" -%}
+{%- assign creator_name      = "[Creator's Name]" -%}
+{%- assign hero_product      = "God's Love (John 3:16)" -%}
+{%- assign hero_price        = "$18.47" -%}
+{%- assign hero_url          = "/products/gods-love-john-3-16" -%}
+
+{%- comment -%} SOCK OF THE MONTH {%- endcomment -%}
+{%- assign sotm_image        = "https://cdn.shopify.com/s/files/1/0508/3797/9306/files/everystep.webp?v=1785364402" -%}{%- comment -%} REPLACE {%- endcomment -%}
+{%- assign sotm_image_alt    = "Man in a truck doorway wearing The Blue and Gold Crosses socks" -%}
+{%- assign sotm_product      = "The Blue and Gold Crosses" -%}
+{%- assign sotm_price        = "$18.47" -%}
+{%- assign sotm_url          = "/products/the-blue-and-gold-crosses" -%}
+
+{%- comment -%} CREATOR BAND {%- endcomment -%}
+{%- assign creator_avatar    = "https://cdn.shopify.com/s/files/1/1726/6105/files/user-icos.webp?v=1784585281" -%}{%- comment -%} REPLACE {%- endcomment -%}
+
+{%- comment -%} FEATURE ICONS {%- endcomment -%}
+{%- assign icon_shipping     = "https://cdn.shopify.com/s/files/1/1726/6105/files/Free_Shipping.png?v=1784577724" -%}
+{%- assign icon_comfort      = "https://cdn.shopify.com/s/files/1/1726/6105/files/Cushioned_Comfort.png?v=1784577724" -%}
+{%- assign icon_quality      = "https://cdn.shopify.com/s/files/1/1726/6105/files/High_Quality_21ad9e33-1583-4e03-83eb-8173d5bc4efa.png?v=1784577723" -%}
+{%- assign icon_breathable   = "https://cdn.shopify.com/s/files/1/1726/6105/files/Breathable_Material.png?v=1784577724" -%}
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<style>
+
+  /* Hide the theme's own header/footer so the lander runs edge to edge */
+  .shopify-section-group-header-group,
+  .shopify-section-group-footer-group { display: none; }
+
+  /* ---------- Tokens ---------- */
+  .bs-lp {
+    --bs-black:      #000000;
+    --bs-charcoal:   #1c1a17;   /* mission + footer */
+    --bs-espresso:   #1c150f;   /* testimonials */
+    --bs-gold:       #ffcf24;   /* single accent — bands, headings, buttons */
+    --bs-gold-deep:  #ecb908;
+    --bs-white:      #ffffff;
+    --bs-muted:      #e4e0da;
+    --bs-rule:       rgba(255,255,255,.34);
+
+    --bs-body:    'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --bs-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+
+    font-family: var(--bs-body);
+    background: var(--bs-black);
+    color: var(--bs-white);
+    margin: 0;
+    width: 100%;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+        font-family: var(--bs-body);
+    }
+  .bs-lp *, .bs-lp *::before, .bs-lp *::after { box-sizing: border-box; }
+  .bs-lp img { display: block; max-width: 100%; height: auto; }
+  /* :where() keeps this reset at zero specificity so component classes below can
+     still set their own margins / text-transform without needing !important */
+  .bs-lp :where(h1, h2, h3, p, ul) { margin: 0; }
+  .bs-lp :where(ul) { padding: 0; list-style: none; }
+  .bs-lp a { text-decoration: none; color: inherit; }
+  .bs-lp svg { display: block; }
+
+  .bs-container { width: 77.5vw; margin-inline: auto; }
+  .bs-svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+  /* Theme overrides: parent theme likes to uppercase headings and repaint links */
+  .bs-lp :where(h1, h2, h3) { text-transform: none; font-weight: 800; }
+  .bs-lp a.bs-btn, .bs-lp a.bs-btn:visited { text-decoration: none !important; }
+  .bs-lp .bs-btn--solid,  .bs-lp .bs-btn--solid:visited  { background: var(--bs-gold) !important; color: #111 !important; }
+  .bs-lp .bs-btn--ghost,  .bs-lp .bs-btn--ghost:visited  { color: var(--bs-gold) !important; }
+
+  /* ---------- Reveal animations ---------- */
+  .bs-reveal {
+    opacity: 0;
+    transform: translateY(1.4vw);
+    transition: opacity .7s ease, transform .7s ease;
+    will-change: opacity, transform;
+  }
+  .bs-reveal.bs-in { opacity: 1; transform: translateY(0); }
+  .bs-reveal[data-delay="1"] { transition-delay: .10s; }
+  .bs-reveal[data-delay="2"] { transition-delay: .20s; }
+  .bs-reveal[data-delay="3"] { transition-delay: .30s; }
+  @media (prefers-reduced-motion: reduce) {
+    .bs-reveal { opacity: 1; transform: none; transition: none; }
+    .bs-lp * { animation: none !important; transition: none !important; }
+  }
+
+  /* ---------- Buttons ---------- */
+  .bs-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: var(--bs-body);
+    font-weight: 600;
+    font-size: 0.9vw;                  /* 20px */
+    line-height: 1.1;
+    padding: 0.9vw 1.95vw;              /* → 60px tall, matches the comp */
+    border-radius: 62vw;
+    border: 0.104vw solid transparent;  /* 2px */
+    cursor: pointer;
+    transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease, color .25s ease;
+  }
+  .bs-btn:hover { transform: translateY(-0.15vw); box-shadow: 0 0.5vw 1.2vw rgba(0,0,0,.35); }
+  .bs-btn:focus-visible { outline: 0.156vw solid var(--bs-gold); outline-offset: 0.2vw; }
+  .bs-btn--solid { background: var(--bs-gold); color: #111; }
+  .bs-btn--solid:hover { background: var(--bs-gold-deep); }
+  .bs-btn--ghost { background: transparent; border-color: var(--bs-gold); color: var(--bs-gold); }
+  .bs-btn--ghost:hover { background: rgba(255,207,36,.12); }
+
+  /* ---------- Pill badge ---------- */
+  .bs-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .6em;
+    font-size: 1.3vw;                   /* 25px */
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--bs-white);
+    padding: 0.48vw 1.93vw;             /* → 49px tall */
+    border: 0.083vw solid var(--bs-gold);  /* 1.6px */
+    border-radius: 62vw;
+  }
+  .bs-badge .bs-spark { color: var(--bs-gold); font-size: .9em; }
+
+  /* ---------- Stars + checklist ---------- */
+  .bs-stars { display: flex; align-items: center; gap: 0.2vw; color: var(--bs-gold); }
+  .bs-stars svg { width: 1.04vw; height: 1.04vw; fill: currentColor; }
+
+  .bs-rating { display: flex; align-items: center; gap: 0.75vw; }
+  .bs-rating-text { font-size: 0.97vw; color: var(--bs-muted); }
+  .bs-rating-text strong { font-weight: 700; color: var(--bs-white); }
+
+  .bs-checklist { display: flex; flex-direction: column; gap: 1vw; }   /* → 46px row pitch */
+  .bs-checklist li { display: flex; align-items: center; gap: 0.85vw; font-size: 1.09vw; line-height: 1.25; }
+  .bs-checklist svg { flex: 0 0 auto; width: 1.35vw; height: 1.35vw; color: var(--bs-gold); }
+  .bs-checklist .bs-ico-solid { fill: var(--bs-gold); }
+
+  /* ============================================================
+     HEADER
+  ============================================================ */
+  .bs-header { background: var(--bs-black); padding: 2.6vw 0; }
+  .bs-logo { display: inline-flex; align-items: center; gap: 1.1vw; }
+  .bs-logo-img { height: 5.2vw; width: auto; }
+  .bs-logo-mark {
+    flex: 0 0 auto;
+    width: 5.2vw; height: 5.2vw;      /* 100px */
+    border-radius: 50%;
+    background: var(--bs-white);
+    color: var(--bs-black);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bs-logo-mark svg { width: 62%; height: 62%; }
+  .bs-wordmark {
+    font-family: var(--bs-display);
+    font-weight: 600;
+    font-size: 4.1vw;
+    line-height: 1;
+    letter-spacing: -.005em;
+    color: var(--bs-white);
+    text-transform: none;
+  }
+
+  /* ============================================================
+     HERO — full-bleed photo, content top + bottom
+  ============================================================ */
+  .bs-hero { position: relative; background: var(--bs-black); overflow: hidden; }
+  .bs-hero-media {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center 28%;
+    background-repeat: no-repeat;
+  }
+  .bs-hero-media::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.05) 18%, rgba(0,0,0,.10) 38%,
+                      rgba(0,0,0,.52) 62%, rgba(0,0,0,.78) 82%, rgba(0,0,0,.88) 100%);
+  }
+  .bs-hero-inner {
+    position: relative;
+    z-index: 1;
+    min-height: 56.9vw;                 /* 1092px */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4.75vw 0 3.4vw;
+  }
+
+  .bs-hero-top { display: flex; flex-direction: column; align-items: flex-start; gap: 1.05vw; }
+  .bs-hero-product {
+    display: flex; align-items: baseline; gap: 1.7vw;
+    padding-left: 2.15vw;               /* lines up with the badge's inner text */
+    font-size: 1.48vw;
+    font-weight: 500;
+    color: var(--bs-white);
+    text-shadow: 0 0.1vw 0.5vw rgba(0,0,0,.55);
+  }
+
+  .bs-hero-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5vw;
+    align-items: end;
+  }
+  .bs-hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 1.15vw; }
+  .bs-hero-title {
+    font-size: 3.18vw;                  /* 61px */
+    font-weight: 800;
+    line-height: 1.06;
+    letter-spacing: -.01em;
+    text-transform: uppercase;
+    color: var(--bs-white);
+  }
+  .bs-hero-title span {
+    display: block;
+    color: var(--bs-gold);
+    font-size: 1.27em;                  /* → ~80px */
+    line-height: 1.02;
+  }
+  .bs-hero-sub { font-size: 1.09vw; line-height: 1.25; color: #eae7e2; max-width: 38vw; }
+
+  .bs-hero-proof { display: flex; flex-direction: column; align-items: flex-start; gap: 1.5vw; }
+  .bs-hero-actions { display: flex; flex-wrap: wrap; gap: 1.45vw; margin-top: 0.4vw; }
+
+  /* ============================================================
+     CREATOR BAND (gold)
+  ============================================================ */
+  .bs-creator { background: var(--bs-gold); color: #111; padding: 4.48vw 0 5.94vw; }
+  .bs-creator .bs-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 19.5vw;
+    gap: 4.3vw;
+    align-items: center;
+  }
+  .bs-creator-copy { display: flex; flex-direction: column; align-items: stretch; text-align: center; }
+  .bs-creator-copy p.bs-creator-eyebrow { font-size: 1.29vw; font-weight: 500; line-height: 1.3; }
+  .bs-bar {
+    background: var(--bs-black);
+    margin-top: 1.15vw;
+    margin-bottom: 1.15vw;
+    padding: 1.25vw 1.6vw;
+    font-size: 3.11vw;                  /* 60px */
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -.01em;
+    text-transform: uppercase;
+    color: var(--bs-white);
+  }
+  .bs-bar span { color: var(--bs-gold); font-weight: 500; }
+  .bs-creator-p {
+    font-size: 1.08vw;
+    line-height: 1.25;
+    font-style: italic;
+    font-weight: 500;
+    max-width: 53.7vw;
+    margin-inline: auto;
+  }
+  .bs-creator-p:first-of-type { margin-top: 1.93vw; }
+  .bs-creator-p + .bs-creator-p { margin-top: 1.35vw; }
+  .bs-avatar {
+    width: 16.7vw; height: 16.7vw;
+    justify-self: center;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #e8e8e8;
+  }
+
+  /* ============================================================
+     SOCK OF THE MONTH (black)
+  ============================================================ */
+  .bs-sotm { background: var(--bs-black); padding: 4.6vw 0 0; }
+  .bs-sotm .bs-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4.4vw;
+    align-items: stretch;
+  }
+
+  .bs-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.85vw;
+    overflow: hidden;
+    background: var(--bs-gold);
+    transition: transform .35s ease, box-shadow .35s ease;
+  }
+  .bs-card:hover { transform: translateY(-0.28vw); box-shadow: 0 1.3vw 2.8vw rgba(0,0,0,.55); }
+  .bs-card img {
+    width: 100%;
+    aspect-ratio: 709 / 643;
+    object-fit: cover;
+    object-position: center;
+  }
+  .bs-card-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5vw;
+    background: var(--bs-gold);
+    color: #111;
+    padding: 1.98vw 2.55vw;             /* → 110px tall bar */
+    margin-top: -1px;                   /* kills the sub-pixel seam */
+  }
+  .bs-card-name  { font-size: 1.49vw; font-weight: 700; }
+  .bs-card-price { font-size: 1.49vw; font-weight: 600; white-space: nowrap; }
+
+  .bs-sotm-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;      /* tops + bottoms align with the card */
+    padding-bottom: 0.2vw;
+  }
+  .bs-sotm-badge {
+    width: 100%;
+    max-width: 30vw;
+    justify-content: flex-start;
+    padding-left: 1.7vw;
+  }
+  .bs-sotm-lead { margin-top: 2.5vw; }
+  .bs-sotm-title {
+    font-size: 5.54vw;                   /* 106px */
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.01em;
+    text-transform: uppercase;
+    color: var(--bs-gold);
+  }
+  .bs-sotm-sub { font-size: 1.1vw; line-height: 1.25; color: #f0ede9; margin-top: 0.5vw; }
+  .bs-sotm-actions { display: flex; flex-wrap: wrap; gap: 1.05vw; }
+
+  /* ============================================================
+     FEATURES BAND (black)
+  ============================================================ */
+  .bs-features { background: var(--bs-black); padding: 6vw 0 2.3vw; }
+  .bs-features .bs-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.6vw;
+  }
+  .bs-feature { display: flex; align-items: center; gap: 1vw; color: var(--bs-white); }
+  .bs-feature img {
+    width: 5.2vw; height: 5.2vw;      /* 100px */
+    object-fit: contain;
+    flex: 0 0 auto;
+    filter: brightness(0) invert(1);     /* forces the dark source PNGs to white */
+  }
+  .bs-feature-title { font-size: 1vw; font-weight: 700; line-height: 1.2; }
+  .bs-feature-sub   { font-size: 0.71vw; font-weight: 500; line-height: 1.35; margin-top: 0.2vw; color: #ddd8d1; }
+  .bs-feature--caps .bs-feature-title,
+  .bs-feature--caps .bs-feature-sub { text-transform: uppercase; }
+
+  /* ============================================================
+     MISSION (charcoal)
+  ============================================================ */
+  .bs-mission { background: var(--bs-charcoal); padding: 3.5vw 0 4vw; text-align: center; }
+  .bs-mission .bs-container { display: flex; flex-direction: column; align-items: center; }
+  .bs-mission p.bs-mission-eyebrow {
+    font-size: 1.04vw;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #f2efeb;
+  }
+  .bs-mission-title {
+    font-size: 3.18vw;                   /* 61px */
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -.01em;
+    text-transform: uppercase;
+    margin-top: 0.73vw;
+  }
+  .bs-mission-title span { color: var(--bs-gold); font-size: 1.05em; }
+  .bs-mission-p {
+    font-size: 1.09vw;
+    line-height: 1.25;
+    font-style: italic;
+    font-weight: 500;
+    color: #d9d4cd;
+    max-width: 62vw;
+    margin-top: 1.9vw;
+  }
+  .bs-mission-kicker { font-weight: 700; color: var(--bs-white); margin-top: 1.15vw; }
+
+  /* ============================================================
+     TESTIMONIALS (espresso)
+  ============================================================ */
+  .bs-testi { background: var(--bs-espresso); border-top: 1px solid var(--bs-rule); padding: 2.7vw 0 3.2vw; }
+  .bs-testi-title {
+    font-size: 2.16vw;                   /* 41px */
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -.01em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 2.71vw;
+  }
+  .bs-swiper { position: relative; overflow: hidden; }
+  .bs-slide { position: relative; border-radius: 0.62vw; overflow: hidden; background: #141414; }
+  .bs-slide video, .bs-slide img {
+    width: 100%;
+    aspect-ratio: 347 / 624;
+    object-fit: cover;
+  }
+  .bs-handle {
+    position: absolute;
+    top: 0.6vw; left: 0.6vw;
+    z-index: 2;
+    display: none; 
+    max-width: calc(100% - 1.2vw);
+    padding: 0.3vw 0.55vw;
+    border-radius: 0.3vw;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(2px);
+    color: var(--bs-white);
+    font-size: 0.7vw;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: .01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bs-testi-foot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 2vw;
+    margin-top: 2.8vw;
+  }
+  .bs-testi-foot p { font-size: 1.09vw; line-height: 1.25; color: #ece8e2; max-width: 29.5vw; }
+  .bs-testi-foot p strong { font-weight: 700; color: var(--bs-white); }
+  .bs-testi-foot .bs-btn { justify-self: center; }
+
+  /* ============================================================
+     FOOTER
+  ============================================================ */
+  .bs-footer {
+    background: var(--bs-charcoal);
+    border-top: 1px solid var(--bs-rule);
+    text-align: center;
+    padding: 1.82vw 0 3.44vw;
+  }
+  .bs-footer-name { font-size: 0.9vw; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .bs-footer-copy { font-size: 1.1vw; font-weight: 600; color: var(--bs-muted); margin-top: 0.6vw; }
+
+  /* ============================================================
+     MOBILE (≤767px) — desktop & tablet share the vw scale above
+  ============================================================ */
+  @media (max-width: 767px) {
+    .bs-container { width: 90%; }
+
+    .bs-btn { font-size: 15px; padding: 15px 24px; border-width: 2px; border-radius: 999px; }
+    .bs-btn:focus-visible { outline-width: 2px; outline-offset: 2px; }
+    .bs-badge { font-size: 12px; padding: 10px 18px; border-width: 1.5px; border-radius: 999px; letter-spacing: .08em; }
+    .bs-reveal { transform: translateY(22px); }
+
+    .bs-stars svg { width: 15px; height: 15px; }
+    .bs-stars { gap: 3px; }
+    .bs-rating { gap: 10px; flex-wrap: wrap; }
+    .bs-rating-text { font-size: 12px; }
+    .bs-checklist { gap: 13px; }
+    .bs-checklist li { font-size: 15px; gap: 10px; line-height: 1.35; }
+    .bs-checklist svg { width: 19px; height: 19px; }
+
+    /* Header */
+    .bs-header { padding: 18px 0; }
+    .bs-logo { gap: 10px; }
+    .bs-logo-img { height: 44px; }
+    .bs-logo-mark { width: 42px; height: 42px; }
+    .bs-wordmark { font-size: 32px; }
+
+    /* Hero */
+    .bs-hero-media { background-position: 58% 22%; }
+    .bs-hero-media::after {
+      background: linear-gradient(180deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,.15) 20%,
+                  rgba(0,0,0,.55) 48%, rgba(0,0,0,.86) 72%, rgba(0,0,0,.94) 100%);
+    }
+    .bs-hero-inner { min-height: 620px; padding: 75vw 0 36px; }
+    .bs-hero-top { gap: 12px; }
+    .bs-hero-product { font-size: 16px; gap: 14px; padding-left: 16px; }
+    .bs-hero-bottom { grid-template-columns: 1fr; gap: 28px; }
+    .bs-hero-copy { gap: 16px; }
+    .bs-hero-title { font-size: 32px; }
+    .bs-hero-title span { font-size: 1.2em; }
+    .bs-hero-sub { font-size: 15px; max-width: 100%; line-height: 1.45; }
+    .bs-hero-proof { gap: 20px; width: 100%; }
+    .bs-hero-actions { flex-direction: column; gap: 12px; width: 100%; margin-top: 0; }
+    .bs-hero-actions .bs-btn { width: 100%; }
+
+    /* Creator band */
+    .bs-creator { padding: 40px 0 44px; }
+    .bs-creator .bs-container { grid-template-columns: 1fr; gap: 26px; }
+    .bs-creator-copy { order: 2; }
+    .bs-avatar { order: 1; width: 130px; height: 130px; }
+    .bs-creator .bs-creator-eyebrow { font-size: 15px !important; }
+    .bs-bar { margin-top: 12px; padding: 14px 14px; font-size: 26px; }
+    .bs-creator-p { font-size: 15px; max-width: 100%; line-height: 1.45; }
+    .bs-creator-p:first-of-type { margin-top: 18px; }
+    .bs-creator-p + .bs-creator-p { margin-top: 14px; }
+
+    /* Sock of the month */
+    .bs-sotm { padding: 44px 0 0; }
+    .bs-sotm .bs-container { grid-template-columns: 1fr; gap: 30px; }
+    .bs-card { border-radius: 12px; }
+    .bs-card-bar { padding: 18px 18px; gap: 12px; }
+    .bs-card-name, .bs-card-price { font-size: 17px; }
+    .bs-sotm-copy { padding-bottom: 0; }
+    .bs-sotm-badge { max-width: 100%; padding-left: 20px; }
+    .bs-sotm-lead { margin-top: 18px; }
+    .bs-sotm-title { font-size: 44px; }
+    .bs-sotm-sub { font-size: 15px; margin-top: 12px; line-height: 1.45; }
+    .bs-sotm-copy > * + * { margin-top: 20px; }
+    .bs-sotm-actions { flex-direction: column; gap: 12px; width: 100%; }
+    .bs-sotm-actions .bs-btn { width: 100%; }
+
+    /* Features */
+    .bs-features { padding: 40px 0 32px; }
+    .bs-features .bs-container { grid-template-columns: 1fr 1fr; gap: 22px 14px; }
+    .bs-feature { gap: 10px; }
+    .bs-feature img { width: 46px; height: 46px; }
+    .bs-feature-title { font-size: 12px; }
+    .bs-feature-sub { font-size: 10px; }
+
+    /* Mission */
+    .bs-mission { padding: 44px 0 48px; }
+    .bs-mission-eyebrow { font-size: 12px; }
+    .bs-mission-title { font-size: 27px; margin-top: 14px; }
+    .bs-mission-p { font-size: 15px; max-width: 100%; margin-top: 16px; line-height: 1.45; }
+    .bs-mission-kicker { margin-top: 16px; }
+
+    /* Testimonials */
+    .bs-testi { padding: 44px 0 40px; }
+    .bs-testi-title { font-size: 24px; margin-bottom: 24px; }
+    .bs-slide { border-radius: 10px; }
+    .bs-handle { top: 8px; left: 8px; padding: 5px 8px; border-radius: 5px; font-size: 11px; max-width: calc(100% - 16px); }
+    .bs-testi-foot { grid-template-columns: 1fr; gap: 22px; margin-top: 28px; text-align: center; }
+    .bs-testi-foot p { font-size: 15px; max-width: 100%; line-height: 1.45; }
+    .bs-testi-foot .bs-btn { justify-self: stretch; }
+
+    /* Footer */
+    .bs-footer { padding: 30px 0 32px; }
+    .bs-footer-name { font-size: 13px; }
+    .bs-footer-copy { font-size: 13px; margin-top: 8px; }
+  }
+</style>
+
+<div class="bs-lp">
+
+  <!-- ================= ICON SPRITE ================= -->
+  <svg class="bs-svg-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="bs-star" viewBox="0 0 24 24">
+        <path d="M12 1.7l3.09 6.46 7.06 1-5.1 4.97 1.2 7.08L12 17.86 5.75 21.2l1.2-7.07-5.1-4.97 7.06-1z"/>
+      </symbol>
+      <symbol id="bs-check-solid" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="11.2"/>
+        <path d="M7 12.4l3.3 3.3L17.2 8.8" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="bs-check-ring" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10.9" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M7.2 12.3l3.3 3.3L16.9 8.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="bs-book" viewBox="0 0 64 64">
+        <path d="M32 8.5c-9.7 0-17.6 7.9-17.6 17.6V55h35.2V26.1C49.6 16.4 41.7 8.5 32 8.5z"/>
+        <path d="M32 15v40" fill="none" stroke="#fff" stroke-width="3.4"/>
+        <path d="M21.5 31.5h6M36.5 31.5h6M21.5 39.5h6M36.5 39.5h6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- ================= HEADER ================= -->
+  <header class="bs-header">
+    <div class="bs-container">
+      <a href="{{ home_url }}" class="bs-logo" aria-label="BibleSocks — home">
+        {%- if logo_image != blank -%}
+          <img class="bs-logo-img" src="{{ logo_image }}" alt="BibleSocks" loading="eager" fetchpriority="high">
+        {%- else -%}
+          <span class="bs-logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="currentColor"><use href="#bs-book"/></svg>
+          </span>
+          <span class="bs-wordmark">BibleSocks</span>
+        {%- endif -%}
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= HERO ================= -->
+  <section class="bs-hero" aria-labelledby="bs-hero-title">
+    <div class="bs-hero-media" style="background-image: url('{{ hero_image }}');" role="img" aria-label="{{ hero_image_alt | escape }}"></div>
+
+    <div class="bs-container bs-hero-inner">
+
+      <div class="bs-hero-top">
+        <span class="bs-badge bs-reveal"><span class="bs-spark" aria-hidden="true">&#10022;</span> {{ creator_name }}'s Pick</span>
+        <a href="{{ hero_url }}" class="bs-hero-product bs-reveal" data-delay="1">
+          <span>{{ hero_product }}</span>
+          <span>{{ hero_price }}</span>
+        </a>
+      </div>
+
+      <div class="bs-hero-bottom">
+
+        <div class="bs-hero-copy">
+          <h1 class="bs-hero-title bs-reveal" id="bs-hero-title">
+            Wear your faith.
+            <span>Share his word.</span>
+          </h1>
+          <p class="bs-hero-sub bs-reveal" data-delay="1">
+            This month's featured pair carries a message inspired by Scripture&mdash;a simple reminder of faith, courage, and God's promises with every step. Whether you're adding it to your own collection or choosing a meaningful gift for someone you love, this is a message worth wearing.
+          </p>
+        </div>
+
+        <div class="bs-hero-proof">
+          <div class="bs-rating bs-reveal" data-delay="1" aria-label="Rated 4.9 out of 5 on average by thousands of customers">
+            <span class="bs-stars" aria-hidden="true">
+              <svg><use href="#bs-star"/></svg><svg><use href="#bs-star"/></svg><svg><use href="#bs-star"/></svg><svg><use href="#bs-star"/></svg><svg><use href="#bs-star"/></svg>
+            </span>
+            <span class="bs-rating-text"><strong>4.9</strong>/avg. from thousands of happy customers</span>
+          </div>
+
+          <ul class="bs-checklist bs-reveal" data-delay="2">
+            <li><svg class="bs-ico-solid" aria-hidden="true"><use href="#bs-check-solid"/></svg>Inspired by Scripture</li>
+            <li><svg class="bs-ico-solid" aria-hidden="true"><use href="#bs-check-solid"/></svg>Soft, comfortable, and made for everyday wear</li>
+            <li><svg class="bs-ico-solid" aria-hidden="true"><use href="#bs-check-solid"/></svg>A meaningful gift of faith and encouragement</li>
+            <li><svg class="bs-ico-solid" aria-hidden="true"><use href="#bs-check-solid"/></svg>Designed to help you wear and share the Word</li>
+          </ul>
+
+          <div class="bs-hero-actions bs-reveal" data-delay="3">
+            <a href="{{ hero_url }}" class="bs-btn bs-btn--solid">Shop This Month's Featured Sock</a>
+            <a href="{{ collection_url }}" class="bs-btn bs-btn--ghost">Browse the Full Collection</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CREATOR BAND ================= -->
+  <section class="bs-creator" aria-labelledby="bs-creator-title">
+    <div class="bs-container">
+
+      <div class="bs-creator-copy">
+        <p class="bs-creator-eyebrow bs-reveal">Consectetur Adipiscing Elit</p>
+        <h2 class="bs-bar bs-reveal" id="bs-creator-title" data-delay="1">Lorem Ipsum <span>Sit Amet</span></h2>
+        <p class="bs-creator-p bs-reveal" data-delay="2">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p class="bs-creator-p bs-reveal" data-delay="3">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud.</p>
+      </div>
+
+      <img class="bs-avatar bs-reveal" data-delay="1"
+        src="{{ creator_avatar }}"
+        alt="Portrait of the featured creator"
+        loading="lazy" width="320" height="320">
+
+    </div>
+  </section>
+
+  <!-- ================= SOCK OF THE MONTH ================= -->
+  <section class="bs-sotm" aria-labelledby="bs-sotm-title">
+    <div class="bs-container">
+
+      <a href="{{ sotm_url }}" class="bs-card bs-reveal">
+        <img src="{{ sotm_image }}" alt="{{ sotm_image_alt | escape }}" loading="lazy" width="709" height="643">
+        <span class="bs-card-bar">
+          <span class="bs-card-name">{{ sotm_product }}</span>
+          <span class="bs-card-price">{{ sotm_price }}</span>
+        </span>
+      </a>
+
+      <div class="bs-sotm-copy">
+        <span class="bs-badge bs-sotm-badge bs-reveal"><span class="bs-spark" aria-hidden="true">&#10022;</span> Sock of the Month</span>
+
+        <div class="bs-sotm-lead">
+          <h2 class="bs-sotm-title bs-reveal" id="bs-sotm-title" data-delay="1">Every step.</h2>
+          <p class="bs-sotm-sub bs-reveal" data-delay="1">
+            This month's featured design is inspired by a powerful story of faith and courage. Soft, comfortable, and meaningful, it is made to remind you of God's faithfulness wherever the day takes you.
+          </p>
+        </div>
+
+        <span class="bs-stars bs-reveal" data-delay="2" role="img" aria-label="Rated 5 out of 5">
+          <svg><use href="#bs-star"/></svg><svg><use href="#bs-star"/></svg><svg><use href="#bs-star"/></svg><svg><use href="#bs-star"/></svg><svg><use href="#bs-star"/></svg>
+        </span>
+
+        <ul class="bs-checklist bs-reveal" data-delay="2">
+          <li><svg aria-hidden="true"><use href="#bs-check-ring"/></svg>Inspired by a biblical story</li>
+          <li><svg aria-hidden="true"><use href="#bs-check-ring"/></svg>Comfortable for everyday wear</li>
+          <li><svg aria-hidden="true"><use href="#bs-check-ring"/></svg>A thoughtful gift for family and friends</li>
+          <li><svg aria-hidden="true"><use href="#bs-check-ring"/></svg>Created to encourage and inspire</li>
+        </ul>
+
+        <div class="bs-sotm-actions bs-reveal" data-delay="3">
+          <a href="{{ sotm_url }}" class="bs-btn bs-btn--solid">Shop This Featured Pair</a>
+          <a href="{{ collection_url }}" class="bs-btn bs-btn--ghost">Explore All BibleSocks</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FEATURES BAND ================= -->
+  <section class="bs-features" aria-label="Why customers love BibleSocks">
+    <div class="bs-container">
+
+      <div class="bs-feature bs-feature--caps bs-reveal">
+        <img src="{{ icon_shipping }}" alt="" loading="lazy" width="88" height="88">
+        <div>
+          <p class="bs-feature-title">Free Shipping</p>
+          <p class="bs-feature-sub">For orders $75.00 and up</p>
+        </div>
+      </div>
+
+      <div class="bs-feature bs-feature--caps bs-reveal" data-delay="1">
+        <img src="{{ icon_comfort }}" alt="" loading="lazy" width="88" height="88">
+        <div>
+          <p class="bs-feature-title">Cushioned Comfort</p>
+          <p class="bs-feature-sub">Soft support for every step.</p>
+        </div>
+      </div>
+
+      <div class="bs-feature bs-reveal" data-delay="2">
+        <img src="{{ icon_quality }}" alt="" loading="lazy" width="88" height="88">
+        <div>
+          <p class="bs-feature-title">High Quality</p>
+          <p class="bs-feature-sub">Crafted for everyday wear.</p>
+        </div>
+      </div>
+
+      <div class="bs-feature bs-reveal" data-delay="3">
+        <img src="{{ icon_breathable }}" alt="" loading="lazy" width="88" height="88">
+        <div>
+          <p class="bs-feature-title">Breathable Material</p>
+          <p class="bs-feature-sub">Keeps feet cool, dry, and fresh.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= MISSION ================= -->
+  <section class="bs-mission" aria-labelledby="bs-mission-title">
+    <div class="bs-container">
+      <p class="bs-mission-eyebrow bs-reveal">Why we made this</p>
+      <h2 class="bs-mission-title bs-reveal" id="bs-mission-title" data-delay="1">Wear your faith. <span>Share his word.</span></h2>
+      <p class="bs-mission-p bs-reveal" data-delay="2">We believe faith should be part of everyday life. That is why we create socks inspired by Scripture&mdash;wearable reminders of truth, hope, courage, and God's promises. Each pair is designed to encourage the person wearing them and create opportunities to share the message behind the design.</p>
+      <p class="bs-mission-p bs-mission-kicker bs-reveal" data-delay="3">One pair. One story. One more way to share the Word.</p>
+    </div>
+  </section>
+
+  <!-- ================= TESTIMONIALS ================= -->
+  <section class="bs-testi" aria-labelledby="bs-testi-title">
+    <div class="bs-container">
+      <h2 class="bs-testi-title bs-reveal" id="bs-testi-title">Shared with purpose.</h2>
+
+      <div class="swiper bs-swiper bs-reveal" data-delay="1" aria-label="Customer video testimonials">
+        <div class="swiper-wrapper">
+
+          <div class="swiper-slide bs-slide">
+  <span class="bs-handle">@INFLUENCER_01</span>
+  <video playsinline autoplay loop muted controls preload="metadata"
+    poster="https://www.biblesocks.com/cdn/shop/files/preview_images/e574e704ad044bf6bccb256692ceab63.thumbnail.0000000000_small.jpg?v=1756511649"
+    aria-label="Customer video testimonial 1">
+    <source src="https://www.biblesocks.com/cdn/shop/videos/c/vp/e574e704ad044bf6bccb256692ceab63/e574e704ad044bf6bccb256692ceab63.HD-1080p-7.2Mbps-56466222.mp4?v=0" type="video/mp4">
+  </video>
+</div>
+
+<div class="swiper-slide bs-slide">
+  <span class="bs-handle">@INFLUENCER_02</span>
+  <video playsinline autoplay loop muted controls preload="metadata"
+    poster="https://www.biblesocks.com/cdn/shop/files/preview_images/fcbe9f66fc304598b9a5d78dac8cc721.thumbnail.0000000000_small.jpg?v=1756511724"
+    aria-label="Customer video testimonial 2">
+    <source src="https://www.biblesocks.com/cdn/shop/videos/c/vp/fcbe9f66fc304598b9a5d78dac8cc721/fcbe9f66fc304598b9a5d78dac8cc721.HD-1080p-7.2Mbps-56466255.mp4?v=0" type="video/mp4">
+  </video>
+</div>
+
+<div class="swiper-slide bs-slide">
+  <span class="bs-handle">@INFLUENCER_03</span>
+  <video playsinline autoplay loop muted controls preload="metadata"
+    poster="https://www.biblesocks.com/cdn/shop/files/preview_images/f9f32aca5c484ee88c3cb634b9d02dfc.thumbnail.0000000000_small.jpg?v=1756511781"
+    aria-label="Customer video testimonial 3">
+    <source src="https://www.biblesocks.com/cdn/shop/videos/c/vp/f9f32aca5c484ee88c3cb634b9d02dfc/f9f32aca5c484ee88c3cb634b9d02dfc.HD-1080p-7.2Mbps-56466271.mp4?v=0" type="video/mp4">
+  </video>
+</div>
+
+<div class="swiper-slide bs-slide">
+  <span class="bs-handle">@INFLUENCER_04</span>
+  <video playsinline autoplay loop muted controls preload="metadata"
+    poster="https://www.biblesocks.com/cdn/shop/files/preview_images/1ed9448151f04557a5cc04fe1fdbd306.thumbnail.0000000000_small.jpg?v=1756511858"
+    aria-label="Customer video testimonial 4">
+    <source src="https://www.biblesocks.com/cdn/shop/videos/c/vp/1ed9448151f04557a5cc04fe1fdbd306/1ed9448151f04557a5cc04fe1fdbd306.HD-1080p-7.2Mbps-56466289.mp4?v=0" type="video/mp4">
+  </video>
+</div>
+
+<div class="swiper-slide bs-slide">
+  <span class="bs-handle">@INFLUENCER_05</span>
+  <video playsinline autoplay loop muted controls preload="metadata"
+    poster="https://www.biblesocks.com/cdn/shop/files/preview_images/47c4ebbf46bf4e89b6ae1ace2de0363a.thumbnail.0000000000_small.jpg?v=1756511945"
+    aria-label="Customer video testimonial 5">
+    <source src="https://www.biblesocks.com/cdn/shop/videos/c/vp/47c4ebbf46bf4e89b6ae1ace2de0363a/47c4ebbf46bf4e89b6ae1ace2de0363a.HD-1080p-7.2Mbps-56466309.mp4?v=0" type="video/mp4">
+  </video>
+</div>
+
+<div class="swiper-slide bs-slide">
+  <span class="bs-handle">@INFLUENCER_06</span>
+  <video playsinline autoplay loop muted controls preload="metadata"
+    poster="https://www.biblesocks.com/cdn/shop/files/preview_images/9c1a7a14cdb04459b7e9e2c9dda2acfe.thumbnail.0000000000_small.jpg?v=1756512088"
+    aria-label="Customer video testimonial 6">
+    <source src="https://www.biblesocks.com/cdn/shop/videos/c/vp/9c1a7a14cdb04459b7e9e2c9dda2acfe/9c1a7a14cdb04459b7e9e2c9dda2acfe.HD-1080p-7.2Mbps-56466359.mp4?v=0" type="video/mp4">
+  </video>
+</div>
+
+
+        </div>
+      </div>
+
+      <div class="bs-testi-foot">
+        <p class="bs-reveal"><strong>Find the Message &ndash; That Speaks to You.</strong> Explore faith-inspired designs based on Scripture, biblical stories, and timeless reminders of God's promises.</p>
+        <a href="{{ collection_url }}" class="bs-btn bs-btn--solid bs-reveal" data-delay="1">Explore the Full Collection</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bs-footer">
+    <div class="bs-container">
+      <p class="bs-footer-name">Bible Socks</p>
+      <p class="bs-footer-copy">&copy; {{ 'now' | date: '%Y' }} All rights reserved.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    /* ---------- Scroll reveal (subtle fade-up) ---------- */
+    var reveals = document.querySelectorAll('.bs-reveal');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('bs-in');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -5% 0px' });
+      reveals.forEach(function (el) { io.observe(el); });
+    } else {
+      reveals.forEach(function (el) { el.classList.add('bs-in'); });
+    }
+
+    /* ---------- Testimonial slider: 4 up, loop, autoplay ---------- */
+    var swiperEl = document.querySelector('.bs-swiper');
+    if (swiperEl && window.Swiper) {
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      /* 35px gap at the 1920px reference = 1.82vw, kept proportional like the CSS */
+      var gap = Math.round(window.innerWidth * 0.0182);
+      new Swiper(swiperEl, {
+        loop: true,
+        speed: 600,
+        autoplay: reduceMotion ? false : {
+          delay: 3000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true
+        },
+        slidesPerView: 1.15,
+        spaceBetween: 12,
+        breakpoints: {
+          768: { slidesPerView: 4, spaceBetween: gap }
+        }
+      });
+    }
+
+    /* ---------- Play videos in view, pause off-screen ----------
+       (queried after Swiper init so loop-mode duplicates are included) */
+    var vids = document.querySelectorAll('.bs-swiper video');
+    if ('IntersectionObserver' in window && vids.length) {
+      var vio = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          var v = entry.target;
+          if (entry.isIntersecting) {
+            var p = v.play();
+            if (p && p.catch) { p.catch(function () {}); }
+          } else {
+            v.pause();
+          }
+        });
+      }, { threshold: 0.35 });
+      vids.forEach(function (v) { vio.observe(v); });
+    }
+  })();
+</script>

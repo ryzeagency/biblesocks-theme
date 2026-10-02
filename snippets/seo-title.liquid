@@ -1,0 +1,20 @@
+{%- liquid
+  assign seo_title = page_title
+  if current_tags
+    assign meta_tags = current_tags | join: ', '
+    assign tag_text = 'general.meta.tags' | t: tags: meta_tags
+    assign seo_title = seo_title | append: ' – ' | append: tag_text
+  endif
+  if current_page != 1
+    assign page_text = 'general.meta.page' | t: page: current_page
+    assign seo_title = seo_title | append: ' – ' | append: page_text
+  endif
+  if template == 'password'
+    assign seo_title = shop.name
+  else
+    unless page_title contains shop.name
+      assign seo_title = seo_title | append: ' – ' | append: shop.name
+    endunless
+  endif
+-%}
+<title>{{ seo_title }}</title>

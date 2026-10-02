@@ -1,0 +1,95 @@
+{% render 'biblesocks-tokens' %}
+<style>
+  .bs-stand-{{ section.id }}{ display:grid; grid-template-columns:0.7fr 1.3fr; }
+  .bs-stand-{{ section.id }} .visual{ min-height:100%; border-right:1px solid var(--bs-hairline); background-size:cover; background-position:center; background-color:#1e1b17; position:relative; }
+  .bs-stand-{{ section.id }} .visual .imglabel{ position:absolute; bottom:20px; left:24px; font-family:'Space Mono',monospace; font-size:10px; color:var(--bs-stone); max-width:240px; }
+  .bs-stand-{{ section.id }} .copy{ padding:80px 64px; display:block; flex-direction:column; justify-content:center; }
+  .bs-stand-{{ section.id }} h2{ font-size:clamp(32px,4.2vw,45px); color:var(--bs-gold); margin-bottom:24px; }
+  .bs-stand-{{ section.id }} .lede{ font-size:18px; color:var(--bs-cream); opacity:0.88; font-style:italic; max-width:480px; margin-bottom:20px; }
+  .bs-stand-{{ section.id }} .origin{ font-size:16px; color:var(--bs-stone); max-width:480px; margin-bottom:20px; }
+  .bs-stand-{{ section.id }} .pillars{ display:grid; grid-template-columns:repeat({{ section.blocks.size | at_most: 3 }},1fr); gap:0;}
+  .bs-stand-{{ section.id }} .pillar{ padding:25px 25px 25px 0; }
+  .bs-stand-{{ section.id }} .pillar:last-child{ border-right:none; padding-right:0; }
+  .bs-stand-{{ section.id }} .pillar .num{ font-family:'Space Mono',monospace; font-size:10.5px; color:var(--bs-flame); letter-spacing:0.1em; margin-bottom:12px; display:block; }
+  .bs-stand-{{ section.id }} .pillar h3{ font-size:17px; margin-bottom:10px; letter-spacing:0.01em; }
+  .bs-stand-{{ section.id }} .pillar p{ font-size:14px; color:var(--bs-stone); line-height:1.55; margin:0; }
+  .bs-stand-{{ section.id }} .close{ margin-bottom:36px; }
+  .bs-stand-{{ section.id }} .close p{ font-size:16px; color:var(--bs-cream); opacity:0.85; max-width:460px; margin:0; }
+  @media (max-width:900px){
+    .bs-stand-{{ section.id }}{ grid-template-columns:1fr; }
+    .bs-stand-{{ section.id }} .visual{ border-right:none; min-height:320px; }
+    .bs-stand-{{ section.id }} .pillars{ grid-template-columns:1fr; }
+    .bs-stand-{{ section.id }} .pillar{ border-right:none; padding:24px 0; }
+    .bs-stand-{{ section.id }} .pillar:last-child{ border-bottom:none; }
+  }
+</style>
+
+<div class="bs-section" style="border-bottom:1px solid var(--bs-hairline);">
+  <div class="bs-stand-{{ section.id }}">
+    <div class="visual" {% if section.settings.image != blank %}style="background-image:url('{{ section.settings.image | image_url: width: 1400 }}')"{% endif %}>
+      {%- if section.settings.image == blank -%}<div class="imglabel bs-mono">IMG PLACEHOLDER — brand/founder or community, grounded and real</div>{%- endif -%}
+    </div>
+    <div class="copy">
+      {%- if section.settings.eyebrow != blank -%}<div class="bs-patch bs-mono">{{ section.settings.eyebrow }}</div>{%- endif -%}
+      <h2>{{ section.settings.headline }}</h2>
+      {%- if section.settings.lede != blank -%}<p class="lede">{{ section.settings.lede }}</p>{%- endif -%}
+      {%- if section.settings.origin != blank -%}<p class="origin">{{ section.settings.origin }}</p>{%- endif -%}
+
+      <div class="pillars">
+        {%- for block in section.blocks -%}
+          <div class="pillar" {{ block.shopify_attributes }}>
+            <span class="num bs-mono">{{ block.settings.label }}</span>
+            <h3 class="bs-display">{{ block.settings.title }}</h3>
+            <p>{{ block.settings.body }}</p>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- if section.settings.close_statement != blank -%}
+        <div class="close"><p>{{ section.settings.close_statement }}</p></div>
+      {%- endif -%}
+
+      {%- if section.settings.cta_text != blank -%}
+        <a href="{{ section.settings.cta_link }}" class="bs-btn bs-btn-line" style="width:fit-content;">{{ section.settings.cta_text }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "BS: Our Stand / Mission",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow tag", "default": "Why We Exist" },
+    { "type": "text", "id": "headline", "label": "Headline", "default": "Every Step a Witness." },
+    { "type": "textarea", "id": "lede", "label": "Lede line", "default": "We didn't start this to sell socks. We started it because every faith gift for men was made for somebody else." },
+    { "type": "textarea", "id": "origin", "label": "Origin paragraph", "default": "Cursive verses. Pastel florals. Novelty bins by the church gift shop register. None of it built for the man who's up before the sun, on his feet all day, and never once asked for a matching set. So we made the one that was — grounded in scripture, built like workwear, and honest enough that a man would actually put it on. Not because it was a gift. Because it held up." },
+    { "type": "textarea", "id": "close_statement", "label": "Closing stand statement", "default": "We're not here for lukewarm. Not ashamed, not soft, not chasing a trend that fades by spring. Just men who stand firm, and the people who stand with them." },
+    { "type": "text", "id": "cta_text", "label": "Button text", "default": "Read Our Stand" },
+    { "type": "url", "id": "cta_link", "label": "Button link" }
+  ],
+  "blocks": [
+    {
+      "type": "pillar",
+      "name": "Value pillar",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Small label", "default": "Conviction" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Loud Faith, Quiet Ego" },
+        { "type": "textarea", "id": "body", "label": "Body copy", "default": "We say what we believe plainly. We don't need the swagger to prove it." }
+      ]
+    }
+  ],
+  "max_blocks": 3,
+  "presets": [
+    {
+      "name": "BS: Our Stand / Mission",
+      "blocks": [
+        { "type": "pillar", "settings": { "label": "Conviction", "title": "Loud Faith, Quiet Ego", "body": "We say what we believe plainly. We don't need the swagger to prove it." } },
+        { "type": "pillar", "settings": { "label": "Craft", "title": "Worn, Not Waved", "body": "Everything we make is built to be used — not unwrapped, admired, and set in a drawer." } },
+        { "type": "pillar", "settings": { "label": "Care", "title": "Built for the Giver", "body": "We know who's buying. Every part of this brand is built to make her gift land right." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

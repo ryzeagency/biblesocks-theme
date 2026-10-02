@@ -1,0 +1,61 @@
+{% render 'biblesocks-tokens' %}
+<style>
+  .bs-rev-{{ section.id }}{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px; }
+  .bs-rev-{{ section.id }} .review{ border:1px solid var(--bs-hairline); padding:30px; background:var(--bs-onyx-2); }
+  .bs-rev-{{ section.id }} .stars{ color:var(--bs-gold); letter-spacing:3px; margin-bottom:14px; font-size:14px; }
+  .bs-rev-{{ section.id }} p{ font-style:italic; font-size:16px; color:var(--bs-cream); opacity:0.9; margin-bottom:16px; }
+  .bs-rev-{{ section.id }} .who{ font-family:'Space Mono',monospace; font-size:11px; color:var(--bs-stone); letter-spacing:0.05em; }
+  @media (max-width:900px){ .bs-rev-{{ section.id }}{ grid-template-columns:1fr; } }
+</style>
+
+<div class="bs-section" style="padding:96px 0; border-bottom:1px solid var(--bs-hairline);">
+  <div class="bs-wrap">
+    <div class="bs-section-head">
+      {%- if section.settings.eyebrow != blank -%}<div class="bs-patch bs-mono">{{ section.settings.eyebrow }}</div>{%- endif -%}
+      <h2>{{ section.settings.headline }}</h2>
+    </div>
+    <div class="bs-rev-{{ section.id }}">
+      {%- for block in section.blocks -%}
+        <div class="review" {{ block.shopify_attributes }}>
+          <div class="stars">
+            {%- for i in (1..5) -%}{% if i <= block.settings.rating %}★{% else %}☆{% endif %}{%- endfor -%}
+          </div>
+          <p>"{{ block.settings.quote }}"</p>
+          <div class="who bs-mono">{{ block.settings.attribution }}</div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "BS: Social Proof",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow tag", "default": "Real Reviews" },
+    { "type": "text", "id": "headline", "label": "Headline", "default": "She Bought. He Wears." }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "range", "id": "rating", "label": "Rating", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "textarea", "id": "quote", "label": "Quote", "default": "Bought these for my husband and he wears them every Sunday." },
+        { "type": "text", "id": "attribution", "label": "Attribution", "default": "Verified Buyer" }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "BS: Social Proof",
+      "blocks": [
+        { "type": "review", "settings": { "quote": "Bought these for my husband and he wears them every Sunday." } },
+        { "type": "review", "settings": { "quote": "My son actually texted me a thank-you. That never happens." } },
+        { "type": "review", "settings": { "quote": "Finally something my dad will wear instead of setting aside." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,55 @@
+{% render 'biblesocks-tokens' %}
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  .toolbar--transparent {
+    background-color: transparent;
+    border-bottom: none;
+    color: #fff;
+    display: none;
+}
+  .bs-announce-{{ section.id }}{
+    background: #000;
+    color: #fff;
+    font-family: 'Source Serif 4', Georgia, serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-align:center; padding:9px 16px;
+    font-family:'Space Mono', monospace; font-size:12.5px;
+    letter-spacing:0.05em; font-weight:700;
+  }
+  .bs-announce-{{ section.id }} span{ opacity:0.55; margin:0 10px; font-weight:400; }
+  
+</style>
+
+<div class="bs-announce-{{ section.id }}">
+  {%- for block in section.blocks -%}
+    {{ block.settings.text }}{% unless forloop.last %}<span>·</span>{% endunless %}
+  {%- endfor -%}
+</div>
+
+{% schema %}
+{
+  "name": "BS: Announcement Bar",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "message",
+      "name": "Message",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Message", "default": "Free shipping over $35" }
+      ]
+    }
+  ],
+  "max_blocks": 5,
+  "presets": [
+    {
+      "name": "BS: Announcement Bar",
+      "blocks": [
+        { "type": "message", "settings": { "text": "Free shipping over $35" } },
+        { "type": "message", "settings": { "text": "Gift-ready, shipped straight to him" } },
+        { "type": "message", "settings": { "text": "Father's Day orders ship same day" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

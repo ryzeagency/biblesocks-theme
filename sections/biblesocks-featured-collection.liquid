@@ -1,0 +1,77 @@
+{% render 'biblesocks-tokens' %}
+<style>
+  .bs-coll-{{ section.id }} .names{ display:flex; gap:28px; flex-wrap:wrap; margin-bottom:40px; font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.08em; color:var(--bs-stone); }
+  .bs-coll-{{ section.id }} .names span{ color:var(--bs-gold); }
+  .bs-coll-{{ section.id }} .products{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
+  .bs-coll-{{ section.id }} .card{ border:1px solid var(--bs-hairline); background:var(--bs-onyx-2); }
+  .bs-coll-{{ section.id }} .card .ph{ aspect-ratio:1/1; background-size:cover; background-position:center; background-color:#1e1b17; }
+  .bs-coll-{{ section.id }} .card .info{ padding:18px; }
+  .bs-coll-{{ section.id }} .card .story{ font-family:'Space Mono',monospace; font-size:10px; color:var(--bs-gold); letter-spacing:0.08em; margin-bottom:8px; }
+  .bs-coll-{{ section.id }} .card h3{ font-size:18px; margin-bottom:6px; }
+  .bs-coll-{{ section.id }} .card .price{ color:var(--bs-stone); font-size:14px; }
+  .bs-coll-{{ section.id }} .cta{ text-align:center; margin-top:48px; }
+  @media (max-width:900px){ .bs-coll-{{ section.id }} .products{ grid-template-columns:repeat(2,1fr); } }
+</style>
+
+<div class="bs-section bs-coll-{{ section.id }}" style="padding:96px 0; border-bottom:1px solid var(--bs-hairline);">
+  <div class="bs-wrap">
+    <div class="bs-section-head">
+      {%- if section.settings.eyebrow != blank -%}<div class="bs-patch bs-mono">{{ section.settings.eyebrow }}</div>{%- endif -%}
+      <h2>{{ section.settings.headline }}</h2>
+    </div>
+
+    {%- if section.settings.collection_names != blank -%}
+      <div class="names bs-mono">
+        {%- assign names = section.settings.collection_names | split: "," -%}
+        {%- for n in names -%}<span>{{ n | strip }}</span>{% unless forloop.last %} · {% endunless %}{%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    <div class="products">
+      {%- assign coll = collections[section.settings.collection] -%}
+      {%- if coll != blank -%}
+        {%- for product in coll.products limit: section.settings.product_limit -%}
+          <a href="{{ product.url }}" class="card">
+            <div class="ph" {% if product.featured_image %}style="background-image:url('{{ product.featured_image | image_url: width: 600 }}')"{% endif %}></div>
+            <div class="info">
+              <div class="story bs-mono">{{ product.type }}</div>
+              <h3 class="bs-display">{{ product.title }}</h3>
+              <div class="price">{{ product.price | money }}</div>
+            </div>
+          </a>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..4) -%}
+          <div class="card">
+            <div class="ph"></div>
+            <div class="info">
+              <div class="story bs-mono">Select a collection</div>
+              <h3 class="bs-display">Product Name</h3>
+              <div class="price">$16.00</div>
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.cta_text != blank -%}
+      <div class="cta"><a href="{{ section.settings.cta_link }}" class="bs-btn bs-btn-line">{{ section.settings.cta_text }}</a></div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "BS: Featured Collection",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow tag", "default": "Bestsellers" },
+    { "type": "text", "id": "headline", "label": "Headline", "default": "Built on Warrior Stories." },
+    { "type": "text", "id": "collection_names", "label": "Collection name row (comma separated)", "default": "Stand Firm, Armor of God, Hold the Line, Boots of the Gospel" },
+    { "type": "collection", "id": "collection", "label": "Products to display" },
+    { "type": "range", "id": "product_limit", "label": "Number of products", "min": 2, "max": 8, "step": 1, "default": 4 },
+    { "type": "text", "id": "cta_text", "label": "Button text", "default": "Shop All Collections" },
+    { "type": "url", "id": "cta_link", "label": "Button link" }
+  ],
+  "presets": [ { "name": "BS: Featured Collection" } ]
+}
+{% endschema %}

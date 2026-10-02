@@ -1,0 +1,472 @@
+{%- if settings.cart_type == 'drawer' -%}
+  {%- liquid
+    comment
+      BUY 3 GET 1 FREE - THEME EDITOR READY
+      These setting IDs can be added to config/settings_schema.json:
+      b3g1_enabled, b3g1_title, b3g1_buy_qty, b3g1_free_qty,
+      b3g1_max_uses, b3g1_auto_message, b3g1_end_text,
+      b3g1_bar_color, b3g1_animation
+    endcomment
+
+    assign b3g1_enabled = settings.b3g1_enabled
+    if b3g1_enabled == nil
+      assign b3g1_enabled = false
+    endif
+
+    assign b3g1_title = settings.b3g1_title | default: 'Buy 3 Get 1 Free'
+    assign b3g1_buy_qty = settings.b3g1_buy_qty | default: 3
+    assign b3g1_free_qty = settings.b3g1_free_qty | default: 1
+    assign b3g1_max_uses = settings.b3g1_max_uses | default: 10
+    assign b3g1_auto_message = settings.b3g1_auto_message | default: 'Automatic discount — no code needed. One-time purchases only.'
+    assign b3g1_end_text = settings.b3g1_end_text | default: 'Ends Sep 7.'
+    assign b3g1_bar_color = settings.b3g1_bar_color | default: '#000000'
+
+    assign b3g1_animation = settings.b3g1_animation
+    if b3g1_animation == nil
+      assign b3g1_animation = true
+    endif
+
+    assign b3g1_group_size = b3g1_buy_qty | plus: b3g1_free_qty
+    assign b3g1_eligible_qty = 0
+
+    for item in cart.items
+      if item.selling_plan_allocation == nil
+        assign b3g1_eligible_qty = b3g1_eligible_qty | plus: item.quantity
+      endif
+    endfor
+
+    assign b3g1_free_unlocked = b3g1_eligible_qty | divided_by: b3g1_group_size
+    if b3g1_free_unlocked > b3g1_max_uses
+      assign b3g1_free_unlocked = b3g1_max_uses
+    endif
+
+    assign b3g1_remainder = b3g1_eligible_qty | modulo: b3g1_group_size
+
+    if b3g1_free_unlocked >= b3g1_max_uses
+      assign b3g1_progress = 100
+      assign b3g1_needed = 0
+    elsif b3g1_eligible_qty > 0 and b3g1_remainder == 0
+      assign b3g1_progress = 100
+      assign b3g1_needed = b3g1_group_size
+    else
+      assign b3g1_progress_times_100 = b3g1_remainder | times: 100
+      assign b3g1_progress = b3g1_progress_times_100 | divided_by: b3g1_group_size
+      assign b3g1_needed = b3g1_group_size | minus: b3g1_remainder
+    endif
+  -%}
+
+  <style>
+    #CartDrawer .b3g1-promo {
+      --b3g1-color: {{ b3g1_bar_color }};
+      margin: 14px 0 16px;
+      padding: 15px 16px;
+      border: 1px solid rgba(0, 0, 0, 0.14);
+      border-radius: 12px;
+      background: #fff;
+      text-align: left;
+    }
+
+    #CartDrawer .b3g1-promo[hidden] {
+      display: none !important;
+    }
+
+    #CartDrawer .b3g1-promo__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    #CartDrawer .b3g1-promo__title {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    #CartDrawer .b3g1-promo__badge {
+      flex: 0 0 auto;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--b3g1-color) 12%, white);
+      color: var(--b3g1-color);
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    #CartDrawer .b3g1-promo__message {
+      margin: 0 0 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    #CartDrawer .b3g1-progress {
+      position: relative;
+      width: 100%;
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, .12);
+    }
+
+    #CartDrawer .b3g1-progress__fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: {{ b3g1_progress }}%;
+      overflow: hidden;
+      border-radius: inherit;
+      background: var(--b3g1-color);
+      transition: width .55s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    #CartDrawer .b3g1-progress__fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 55%;
+      background: linear-gradient(
+        105deg,
+        transparent 0%,
+        rgba(255,255,255,.08) 25%,
+        rgba(255,255,255,.58) 50%,
+        rgba(255,255,255,.08) 75%,
+        transparent 100%
+      );
+      transform: translateX(-140%);
+      animation: b3g1-drawer-shimmer 1.9s linear infinite;
+    }
+
+    #CartDrawer .b3g1-promo--no-animation .b3g1-progress__fill {
+      transition: none;
+    }
+
+    #CartDrawer .b3g1-promo--no-animation .b3g1-progress__fill::after {
+      display: none;
+    }
+
+    #CartDrawer .b3g1-progress__labels {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 7px;
+      font-size: 12px;
+      line-height: 1.25;
+      opacity: .78;
+    }
+
+    #CartDrawer .b3g1-promo__fineprint {
+      margin: 11px 0 0;
+      font-size: 12px;
+      line-height: 1.4;
+      opacity: .78;
+    }
+
+    @keyframes b3g1-drawer-shimmer {
+      0%   { transform: translateX(-140%); }
+      100% { transform: translateX(280%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #CartDrawer .b3g1-progress__fill {
+        transition: none;
+      }
+
+      #CartDrawer .b3g1-progress__fill::after {
+        display: none;
+      }
+    }
+  </style>
+
+  <div id="CartDrawer" class="drawer drawer--right">
+    <form id="CartDrawerForm" action="{{ routes.cart_url }}" method="post" novalidate class="drawer__contents" data-location="cart-drawer">
+      <div class="drawer__fixed-header">
+        <div class="drawer__header appear-animation appear-delay-1">
+          <div class="h2 drawer__title">{{ 'cart.general.title' | t }}</div>
+          <div class="drawer__close">
+            <button type="button" class="drawer__close-button js-drawer-close">
+              <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-close" viewBox="0 0 64 64"><title>icon-X</title><path d="m19 17.61 27.12 27.13m0-27.12L19 44.74"/></svg>
+              <span class="icon__fallback-text">{{ 'cart.general.close_cart' | t }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer__inner">
+        <div class="drawer__scrollable">
+          <div data-products class="appear-animation appear-delay-2"></div>
+
+          {% if settings.cart_notes_enable %}
+            <div class="appear-animation appear-delay-3">
+              <label for="CartNoteDrawer">{{ 'cart.general.note' | t }}</label>
+              <textarea name="note" class="input-full cart-notes" id="CartNoteDrawer">{{ cart.note }}</textarea>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="drawer__footer appear-animation appear-delay-4">
+          <div data-discounts>
+            {% if cart.cart_level_discount_applications != blank %}
+              <div class="cart__discounts cart__item-sub cart__item-row">
+                <div>{{ 'cart.general.discounts' | t }}</div>
+                <div class="text-right">
+                  {% for cart_discount in cart.cart_level_discount_applications %}
+                    <div class="cart__discount">
+                      {{ cart_discount.title }} (-{{ cart_discount.total_allocated_amount | money }})
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="cart__item-sub cart__item-row">
+            <div class="ajaxcart__subtotal">{{ 'cart.general.subtotal' | t }}</div>
+            <div data-subtotal>{{ cart.total_price | money }}</div>
+          </div>
+
+          {%- if b3g1_enabled -%}
+            <div
+              id="B3G1CartDrawerPromo"
+              class="b3g1-promo{% unless b3g1_animation %} b3g1-promo--no-animation{% endunless %}"
+              data-buy-qty="{{ b3g1_buy_qty }}"
+              data-free-qty="{{ b3g1_free_qty }}"
+              data-max-uses="{{ b3g1_max_uses }}"
+              {% if cart == empty %}hidden{% endif %}
+            >
+              <div class="b3g1-promo__top">
+                <h3 class="b3g1-promo__title">{{ b3g1_title }}</h3>
+                <span class="b3g1-promo__badge">Automatic</span>
+              </div>
+
+              <p class="b3g1-promo__message" data-b3g1-message>
+                {%- if b3g1_free_unlocked >= b3g1_max_uses -%}
+                  Maximum {{ b3g1_max_uses }} free items unlocked!
+                {%- elsif b3g1_free_unlocked > 0 and b3g1_remainder == 0 -%}
+                  {{ b3g1_free_unlocked }} FREE {% if b3g1_free_unlocked == 1 %}item{% else %}items{% endif %} unlocked!
+                {%- elsif b3g1_free_unlocked > 0 -%}
+                  {{ b3g1_free_unlocked }} FREE unlocked! Add {{ b3g1_needed }} more eligible {% if b3g1_needed == 1 %}item{% else %}items{% endif %} to unlock another.
+                {%- else -%}
+                  Add {{ b3g1_needed }} more eligible {% if b3g1_needed == 1 %}item{% else %}items{% endif %} to get 1 FREE.
+                {%- endif -%}
+              </p>
+
+              <div
+                class="b3g1-progress"
+                role="progressbar"
+                aria-label="{{ b3g1_title | escape }}"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ b3g1_progress }}"
+                data-b3g1-progress
+              >
+                <div class="b3g1-progress__fill" data-b3g1-fill></div>
+              </div>
+
+              <div class="b3g1-progress__labels" aria-hidden="true">
+                <span>Buy {{ b3g1_buy_qty }}</span>
+                <span>Get {{ b3g1_free_qty }} FREE</span>
+              </div>
+
+              <p class="b3g1-promo__fineprint">
+                {{ b3g1_auto_message }}
+                {%- if b3g1_end_text != blank %} {{ b3g1_end_text }}{% endif -%}
+              </p>
+            </div>
+          {%- endif -%}
+
+          <div class="cart__item-row text-center">
+            <small>
+              {{ 'cart.general.shipping_at_checkout' | t }}<br />
+            </small>
+          </div>
+
+          {% if settings.cart_terms_conditions_enable %}
+            <div class="cart__item-row cart__terms">
+              <input type="checkbox" id="CartTermsDrawer" class="cart__terms-checkbox">
+              <label for="CartTermsDrawer">
+                {% if settings.cart_terms_conditions_page != blank %}
+                  {{ 'cart.general.terms_html' | t: url: settings.cart_terms_conditions_page.url }}
+                {% else %}
+                  {{ 'cart.general.terms' | t }}
+                {% endif %}
+              </label>
+            </div>
+          {% endif %}
+
+          <div class="cart__checkout-wrapper">
+            <button type="submit" name="checkout" data-terms-required="{{ settings.cart_terms_conditions_enable }}" class="btn cart__checkout">
+              {{ 'cart.general.checkout' | t }}
+            </button>
+
+            {% if additional_checkout_buttons and settings.cart_additional_buttons %}
+              <div class="additional-checkout-buttons additional-checkout-buttons--vertical">{{ content_for_additional_checkout_buttons }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer__cart-empty appear-animation appear-delay-2">
+        <div class="drawer__scrollable">
+          {{ 'cart.general.empty' | t }}
+        </div>
+      </div>
+    </form>
+  </div>
+
+  {%- if b3g1_enabled -%}
+    <script>
+      (() => {
+        const drawer = document.getElementById('CartDrawer');
+        const promo = document.getElementById('B3G1CartDrawerPromo');
+
+        if (!drawer || !promo || drawer.dataset.b3g1Initialized === 'true') return;
+        drawer.dataset.b3g1Initialized = 'true';
+
+        const message = promo.querySelector('[data-b3g1-message]');
+        const progress = promo.querySelector('[data-b3g1-progress]');
+        const fill = promo.querySelector('[data-b3g1-fill]');
+
+        const buyQty = parseInt(promo.dataset.buyQty || '3', 10);
+        const freeQty = parseInt(promo.dataset.freeQty || '1', 10);
+        const maxUses = parseInt(promo.dataset.maxUses || '10', 10);
+        const groupSize = buyQty + freeQty;
+
+        let refreshTimer = null;
+        let requestRunning = false;
+        let refreshQueued = false;
+
+        const plural = (count, singular, pluralWord) =>
+          count === 1 ? singular : (pluralWord || `${singular}s`);
+
+        const render = (cart) => {
+          if (!cart || !Array.isArray(cart.items)) return;
+
+          const eligibleQty = cart.items.reduce((total, item) => {
+            // The Shopify automatic discount shown applies to one-time purchases.
+            // Subscription lines are excluded from the progress count.
+            if (item.selling_plan_allocation) return total;
+            return total + (parseInt(item.quantity, 10) || 0);
+          }, 0);
+
+          promo.hidden = cart.item_count === 0;
+
+          const unlockedRaw = Math.floor(eligibleQty / groupSize);
+          const unlocked = Math.min(unlockedRaw, maxUses);
+          const remainder = eligibleQty % groupSize;
+
+          let percent = 0;
+          let needed = groupSize - remainder;
+          let text = '';
+
+          if (unlocked >= maxUses) {
+            percent = 100;
+            needed = 0;
+            text = `Maximum ${maxUses} free ${plural(maxUses, 'item')} unlocked!`;
+          } else if (eligibleQty > 0 && remainder === 0) {
+            percent = 100;
+            needed = groupSize;
+            text = `${unlocked} FREE ${plural(unlocked, 'item')} unlocked!`;
+          } else {
+            percent = Math.round((remainder / groupSize) * 100);
+
+            if (unlocked > 0) {
+              text = `${unlocked} FREE unlocked! Add ${needed} more eligible ${plural(needed, 'item')} to unlock another.`;
+            } else {
+              text = `Add ${needed} more eligible ${plural(needed, 'item')} to get ${freeQty} FREE.`;
+            }
+          }
+
+          message.textContent = text;
+          fill.style.width = `${percent}%`;
+          progress.setAttribute('aria-valuenow', String(percent));
+        };
+
+        const cartUrl = () => {
+          const root = window.Shopify && window.Shopify.routes && window.Shopify.routes.root
+            ? window.Shopify.routes.root
+            : '/';
+          return `${root}cart.js`;
+        };
+
+        const refresh = async () => {
+          if (requestRunning) {
+            refreshQueued = true;
+            return;
+          }
+
+          requestRunning = true;
+
+          try {
+            const response = await fetch(cartUrl(), {
+              method: 'GET',
+              credentials: 'same-origin',
+              cache: 'no-store',
+              headers: { Accept: 'application/json' }
+            });
+
+            if (!response.ok) return;
+            render(await response.json());
+          } catch (error) {
+            console.warn('Buy 3 Get 1 cart progress could not refresh.', error);
+          } finally {
+            requestRunning = false;
+
+            if (refreshQueued) {
+              refreshQueued = false;
+              scheduleRefresh(80);
+            }
+          }
+        };
+
+        const scheduleRefresh = (delay = 140) => {
+          window.clearTimeout(refreshTimer);
+          refreshTimer = window.setTimeout(refresh, delay);
+        };
+
+        // This theme redraws its AJAX cart product/subtotal regions.
+        // Watching those regions makes the promo survive quantity changes,
+        // removals, and new Add to Cart actions without depending on one
+        // specific theme event name.
+        const productsRegion = drawer.querySelector('[data-products]');
+        const subtotalRegion = drawer.querySelector('[data-subtotal]');
+
+        const observer = new MutationObserver(() => scheduleRefresh());
+
+        if (productsRegion) {
+          observer.observe(productsRegion, {
+            childList: true,
+            subtree: true,
+            characterData: true
+          });
+        }
+
+        if (subtotalRegion) {
+          observer.observe(subtotalRegion, {
+            childList: true,
+            subtree: true,
+            characterData: true
+          });
+        }
+
+        // Common Shopify/Archetype-style cart events: harmless if the theme
+        // does not emit one or more of them.
+        [
+          'cart:updated',
+          'cart:build',
+          'cart:refresh',
+          'cart:change',
+          'ajaxProduct:added',
+          'product:added'
+        ].forEach((eventName) => {
+          document.addEventListener(eventName, () => scheduleRefresh(80));
+        });
+
+        refresh();
+      })();
+    </script>
+  {%- endif -%}
+{%- endif -%}

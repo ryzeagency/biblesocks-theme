@@ -1,0 +1,358 @@
+{% render 'biblesocks-tokens' %}
+
+<style>
+  .bs-tiles-{{ section.id }} {
+    display: grid;
+    grid-template-columns: repeat(
+      {{ section.blocks.size | at_most: 4 }},
+      minmax(0, 1fr)
+    );
+    gap: 2px;
+    background: var(--bs-onyx);
+  }
+
+  .bs-tile-{{ section.id }} {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+
+    background: var(--bs-onyx);
+    text-decoration: none;
+    pointer-events: none;
+  }
+
+  .bs-tile-{{ section.id }} .ph {
+    position: absolute;
+    inset: 0;
+
+    background-color: #1e1b17;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    transition: transform 0.35s ease;
+  }
+
+  .bs-tile-{{ section.id }} .label {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+    padding: 40px 18px 20px;
+
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(18, 17, 16, 0.92) 70%
+    );
+  }
+
+  .bs-tile-{{ section.id }} .role {
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+  }
+
+  .bs-tile-{{ section.id }}:hover .ph {
+    transform: scale(1.03);
+  }
+
+  .bs-tile-{{ section.id }}:hover .role {
+    color: var(--bs-gold);
+  }
+
+  .bs-tile-{{ section.id }}:focus-visible {
+    outline: 2px solid var(--bs-gold);
+    outline-offset: 3px;
+  }
+
+  /* One button below all blocks */
+  .bs-shop-button-wrapper-{{ section.id }} {
+    display: flex;
+    justify-content: center;
+    margin-top: {{ section.settings.button_spacing_top }}px;
+  }
+
+  .bs-shop-button-{{ section.id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 46px;
+    padding: 15px 50px;
+
+    background-color: {{ section.settings.button_background_color }};
+    color: {{ section.settings.button_text_color }} !important;
+
+    border:
+      {{ section.settings.button_border_width }}px
+      solid
+      {{ section.settings.button_border_color }};
+    border-radius: {{ section.settings.button_border_radius }}px;
+
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .bs-shop-button-{{ section.id }}:hover,
+  .bs-shop-button-{{ section.id }}:focus-visible {
+    background-color: {{ section.settings.button_hover_background_color }};
+    color: {{ section.settings.button_hover_text_color }};
+    border-color: {{ section.settings.button_hover_border_color }};
+    transform: translateY(-2px);
+  }
+
+  .bs-shop-button-{{ section.id }}:focus-visible {
+    outline: 2px solid {{ section.settings.button_text_color }};
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 820px) {
+    .bs-tiles-{{ section.id }} {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 480px) {
+    .bs-tiles-{{ section.id }} {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div
+  class="bs-section"
+  style="padding: 96px 0; border-bottom: 1px solid var(--bs-hairline);"
+>
+  <div class="bs-wrap">
+    <div class="bs-section-head">
+      {%- if section.settings.eyebrow != blank -%}
+        <div class="bs-patch bs-mono">
+          {{ section.settings.eyebrow }}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.headline != blank -%}
+        <h2>{{ section.settings.headline }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.body != blank -%}
+        <p>{{ section.settings.body }}</p>
+      {%- endif -%}
+    </div>
+
+    <div class="bs-tiles-{{ section.id }}">
+      {%- for block in section.blocks -%}
+        <a
+          href="{{ block.settings.link | default: '#' }}"
+          class="bs-tile-{{ section.id }}"
+          aria-label="{{ block.settings.role }}"
+          {{ block.shopify_attributes }}
+        >
+          <div
+            class="ph"
+            {% if block.settings.image != blank %}
+              style="background-image: url('{{ block.settings.image | image_url: width: 1000 }}');"
+            {% endif %}
+          ></div>
+
+          <div class="label">
+            {%- if block.settings.role != blank -%}
+              <div class="role bs-display">
+                {{ block.settings.role }}
+              </div>
+            {%- endif -%}
+          </div>
+        </a>
+      {%- endfor -%}
+    </div>
+
+    {%- if section.settings.button_label != blank -%}
+      <div class="bs-shop-button-wrapper-{{ section.id }}">
+        <a
+          class="bs-shop-button-{{ section.id }}"
+          href="{{ section.settings.button_link | default: '#' }}"
+        >
+          {{ section.settings.button_label }}
+        </a>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "BS: Shop For Him",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow tag",
+      "default": "Shop For Him"
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "Headline",
+      "default": "Who Are You Standing With?"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body copy",
+      "default": "The giver doesn't think in SKUs. She thinks in people. Shop by the man in your life — each one routes to a curated collection built for him."
+    },
+    {
+      "type": "header",
+      "content": "Shop button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "button_background_color",
+      "label": "Button background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#FFD700"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background_color",
+      "label": "Button hover background",
+      "default": "#FFD700"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Button hover text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_border_color",
+      "label": "Button hover border color",
+      "default": "#FFD700"
+    },
+    {
+      "type": "range",
+      "id": "button_border_width",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "unit": "px",
+      "label": "Button border width",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Button corner radius",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_spacing_top",
+      "min": 12,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Space above button",
+      "default": 32
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "Recipient tile",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "role",
+          "label": "Recipient",
+          "default": "Husband"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Tile link"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 5,
+  "presets": [
+    {
+      "name": "BS: Shop For Him",
+      "blocks": [
+        {
+          "type": "tile",
+          "settings": {
+            "role": "Husband"
+          }
+        },
+        {
+          "type": "tile",
+          "settings": {
+            "role": "Dad"
+          }
+        },
+        {
+          "type": "tile",
+          "settings": {
+            "role": "Son"
+          }
+        },
+        {
+          "type": "tile",
+          "settings": {
+            "role": "Pastor"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

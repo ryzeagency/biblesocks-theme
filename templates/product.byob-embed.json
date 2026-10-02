@@ -1,0 +1,355 @@
+{
+  "sections": {
+    "zp-product-header-content": {
+      "type": "product-header-content-zipifypages",
+      "settings": {}
+    },
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "text_8UAMXH": {
+          "type": "text",
+          "settings": {
+            "text": "{{ product.metafields.custom.value_props.value }}"
+          }
+        },
+        "loox_reviews_loox_rating_qk3UVC": {
+          "type": "shopify://apps/loox-reviews/blocks/loox-rating/5c3b337f-fd14-4df5-b1d6-80ec13e6e28e",
+          "settings": {
+            "contentSize": 16,
+            "pattern": "",
+            "hideText": false,
+            "alignment": "",
+            "layout": "",
+            "textColor": "",
+            "starColor": "",
+            "showAllReviews": false,
+            "looxOpenFloatingWidget": false,
+            "emptyRatingWidget": false
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "size_chart_fayn6V": {
+          "type": "size_chart",
+          "settings": {
+            "size_chart": "size-guide"
+          }
+        },
+        "variant_picker": {
+          "type": "variant_picker",
+          "settings": {
+            "variant_labels": true,
+            "picker_type": "button",
+            "product_dynamic_variants_enable": true,
+            "color_swatches": false
+          }
+        },
+        "inventory_status": {
+          "type": "inventory_status",
+          "disabled": true,
+          "settings": {
+            "inventory_threshold": 10,
+            "inventory_transfers_enable": false
+          }
+        },
+        "one_click_upsell_on_page_cYxHpY": {
+          "type": "shopify://apps/one-click-upsell/blocks/on-page/bfe6e378-b73a-4871-b8d3-7d6ede22678e",
+          "settings": {}
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": true,
+            "surface_pickup_enable": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "sales_point_YTJxiN": {
+          "type": "sales_point",
+          "settings": {
+            "icon": "shield",
+            "text": "100% Satisfaction Guaranteed"
+          }
+        },
+        "sales_point_DRzxDD": {
+          "type": "sales_point",
+          "settings": {
+            "icon": "truck",
+            "text": "Fast Shipping"
+          }
+        },
+        "sales_point_dMy7Df": {
+          "type": "sales_point",
+          "settings": {
+            "icon": "ribbon",
+            "text": "Designer Quality Blend"
+          }
+        },
+        "loox_reviews_loox_snippets_widget_FBiWB6": {
+          "type": "shopify://apps/loox-reviews/blocks/loox-snippets-widget/5c3b337f-fd14-4df5-b1d6-80ec13e6e28e",
+          "settings": {
+            "reviews-type": "product-reviews",
+            "reviews-limit": 10,
+            "alignment": "left",
+            "max-width": "",
+            "color-scheme": "inverted",
+            "shadow": "",
+            "show-rating": true,
+            "show-image": true,
+            "hide-arrows-mobile": false,
+            "font-size": 14,
+            "show-border": false,
+            "border-radius": 0,
+            "background-color": "",
+            "text-color": "",
+            "name-color": "",
+            "rating-icon-color": "",
+            "border-color": "",
+            "shadow-color": "",
+            "product_selection": ""
+          }
+        },
+        "separator": {
+          "type": "separator",
+          "settings": {}
+        },
+        "description": {
+          "type": "description",
+          "settings": {
+            "is_tab": false
+          }
+        },
+        "share": {
+          "type": "share",
+          "disabled": true,
+          "settings": {}
+        },
+        "redo_free_return_automation_concierge_product_form_xFYJW4": {
+          "type": "shopify://apps/redo/blocks/concierge_product_form/c613644b-6df4-4d11-b336-43a5c06745a1",
+          "settings": {
+            "buttonBackgroundColor": "#000000",
+            "buttonTextColor": "#ffffff",
+            "buttonText": "Ask AI",
+            "placeholder": "Ask {storeName} AI about this product",
+            "fontSize": "inherit",
+            "borderRadius": "0px",
+            "customCss": ""
+          }
+        },
+        "byob_byob_embed_widget_block_xXAkkH": {
+          "type": "shopify://apps/byob/blocks/byob-embed-widget-block/cbcdb3c1-93e1-4702-8f46-0cad28865e89",
+          "settings": {
+            "button_color": "#3B82F6",
+            "show_vendor": true,
+            "show_price": true,
+            "show_sold_out_products": false,
+            "show_border": true,
+            "product_title_font_size": 16,
+            "layout_mode": "stacked",
+            "grid_columns_mobile": 2,
+            "grid_columns_large": 4
+          }
+        }
+      },
+      "block_order": [
+        "text_8UAMXH",
+        "loox_reviews_loox_rating_qk3UVC",
+        "price",
+        "size_chart_fayn6V",
+        "variant_picker",
+        "inventory_status",
+        "one_click_upsell_on_page_cYxHpY",
+        "buy_buttons",
+        "sales_point_YTJxiN",
+        "sales_point_DRzxDD",
+        "sales_point_dMy7Df",
+        "loox_reviews_loox_snippets_widget_FBiWB6",
+        "separator",
+        "description",
+        "share",
+        "redo_free_return_automation_concierge_product_form_xFYJW4",
+        "byob_byob_embed_widget_block_xXAkkH"
+      ],
+      "disabled": true,
+      "settings": {
+        "sku_enable": false,
+        "image_position": "left",
+        "image_size": "large",
+        "product_zoom_enable": true,
+        "thumbnail_position": "beside",
+        "thumbnail_height": "fixed",
+        "thumbnail_arrows": false,
+        "mobile_layout": "partial",
+        "enable_video_looping": true,
+        "product_video_style": "muted"
+      }
+    },
+    "sub": {
+      "type": "product-full-width",
+      "disabled": true,
+      "settings": {
+        "max_width": true
+      }
+    },
+    "1710810062a9575abf": {
+      "type": "apps",
+      "blocks": {
+        "loox_reviews_loox_dynamic_section_99Qj8j": {
+          "type": "shopify://apps/loox-reviews/blocks/loox-dynamic-section/5c3b337f-fd14-4df5-b1d6-80ec13e6e28e",
+          "disabled": true,
+          "settings": {
+            "reviews_to_display": "",
+            "default_tab": "automatic",
+            "only_photos": false,
+            "aggregated": false,
+            "limit": 20,
+            "hide_thumbnails": false,
+            "maxwidth": 1920,
+            "is_sample": false
+          }
+        }
+      },
+      "block_order": [
+        "loox_reviews_loox_dynamic_section_99Qj8j"
+      ],
+      "settings": {
+        "full_width": false,
+        "space_around": true
+      }
+    },
+    "product-recommendations": {
+      "type": "product-recommendations",
+      "disabled": true,
+      "settings": {
+        "product_recommendations_heading": "You may also like",
+        "related_count": 5,
+        "products_per_row": 5
+      }
+    },
+    "recently-viewed": {
+      "type": "recently-viewed",
+      "settings": {
+        "recent_count": 5
+      }
+    },
+    "collection-return": {
+      "type": "collection-return",
+      "settings": {}
+    },
+    "zp-product-footer-content": {
+      "type": "product-footer-content-zipifypages",
+      "settings": {}
+    },
+    "1762911597c03aa905": {
+      "type": "apps",
+      "blocks": {
+        "byob_byob_bundle_info_block_XUP7Qh": {
+          "type": "shopify://apps/byob/blocks/byob-bundle-info-block/cbcdb3c1-93e1-4702-8f46-0cad28865e89",
+          "settings": {
+            "show_banner_image": true,
+            "top-layout": "default",
+            "media_size": "medium",
+            "image_header_padding": 0,
+            "byob_section_wrapper": true,
+            "title_align": "center",
+            "align_text": "center",
+            "title_size": "h1",
+            "description_font_size": 15
+          }
+        },
+        "byob_byob_product_grid_block_biWpyc": {
+          "type": "shopify://apps/byob/blocks/byob-product-grid-block/cbcdb3c1-93e1-4702-8f46-0cad28865e89",
+          "settings": {
+            "items_per_row": 4,
+            "items_per_row_mobile": 2,
+            "open_all_tabs": false,
+            "show_step_builder": "none",
+            "byob_section_wrapper": true,
+            "tab_color": "#d1ecfe",
+            "tab_text_color": "#000000",
+            "tick_icon_color": "#008000",
+            "card_background": "#ffffff",
+            "product_name_color": "#444444",
+            "button_color": "#000000",
+            "button_text_color": "#ffffff",
+            "add_a_bounding_box": true,
+            "disable_product_link": true,
+            "enable_quickview": false,
+            "enable_quantity_input": false,
+            "show_product_compare_at_price": false,
+            "show_product_price": true,
+            "show_product_reviews": false,
+            "show_currency_code": false,
+            "show_product_type": false,
+            "show_product_vendor": false,
+            "show_sold_out_products": true
+          }
+        },
+        "byob_byob_confirm_modal_block_BpETnr": {
+          "type": "shopify://apps/byob/blocks/byob-confirm-modal-block/cbcdb3c1-93e1-4702-8f46-0cad28865e89",
+          "settings": {
+            "button_color": "",
+            "button_text_color": "",
+            "show_confirm_modal": true,
+            "show_view_cart_button": true,
+            "direct_checkout": false,
+            "show_create_another_button": false,
+            "hide_sku_on_cart": true,
+            "show_quantity_in_line_items": false,
+            "disable_block_list": false
+          }
+        },
+        "byob_byob_footer_block_WeyrAX": {
+          "type": "shopify://apps/byob/blocks/byob-footer-block/cbcdb3c1-93e1-4702-8f46-0cad28865e89",
+          "settings": {
+            "background_color": "#e8e8e8",
+            "footer_product_name_color": "#222222",
+            "remove_icon_color": "#161616",
+            "footer_show_product_title": true,
+            "footer_show_total_price": true,
+            "footer_show_byob_total_price": true,
+            "footer_show_total_compare_at_price": false,
+            "footer_bottom_position": 10,
+            "product_card_padding": 5,
+            "add_a_border": false,
+            "border_color": "#676767",
+            "icon_type": "bag",
+            "icon_horizontal_position": "left"
+          }
+        }
+      },
+      "block_order": [
+        "byob_byob_bundle_info_block_XUP7Qh",
+        "byob_byob_product_grid_block_biWpyc",
+        "byob_byob_confirm_modal_block_BpETnr",
+        "byob_byob_footer_block_WeyrAX"
+      ],
+      "settings": {
+        "full_width": false,
+        "space_around": true
+      }
+    },
+    "17714444648c44dd03": {
+      "type": "apps",
+      "settings": {
+        "full_width": false,
+        "space_around": true
+      }
+    }
+  },
+  "order": [
+    "zp-product-header-content",
+    "main",
+    "sub",
+    "1710810062a9575abf",
+    "product-recommendations",
+    "recently-viewed",
+    "collection-return",
+    "zp-product-footer-content",
+    "1762911597c03aa905",
+    "17714444648c44dd03"
+  ]
+}

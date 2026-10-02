@@ -1,0 +1,63 @@
+<script>
+(function(){
+var script = document.createElement('script');
+script.onload = function() {
+  var txnId = EF.urlParameter('infclid') || EF.urlParameter('transaction_id') || EF.urlParameter('_ef_transaction_id');
+  EF.click({
+      offer_id: EF.urlParameter('oid'),
+      affiliate_id: EF.urlParameter('utm_campaign'),
+      transaction_id: txnId,
+      sub1: EF.urlParameter('sub1'),
+      sub2: EF.urlParameter('sub2'),
+      sub3: EF.urlParameter('sub3'),
+      sub4: EF.urlParameter('sub4'),
+      sub5: EF.urlParameter('sub5'),
+      uid: EF.urlParameter('uid'),
+      source_id: EF.urlParameter('source_id'),
+      creative_id: EF.urlParameter('creative_id'),
+  }).then( function(transaction_id) {
+    if (transaction_id) {
+      (async () => {
+        let formData = new URLSearchParams();
+        formData.append('attributes[eftid]', transaction_id);
+        const rawResponse = await fetch('/cart.js', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+          },
+          body: formData
+        });
+      })();
+    }
+  });
+
+  var sendEmailLead = function(email) {
+    EF.conversion({
+      offer_id: 151,
+      event_id: 630,
+      email: email,
+      verification_token: 'emj8w8Te62xseWASUy0zrpMKt87QE2',
+    });
+  };
+
+  window.addEventListener("klaviyoForms", function(e) {
+    if (e.detail.type === 'submit') {
+      sendEmailLead(e.detail.metaData.$email);
+    }
+  });
+
+  const contactForm = document.getElementById('newsletter-footer');
+  if (contactForm) {
+    contactForm.addEventListener("submit", (event) => {
+      const email = document.querySelector('#Email-footer2').value ?? '';
+      if (email !== '') {
+        sendEmailLead(email);
+      }
+    });
+  }
+};
+script.src = "https://www.inflektiondirect.com/scripts/sdk/everflow.js";
+document.head.appendChild(script);
+})(document);
+</script>

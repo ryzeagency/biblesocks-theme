@@ -1,0 +1,64 @@
+{% render 'biblesocks-tokens' %}
+<style>
+  .bs-occ-{{ section.id }}{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .bs-occ-{{ section.id }} .occasion{ border:1px solid var(--bs-hairline); position:relative; aspect-ratio:4/5; overflow:hidden; }
+  .bs-occ-{{ section.id }} .occasion .ph{ position:absolute; inset:0; background-size:cover; background-position:center; background-color:#1e1b17; }
+  .bs-occ-{{ section.id }} .occasion .cap{ position:absolute; bottom:0; left:0; right:0; padding:22px; background:linear-gradient(180deg, transparent, rgba(18,17,16,0.95)); }
+  .bs-occ-{{ section.id }} .occasion .date{ font-family:'Space Mono',monospace; font-size:10px; color:var(--bs-gold); letter-spacing:0.1em; margin-bottom:6px;display: inline-block;padding: 5px 10px;background: #000; }
+  .bs-occ-{{ section.id }} .occasion h3{ font-size:24px; }
+  @media (max-width:820px){ .bs-occ-{{ section.id }}{ grid-template-columns:1fr; } }
+</style>
+
+<div class="bs-section" style="padding:96px 0; border-bottom:1px solid var(--bs-hairline);">
+  <div class="bs-wrap">
+    <div class="bs-section-head">
+      {%- if section.settings.eyebrow != blank -%}<div class="bs-patch bs-mono">{{ section.settings.eyebrow }}</div>{%- endif -%}
+      <h2>{{ section.settings.headline }}</h2>
+      {%- if section.settings.body != blank -%}<p>{{ section.settings.body }}</p>{%- endif -%}
+    </div>
+    <div class="bs-occ-{{ section.id }}">
+      {%- for block in section.blocks -%}
+        <a href="{{ block.settings.link }}" class="occasion" {{ block.shopify_attributes }}>
+          <div class="ph" {% if block.settings.image != blank %}style="background-image:url('{{ block.settings.image | image_url: width: 800 }}')"{% endif %}></div>
+          <div class="cap">
+            <div class="date bs-mono">Occasion</div>
+            <h3 class="bs-display">{{ block.settings.name }}</h3>
+          </div>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "BS: Shop By Occasion",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow tag", "default": "Shop By Occasion" },
+    { "type": "text", "id": "headline", "label": "Headline", "default": "Got a Date Circled? Start Here." },
+    { "type": "textarea", "id": "body", "label": "Body copy", "default": "She shops ahead of a date. Swaps seasonally — Easter, graduations, pastor appreciation, men's retreats." }
+  ],
+  "blocks": [
+    {
+      "type": "occasion",
+      "name": "Occasion",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "name", "label": "Occasion name", "default": "Father's Day" },
+        { "type": "url", "id": "link", "label": "Collection link" }
+      ]
+    }
+  ],
+  "max_blocks": 3,
+  "presets": [
+    {
+      "name": "BS: Shop By Occasion",
+      "blocks": [
+        { "type": "occasion", "settings": { "name": "Father's Day" } },
+        { "type": "occasion", "settings": { "name": "Baptism" } },
+        { "type": "occasion", "settings": { "name": "Christmas" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

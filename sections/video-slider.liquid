@@ -1,0 +1,378 @@
+{%- style -%}
+  .video-slider.section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+
+    /* Customizable section colors */
+    background-color: {{ section.settings.background_color }};
+    color: {{ section.settings.text_color }};
+  }
+
+  .video-slider.section-{{ section.id }}-padding .title {
+    color: {{ section.settings.heading_color }};
+    text-align: {{ section.settings.align_text }};
+    font-family: 'Anton','Arial Narrow',sans-serif;
+    font-size: 45px;
+    margin-bottom: 50px;
+  }
+
+  /* Applies the selected font color to other text inside the section */
+  .video-slider.section-{{ section.id }}-padding p,
+  .video-slider.section-{{ section.id }}-padding span,
+  .video-slider.section-{{ section.id }}-padding div {
+    color: inherit;
+  }
+
+  .video-slider .testimonial__image {
+    height: 500px;
+    max-width: 27rem;
+    background: none;
+  }
+
+  .video-slider testimonials-component {
+    --block-width: 300px !important;
+  }
+
+  .video-slider video {
+    height: 100% !important;
+    border-radius: 15px;
+  }
+
+  .video-slider .testimonial__image.media-wrapper {
+    margin-right: 0;
+  }
+
+  .video-slider .video-slider-list::before,
+  .video-slider .video-slider-list::after {
+    width: 0%;
+  }
+
+  .video-slider-item {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .video-slider-list {
+    position: static;
+    display: flex;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-color: {{ section.settings.scrollbar_color }}
+      {{ section.settings.scrollbar_background_color }};
+    scrollbar-width: thin;
+    padding-bottom: 10px;
+  }
+
+  .video-slider-list::-webkit-scrollbar-track {
+    background: {{ section.settings.scrollbar_background_color }};
+  }
+
+  .video-slider-list::-webkit-scrollbar-thumb {
+    background: {{ section.settings.scrollbar_color }};
+    border: 4px solid transparent;
+    border-radius: 10px;
+    background-clip: padding-box;
+  }
+
+  .video-slider:hover .video-slider-list::-webkit-scrollbar-thumb {
+    background: {{ section.settings.scrollbar_hover_color }};
+  }
+
+  .video-slider-list::-webkit-scrollbar-thumb:hover {
+    background: {{ section.settings.scrollbar_hover_color }} !important;
+  }
+
+  @media only screen and (max-width: 800px) {
+    .video-slider .testimonial__image {
+      margin-left: 0;
+    }
+
+    .video-slider .video-slider-list {
+      width: 100%;
+    }
+  }
+{%- endstyle -%}
+
+<div class="video-slider section-{{ section.id }}-padding">
+  <div class="testimonials page-width">
+    {%- if section.settings.title != blank -%}
+      <{{ section.settings.heading_tag }}
+        class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+      >
+        {{ section.settings.title }}
+      </{{ section.settings.heading_tag }}>
+    {%- endif -%}
+
+    {%- assign block_count = section.blocks.size -%}
+
+    {%- if block_count > 0 -%}
+      <svg class="visually-hidden">
+        <defs>
+          <clipPath
+            id="testimonial-clip-path"
+            clipPathUnits="objectBoundingBox"
+          >
+            <path d="M0.11,0.09 C0.014,0.174,-0.003,0.398,0,0.499 C-0.003,0.618,0.015,0.849,0.125,0.919 C0.235,0.989,0.413,0.997,0.504,0.999 C0.604,0.999,0.719,0.999,0.869,0.924 C0.974,0.849,0.994,0.704,0.999,0.499 C1,0.295,0.984,0.155,0.879,0.075 C0.796,0.011,0.593,-0.003,0.504,0 C0.413,-0.005,0.206,0.006,0.11,0.09"></path>
+          </clipPath>
+        </defs>
+      </svg>
+
+      <testimonials-component
+        data-slider="{% if block_count > 1 %}true{% else %}false{% endif %}"
+        data-autorotate="{{ section.settings.autorotate }}"
+        data-autorotate-speed="{{ section.settings.autorotate_speed | times: 1000 }}"
+        style="--block-count: {{ block_count | minus: 1 }};"
+      >
+        <div class="testimonial__list-wrapper">
+          <div
+            class="video-slider-list"
+            id="Testimonials-{{ section.id }}"
+          >
+            {%- for block in section.blocks -%}
+              <div
+                class="video-slider-item{% if forloop.first or block_count == 1 %} is-selected{% endif %}"
+                {{ block.shopify_attributes }}
+              >
+                <div class="testimonial__image media-wrapper media-wrapper--small">
+                  {%- if block.settings.video != blank -%}
+                    {{
+                      block.settings.video
+                      | video_tag:
+                        image_size: '3840px',
+                        autoplay: true,
+                        loop: true,
+                        controls: true,
+                        muted: true,
+                        playsinline: true
+                    }}
+                  {%- else -%}
+                    <div class="media media--square">
+                      {{ 'image' | placeholder_svg_tag: 'placeholder' }}
+                    </div>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      </testimonials-component>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Videos slider",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "default": "Video slider",
+      "label": "Videos title"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h1",
+          "label": "Large"
+        },
+        {
+          "value": "h2",
+          "label": "Medium"
+        },
+        {
+          "value": "h3",
+          "label": "Small"
+        }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "select",
+      "id": "align_text",
+      "label": "Heading alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "div",
+          "label": "Div"
+        },
+        {
+          "value": "span",
+          "label": "Span"
+        },
+        {
+          "value": "p",
+          "label": "Paragraph"
+        }
+      ],
+      "default": "h2",
+      "label": "Heading HTML tag"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Font color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "scrollbar_background_color",
+      "label": "Scrollbar background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "scrollbar_color",
+      "label": "Scrollbar color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "color",
+      "id": "scrollbar_hover_color",
+      "label": "Scrollbar hover color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Videos slider",
+      "blocks": [
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.overlay"]
+  }
+}
+{% endschema %} 

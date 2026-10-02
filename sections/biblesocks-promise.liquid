@@ -1,0 +1,24 @@
+{% render 'biblesocks-tokens' %}
+<style>
+  .bs-promise-{{ section.id }}{ background:var(--bs-onyx-2); text-align:center; padding:80px 32px; }
+  .bs-promise-{{ section.id }} h2{ font-size:clamp(30px,5vw,45px); max-width:840px; margin:25px auto !important; color:var(--bs-gold); }
+  .bs-promise-{{ section.id }} p{ max-width:640px; margin:0 auto; color:var(--bs-cream); opacity:0.82; font-size:17px; font-style:italic; }
+</style>
+
+<div class="bs-section bs-promise-{{ section.id }}">
+  {%- if section.settings.eyebrow != blank -%}<div class="bs-patch bs-mono">{{ section.settings.eyebrow }}</div>{%- endif -%}
+  <h2>{{ section.settings.headline }}</h2>
+  {%- if section.settings.body != blank -%}<p>{{ section.settings.body }}</p>{%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "BS: The Promise",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow tag", "default": "Our Promise" },
+    { "type": "textarea", "id": "headline", "label": "Headline", "default": "Finally — a faith gift he won't shove in a drawer." },
+    { "type": "textarea", "id": "body", "label": "Body copy", "default": "Every faith gift for the men you love is cutesy, cursive, or never worn. Not these. Strong enough that he'll reach for them on his own." }
+  ],
+  "presets": [ { "name": "BS: The Promise" } ]
+}
+{% endschema %}

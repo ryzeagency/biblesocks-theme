@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "zp-product-header-content": {
@@ -45,25 +54,25 @@
             "tier2_badge": "Save 10%",
             "tier2_discount_percent": 10,
             "tier2_free_shipping": false,
-            "tier2_code": "",
+            "tier2_code": "BIBLESOCKSMIXANDMATCH10",
             "tier3_enable": true,
             "tier3_label": "3 Pack",
             "tier3_badge": "Save 15%",
             "tier3_discount_percent": 15,
             "tier3_free_shipping": false,
-            "tier3_code": "",
+            "tier3_code": "BIBLESOCKSMIXANDMATCH15",
             "tier4_enable": true,
             "tier4_label": "4 Pack",
             "tier4_badge": "Save 20%",
             "tier4_discount_percent": 20,
             "tier4_free_shipping": false,
-            "tier4_code": "",
+            "tier4_code": "BIBLESOCKSMIXANDMATCH20",
             "tier5_enable": true,
             "tier5_label": "5 Pack",
             "tier5_badge": "Save 20%",
             "tier5_discount_percent": 20,
             "tier5_free_shipping": true,
-            "tier5_code": "",
+            "tier5_code": "BIBLESOCKSMIXANDMATCH20",
             "show_progress_bar": true,
             "free_shipping_enable": true,
             "free_shipping_threshold": 75,
@@ -126,7 +135,8 @@
           "type": "tab",
           "settings": {
             "title": "Terms and conditions",
-            "content": ""
+            "content": "",
+            "page": ""
           }
         },
         "contact": {
@@ -180,6 +190,8 @@
         "loox_reviews_loox_dynamic_section_99Qj8j": {
           "type": "shopify://apps/loox-reviews/blocks/loox-dynamic-section/5c3b337f-fd14-4df5-b1d6-80ec13e6e28e",
           "settings": {
+            "reviews_to_display": "",
+            "default_tab": "automatic",
             "only_photos": false,
             "aggregated": false,
             "limit": 20,

@@ -1,0 +1,198 @@
+/* ==========================================================================
+   Cart page extras — savings summary, free shipping bar, "You might also like"
+   Used by sections/main-cart.liquid (Impulse)
+   ========================================================================== */
+
+cart-extras {
+  display: block;
+}
+
+/* Impulse tints the whole sidebar column. The tint moves onto the summary box,
+   so the suggestions can sit below it on the page background. */
+@media only screen and (min-width: 769px) {
+  .cart__page-col.cart-extras-col {
+    padding: 0;
+    /* Taller now that the suggestions live here, so it scrolls with the page
+       rather than sticking and cutting off its bottom. */
+    position: static;
+  }
+
+  .cart__page-col.cart-extras-col::after {
+    content: none;
+  }
+
+  .cart-extras-box {
+    position: relative;
+    padding: 30px;
+    background: color-mix(in srgb, var(--colorTextBody) 3%, var(--colorBody));
+  }
+}
+
+/* ---------- Original total + total saved ---------- */
+
+.cart-extras-summary__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.cart-extras-summary__original {
+  opacity: 0.6;
+}
+
+.cart-extras-summary__row--saved {
+  font-weight: 700;
+  color: #1a7f37;
+}
+
+/* ---------- Free shipping bar ---------- */
+
+.cart-extras-shipping {
+  margin: 18px 0 22px;
+}
+
+.cart-extras-shipping__text {
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.cart-extras-shipping__track {
+  height: 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--colorTextBody) 12%, transparent);
+  overflow: hidden;
+}
+
+.cart-extras-shipping__fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--colorTextBody);
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cart-extras-shipping.is-unlocked .cart-extras-shipping__fill {
+  background: #1a7f37;
+}
+
+.cart-extras-shipping.is-unlocked .cart-extras-shipping__text {
+  color: #1a7f37;
+}
+
+/* ---------- You might also like ---------- */
+
+.cart-extras-upsell {
+  margin-top: 28px;
+}
+
+.cart-extras-upsell__heading {
+  margin-bottom: 14px;
+  font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
+  font-size: 1.15em;
+  letter-spacing: var(--typeHeaderSpacing);
+  text-transform: uppercase;
+}
+
+.cart-extras-upsell__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cart-extras-upsell__item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--colorTextBody) 10%, transparent);
+}
+
+.cart-extras-upsell__item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.cart-extras-upsell__media {
+  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--colorTextBody) 5%, transparent);
+}
+
+.cart-extras-upsell__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cart-extras-upsell__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cart-extras-upsell__title {
+  font-size: 0.9em;
+  line-height: 1.3;
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cart-extras-upsell__cost {
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+.cart-extras-upsell__select {
+  max-width: 140px;
+  padding: 4px 26px 4px 8px;
+  font-size: 0.8em;
+  background-position: right 8px center;
+}
+
+.cart-extras-upsell__add {
+  padding: 9px 16px;
+  border: 1px solid var(--colorTextBody);
+  border-radius: 0;
+  background: var(--colorBody);
+  color: var(--colorTextBody);
+  font-family: inherit;
+  font-size: 0.8em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.cart-extras-upsell__add:hover:not([disabled]) {
+  background: var(--colorTextBody);
+  color: var(--colorBody);
+}
+
+.cart-extras-upsell__add[disabled],
+.cart-extras-upsell__add.is-loading {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+.cart-extras-upsell__error {
+  margin-top: 10px;
+  font-size: 0.85em;
+  color: #d72c0d;
+}
+
+.cart-extras-upsell__error:empty {
+  display: none;
+}

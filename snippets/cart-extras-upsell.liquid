@@ -1,0 +1,85 @@
+{% comment %}
+  Cart page: "You might also like" — socks from a collection that are not in the
+  cart yet, each with an Add button. assets/cart-extras.js handles the adding and
+  re-renders this list so a sock disappears once it is in the cart.
+
+  Accepts:
+  - section: the main-cart section, for its settings
+
+  Usage:
+  {% render 'cart-extras-upsell', section: section %}
+{% endcomment %}
+
+{%- liquid
+  assign upsell_collection = section.settings.upsell_collection
+  assign upsell_limit = section.settings.upsell_limit | default: 4
+  assign in_cart = cart.items | map: 'product_id' | join: ','
+  assign in_cart = ',' | append: in_cart | append: ','
+  assign shown = 0
+-%}
+
+{%- if section.settings.upsell_enable and upsell_collection != blank -%}
+  {%- capture upsell_items -%}
+    {%- for sock in upsell_collection.products limit: 50 -%}
+      {%- capture sock_key -%},{{ sock.id }},{%- endcapture -%}
+      {%- if sock.available and sock.gift_card? == false -%}
+        {%- unless in_cart contains sock_key -%}
+          {%- assign sock_variant = sock.selected_or_first_available_variant -%}
+          <div class="cart-extras-upsell__item" data-cart-extras-item>
+            <a class="cart-extras-upsell__media" href="{{ sock.url }}">
+              {%- if sock.featured_image -%}
+                <img
+                  src="{{ sock.featured_image | image_url: width: 160 }}"
+                  alt="{{ sock.featured_image.alt | default: sock.title | escape }}"
+                  width="80"
+                  height="80"
+                  loading="lazy"
+                >
+              {%- endif -%}
+            </a>
+            <div class="cart-extras-upsell__info">
+              <a class="cart-extras-upsell__title" href="{{ sock.url }}">{{ sock.title | escape }}</a>
+              <span class="cart-extras-upsell__cost" data-cart-extras-cost>{{ sock_variant.price | money }}</span>
+              {%- if sock.has_only_default_variant -%}
+                <input type="hidden" data-cart-extras-variant value="{{ sock_variant.id }}">
+              {%- else -%}
+                <select
+                  class="cart-extras-upsell__select"
+                  data-cart-extras-variant
+                  aria-label="{{ 'Size for ' | append: sock.title | escape }}"
+                >
+                  {%- for variant in sock.variants -%}
+                    {%- if variant.available -%}
+                      <option
+                        value="{{ variant.id }}"
+                        data-cost="{{ variant.price | money | escape }}"
+                        {% if variant.id == sock_variant.id %}selected{% endif %}
+                      >
+                        {{- variant.title | escape -}}
+                      </option>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </select>
+              {%- endif -%}
+            </div>
+            <button type="button" class="cart-extras-upsell__add" data-cart-extras-add>
+              {{- section.settings.upsell_add_text | default: 'Add' | escape -}}
+            </button>
+          </div>
+          {%- assign shown = shown | plus: 1 -%}
+          {%- if shown >= upsell_limit -%}{%- break -%}{%- endif -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- if shown > 0 -%}
+    <div class="cart-extras-upsell">
+      <div class="cart-extras-upsell__heading">
+        {{- section.settings.upsell_heading | default: 'You might also like' | escape -}}
+      </div>
+      <div class="cart-extras-upsell__list">{{ upsell_items }}</div>
+      <div class="cart-extras-upsell__error" data-cart-extras-error role="alert"></div>
+    </div>
+  {%- endif -%}
+{%- endif -%}

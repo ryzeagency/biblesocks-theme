@@ -1,0 +1,71 @@
+{% comment %}
+  Cart page: original total, total saved and a free shipping progress bar.
+  Sits above the subtotal. assets/cart-extras.js re-renders it after every cart change.
+
+  Accepts:
+  - section: the main-cart section, for its settings
+
+  Usage:
+  {% render 'cart-extras-summary', section: section %}
+{% endcomment %}
+
+{%- liquid
+  # What the cart would cost at full price: compare-at price where a sock is on
+  # sale, otherwise its price before any discount code.
+  assign original_total = 0
+  for item in cart.items
+    assign unit = item.original_price
+    if item.variant.compare_at_price > unit
+      assign unit = item.variant.compare_at_price
+    endif
+    assign line = unit | times: item.quantity
+    assign original_total = original_total | plus: line
+  endfor
+  assign saved = original_total | minus: cart.total_price
+
+  assign threshold = section.settings.free_shipping_threshold | default: 75 | times: 100
+  assign remaining = threshold | minus: cart.total_price
+  if threshold > 0
+    assign percent = cart.total_price | times: 100 | divided_by: threshold | floor
+  else
+    assign percent = 100
+  endif
+  if percent > 100
+    assign percent = 100
+  endif
+-%}
+
+<div class="cart-extras-summary">
+  {%- if section.settings.show_savings and saved > 0 -%}
+    <div class="cart-extras-summary__row">
+      <span>{{ section.settings.original_total_label | default: 'Original total' | escape }}</span>
+      <s class="cart-extras-summary__original">{{ original_total | money }}</s>
+    </div>
+    <div class="cart-extras-summary__row cart-extras-summary__row--saved">
+      <span>{{ section.settings.saved_label | default: 'Total saved' | escape }}</span>
+      <span>-{{ saved | money }}</span>
+    </div>
+  {%- endif -%}
+
+  {%- if section.settings.free_shipping_enable and threshold > 0 -%}
+    <div class="cart-extras-shipping{% if remaining <= 0 %} is-unlocked{% endif %}">
+      <div class="cart-extras-shipping__text">
+        {%- if remaining > 0 -%}
+          {%- assign amount = remaining | money -%}
+          {{ section.settings.free_shipping_away_text | default: "You're [amount] away from free shipping" | escape | replace: '[amount]', amount }}
+        {%- else -%}
+          {{ section.settings.free_shipping_unlocked_text | default: "You've unlocked free shipping!" | escape }}
+        {%- endif -%}
+      </div>
+      <div
+        class="cart-extras-shipping__track"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="{{ percent }}"
+      >
+        <div class="cart-extras-shipping__fill" style="width: {{ percent }}%"></div>
+      </div>
+    </div>
+  {%- endif -%}
+</div>

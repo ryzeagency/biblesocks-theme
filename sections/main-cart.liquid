@@ -13,6 +13,9 @@
   </header>
 
   {%- if cart.item_count > 0 -%}
+    {{ 'cart-extras.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'cart-extras.js' | asset_url }}" defer="defer"></script>
+
     <form action="{{ routes.cart_url }}" method="post" novalidate data-location="page" id="CartPageForm">
       <div class="cart__page">
         <div data-products class="cart__page-col">
@@ -20,7 +23,13 @@
             {%- render 'cart-item', product: item, sizes: '150px', -%}
           {%- endfor -%}
         </div>
-        <div class="cart__page-col">
+        <div class="cart__page-col cart-extras-col">
+          <cart-extras data-section-id="{{ section.id }}" data-cart-url="{{ routes.cart_url }}">
+          <div class="cart-extras-box">
+          <div data-cart-extras-part="summary">
+            {%- render 'cart-extras-summary', section: section -%}
+          </div>
+
           {% if settings.cart_notes_enable %}
             <div>
               <label for="CartNote">{{ 'cart.general.note' | t }}</label>
@@ -76,6 +85,12 @@
               {{ 'cart.general.shipping_at_checkout' | t }}<br />
             </small>
           </div>
+          </div>
+
+          <div data-cart-extras-part="upsell">
+            {%- render 'cart-extras-upsell', section: section -%}
+          </div>
+          </cart-extras>
         </div>
       </div>
     </form>
@@ -84,6 +99,98 @@
 
 {% schema %}
 {
-  "name": "t:sections.main-cart.name"
+  "name": "t:sections.main-cart.name",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Savings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_savings",
+      "label": "Show original total and total saved",
+      "default": true,
+      "info": "Shown above the subtotal when the cart saves anything, from sale prices or discount codes."
+    },
+    {
+      "type": "text",
+      "id": "original_total_label",
+      "label": "Original total label",
+      "default": "Original total"
+    },
+    {
+      "type": "text",
+      "id": "saved_label",
+      "label": "Total saved label",
+      "default": "Total saved"
+    },
+    {
+      "type": "header",
+      "content": "Free shipping bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "free_shipping_enable",
+      "label": "Show free shipping progress",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "Free shipping threshold",
+      "default": 75,
+      "info": "In your store currency, without the symbol. Measured against the cart total after discounts. Must match your shipping rate."
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_away_text",
+      "label": "Message before free shipping",
+      "default": "You're [amount] away from free shipping",
+      "info": "[amount] is how much more is needed."
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_unlocked_text",
+      "label": "Message once free shipping is reached",
+      "default": "You've unlocked free shipping!"
+    },
+    {
+      "type": "header",
+      "content": "You might also like"
+    },
+    {
+      "type": "checkbox",
+      "id": "upsell_enable",
+      "label": "Show suggestions",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "upsell_heading",
+      "label": "Heading",
+      "default": "You might also like"
+    },
+    {
+      "type": "collection",
+      "id": "upsell_collection",
+      "label": "Suggest socks from",
+      "info": "Socks already in the cart and sold-out socks are skipped."
+    },
+    {
+      "type": "range",
+      "id": "upsell_limit",
+      "label": "Socks to show",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "upsell_add_text",
+      "label": "Add button text",
+      "default": "Add"
+    }
+  ]
 }
 {% endschema %}

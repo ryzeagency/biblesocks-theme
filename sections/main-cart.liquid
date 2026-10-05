@@ -17,15 +17,14 @@
     <script src="{{ 'cart-extras.js' | asset_url }}" defer="defer"></script>
 
     <form action="{{ routes.cart_url }}" method="post" novalidate data-location="page" id="CartPageForm">
+      <cart-extras data-section-id="{{ section.id }}" data-cart-url="{{ routes.cart_url }}">
       <div class="cart__page">
         <div data-products class="cart__page-col">
           {% for item in cart.items %}
             {%- render 'cart-item', product: item, sizes: '150px', -%}
           {%- endfor -%}
         </div>
-        <div class="cart__page-col cart-extras-col">
-          <cart-extras data-section-id="{{ section.id }}" data-cart-url="{{ routes.cart_url }}">
-          <div class="cart-extras-box">
+        <div class="cart__page-col">
           <div data-cart-extras-part="summary">
             {%- render 'cart-extras-summary', section: section -%}
           </div>
@@ -85,14 +84,13 @@
               {{ 'cart.general.shipping_at_checkout' | t }}<br />
             </small>
           </div>
-          </div>
-
-          <div data-cart-extras-part="upsell">
-            {%- render 'cart-extras-upsell', section: section -%}
-          </div>
-          </cart-extras>
         </div>
       </div>
+
+      <div data-cart-extras-part="upsell">
+        {%- render 'cart-extras-upsell', section: section -%}
+      </div>
+      </cart-extras>
     </form>
   {%- endif -%}
 </div>

@@ -52,10 +52,10 @@ the free-shipping bar, so keep it equal to the real discount.
 - **Progress bar levels.** The bar fills towards the next level, not the whole pack:
 
   ```
-  Add 2 socks to save 10%                     (nothing picked)
-  Buy one more, save 10% / 15% / 20%          (1–3 socks)
-  Add 1 more sock to unlock FREE shipping     (4 socks)
-  You've unlocked FREE shipping + 20% off!    (5 or more, highlighted)
+  Add 2 socks to save 10%                  (nothing picked)
+  Buy one more, save 10% / 15% / 20%       (1–3 socks)
+  Buy one more, save 20% + free shipping   (4 socks)
+  20% + free shipping unlocked             (5 or more, highlighted)
   ```
 
   Ticking **This pack includes free shipping** is a promise: back it with a shipping rule
@@ -66,3 +66,13 @@ the free-shipping bar, so keep it equal to the real discount.
 - On a normal product page the block can also be added: **Single** then means "buy this
   product" and the normal add-to-cart stays; multi-packs switch into the picker.
 - Below 769px the picker moves inline under the chosen-sock slots.
+
+## Site-wide styles to know about
+
+- `snippets/biblesocks-tokens.liquid` sets `body p { color: #fff !important }` for the dark
+  homepage sections. The builder's messages are paragraphs, so `sock-bundle.css` restates
+  their colour. Any new text added to the builder as a `<p>` needs the same.
+- `theme.css.liquid` hides anything with "price" in its class name inside anything with
+  "bundle" in its class name (for the BYOB app page). `sock-bundle.css` brings back the
+  sock prices in the picker.
+

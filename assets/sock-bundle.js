@@ -813,7 +813,9 @@ if (!customElements.get('sock-bundle')) {
             .replace('[reward]', reward);
         } else if (this.earnedTier?.freeShipping && this.earnedTier.percent > 0) {
           shippingUnlocked = true;
-          message = this.progressShippingUnlockedText.replace('[percent]', this.earnedTier.percent);
+          message = this.progressShippingUnlockedText
+            .replace('[percent]', this.earnedTier.percent)
+            .replace('[reward]', this.rewardFor(this.earnedTier));
         } else {
           // Top of the ladder: say what the pack has earned.
           const reward = this.rewardFor(this.earnedTier);

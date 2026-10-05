@@ -893,3 +893,22 @@ sock-bundle {
   cursor: pointer;
   text-decoration: underline;
 }
+
+/* ---------- Site-wide overrides ----------
+   snippets/biblesocks-tokens.liquid sets `body p { color: #fff !important }` for the
+   dark homepage sections, and theme.css hides anything named *price* inside anything
+   named *bundle*. Both would blank parts of the builder, so restate them here. */
+
+.sock-bundle .sock-bundle__progress-note,
+.sock-bundle-picker .sock-bundle-picker__empty {
+  color: var(--colorTextBody) !important;
+}
+
+.sock-bundle .sock-bundle__error {
+  color: #d72c0d !important;
+}
+
+.sock-bundle-picker .sock-bundle-picker__card .sock-bundle-picker__card-price {
+  display: block !important;
+}
+

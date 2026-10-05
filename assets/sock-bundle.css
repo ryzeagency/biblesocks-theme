@@ -50,6 +50,11 @@ sock-bundle {
   position: relative;
 }
 
+/* Kept in the markup so it can be switched back on in the theme editor. */
+.sock-bundle__tiers-wrap--hidden {
+  display: none;
+}
+
 .sock-bundle__tiers {
   /* How many cards fit before the next one peeks in from the right. */
   --sb-tier-peek: 4.4;
@@ -210,9 +215,17 @@ sock-bundle {
 }
 
 .sock-bundle__slots {
+  /* Four to a row, wrapping onto new rows as the pack grows. */
   display: grid;
-  grid-template-columns: repeat(var(--sb-slot-count, 2), minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media screen and (max-width: 480px) {
+  .sock-bundle__slots {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 8px;
+  }
 }
 
 .sock-bundle__slot {
@@ -221,6 +234,7 @@ sock-bundle {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  min-width: 0;
   padding: 6px 4px 8px;
   border: 1px dashed var(--sb-border);
   border-radius: var(--sb-radius);
@@ -230,6 +244,50 @@ sock-bundle {
 
 .sock-bundle__slot--filled {
   border-style: solid;
+}
+
+.sock-bundle__slot--reward {
+  border-style: solid;
+  border-color: var(--colorTextBody);
+  background: color-mix(in srgb, var(--colorTextBody) 4%, transparent);
+}
+
+/* An icon rather than a product photo: pad it so it does not fill the box. */
+.sock-bundle__slot-media .sock-bundle__slot-icon {
+  width: 70%;
+  height: 70%;
+  margin: 15%;
+  object-fit: contain;
+}
+
+.sock-bundle__slot-gift {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 24px;
+  line-height: 1;
+}
+
+/* A sock the pack makes free: outlined, with a tag over its photo. */
+.sock-bundle__slot--free {
+  border-color: var(--colorTextBody);
+}
+
+.sock-bundle__slot-free {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--colorTextBody);
+  color: var(--colorBody);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .sock-bundle__slot--active {
@@ -276,17 +334,6 @@ sock-bundle {
   opacity: 0.6;
 }
 
-.sock-bundle__slot-select {
-  width: 100%;
-  margin-top: 2px;
-  padding: 4px 5px;
-  border: 1px solid color-mix(in srgb, var(--colorTextBody) 20%, transparent);
-  border-radius: 5px;
-  background: var(--colorBody);
-  color: var(--colorTextBody);
-  font-family: inherit;
-  font-size: 11px;
-}
 
 .sock-bundle__slot-remove {
   position: absolute;
@@ -387,63 +434,17 @@ sock-bundle {
   display: none;
 }
 
-/* Room under the bar for the milestone label. */
-.sock-bundle__progress.has-milestone .sock-bundle__progress-track {
-  margin-bottom: 22px;
-}
-
 .sock-bundle__progress-marker-dot {
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   border: 2px solid var(--colorBody);
-  background: color-mix(in srgb, var(--colorTextBody) 22%, var(--colorBody));
-  color: var(--colorBody);
-  transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.sock-bundle__progress-marker-dot svg {
-  width: 15px;
-  height: 15px;
-}
-
-.sock-bundle__progress-marker-label {
-  position: absolute;
-  top: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-  text-transform: uppercase;
-  opacity: 0.6;
-  transition: opacity 0.3s ease;
-}
-
-/* At the end of the bar the icon sits just inside it, with the label lined up
-   to the right edge, so neither pokes past the column. */
-.sock-bundle__progress-marker--end {
-  transform: translate(-100%, -50%);
-}
-
-.sock-bundle__progress-marker--end .sock-bundle__progress-marker-label {
-  left: auto;
-  right: 0;
-  transform: none;
+  background: color-mix(in srgb, var(--colorTextBody) 35%, transparent);
+  transition: background 0.3s ease;
 }
 
 .sock-bundle__progress-marker--reached .sock-bundle__progress-marker-dot {
   background: var(--colorTextBody);
-  animation: sock-bundle-pop 0.4s ease;
-}
-
-.sock-bundle__progress-marker--reached .sock-bundle__progress-marker-label {
-  opacity: 1;
 }
 
 .sock-bundle__progress-note {
@@ -493,10 +494,68 @@ sock-bundle {
   }
 
   .sock-bundle__progress-fill::after,
-  .sock-bundle__progress-marker--reached .sock-bundle__progress-marker-dot,
   .sock-bundle__progress-note--pulse {
     animation: none;
   }
+}
+
+/* ---------- Claimed rewards ---------- */
+
+.sock-bundle__rewards {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.sock-bundle__rewards[hidden] {
+  display: none;
+}
+
+.sock-bundle__reward {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0.45;
+}
+
+.sock-bundle__reward.is-claimed {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.sock-bundle__reward-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--colorTextBody) 35%, transparent);
+  border-radius: 50%;
+  font-size: 10.5px;
+  line-height: 1;
+}
+
+.sock-bundle__reward.is-claimed .sock-bundle__reward-mark {
+  border-color: var(--colorTextBody);
+  background: var(--colorTextBody);
+  color: var(--colorBody);
+}
+
+/* The pair count it unlocks at, so an unclaimed row still reads as a target. */
+.sock-bundle__reward-at {
+  font-size: 11.5px;
+  font-weight: 600;
+  opacity: 0.6;
+}
+
+.sock-bundle__reward-at::before {
+  content: '@ ';
 }
 
 /* ---------- Bundle summary + ATC ---------- */
@@ -521,6 +580,11 @@ sock-bundle {
 .sock-bundle__summary-compare {
   text-decoration: line-through;
   opacity: 0.55;
+}
+
+.sock-bundle__summary-compare[hidden],
+.sock-bundle__summary-save[hidden] {
+  display: none;
 }
 
 .sock-bundle__summary-save {
@@ -801,7 +865,7 @@ sock-bundle {
 }
 
 /* Hide the gallery while picking, when the block is set to replace it.
-   Desktop only (Impulse's medium-up breakpoint): on mobile the picker moves inline instead of replacing it. */
+   Desktop only: on mobile the picker moves inline instead of replacing it. */
 @media screen and (min-width: 769px) {
   .sock-bundle-gallery-hidden .sock-bundle-gallery {
     display: none;

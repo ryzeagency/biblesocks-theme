@@ -436,7 +436,7 @@
       "type": "text",
       "id": "tier5_label",
       "label": "Label",
-      "default": "5 Pack"
+      "default": "5+ Pack"
     },
     {
       "type": "text",
@@ -468,6 +468,66 @@
       "id": "tier5_code",
       "label": "Discount code",
       "info": "Shopify discount code applied when this pack is added to cart."
+    },
+    {
+      "type": "header",
+      "content": "6 socks"
+    },
+    {
+      "type": "checkbox",
+      "id": "tier6_enable",
+      "label": "Show this pack",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "tier6_label",
+      "label": "Label",
+      "default": "6 Pack"
+    },
+    {
+      "type": "text",
+      "id": "tier6_badge",
+      "label": "Save text",
+      "default": "3 free",
+      "info": "Second line on the card. Leave blank to show only the label."
+    },
+    {
+      "type": "range",
+      "id": "tier6_free_socks",
+      "min": 0,
+      "max": 6,
+      "step": 1,
+      "label": "Socks free",
+      "default": 3,
+      "info": "How many socks in the pack are free. The cheapest ones go free, as Shopify's Buy X get Y discounts do. Must match the discount code below."
+    },
+    {
+      "type": "checkbox",
+      "id": "tier6_free_shipping",
+      "label": "This pack includes free shipping",
+      "default": true,
+      "info": "Adds a free shipping line to the card and to the progress bar reward. Back it with a shipping rule or a free shipping discount."
+    },
+    {
+      "type": "text",
+      "id": "tier6_code",
+      "label": "Discount code",
+      "info": "A Buy X get Y code, e.g. buy 3 get 3 free, on the sock picker collection."
+    },
+    {
+      "type": "text",
+      "id": "reward_free_socks_text",
+      "label": "Free socks reward wording",
+      "default": "[count] socks free",
+      "info": "Reads after the bonus message, e.g. \"Buy one more and get 3 socks free\"."
+    },
+    {
+      "type": "text",
+      "id": "free_sock_tag",
+      "label": "Free sock tag",
+      "default": "Free",
+      "info": "Shown on each sock that the pack makes free."
     },
     {
       "type": "header",
@@ -532,16 +592,10 @@
     },
     {
       "type": "text",
-      "id": "progress_complete_text",
-      "label": "Message when the pack is full",
-      "default": "[reward] unlocked"
-    },
-    {
-      "type": "text",
       "id": "progress_shipping_next_text",
       "label": "Message one sock before free shipping",
       "default": "Add [count] more [socks] to unlock FREE shipping",
-      "info": "Shown when the next pack is one marked \"This pack includes free shipping\". [count], [socks] and [reward] work here."
+      "info": "Shown when the next pack is one marked \"This pack includes free shipping\". [count] and [socks] work here."
     },
     {
       "type": "text",
@@ -552,9 +606,128 @@
     },
     {
       "type": "text",
-      "id": "progress_shipping_label",
-      "label": "Free shipping label on the bar",
-      "default": "Free shipping"
+      "id": "bonus_incomplete_text",
+      "label": "Message pointing at a bonus reward",
+      "default": "Buy one more and get [reward]",
+      "info": "Used for the extra rewards below, which are things rather than discounts."
+    },
+    {
+      "type": "header",
+      "content": "Bonus reward 1"
+    },
+    {
+      "type": "checkbox",
+      "id": "bonus1_enable",
+      "label": "Show this reward",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "bonus1_pairs",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "label": "Pairs needed",
+      "default": 6
+    },
+    {
+      "type": "text",
+      "id": "bonus1_label",
+      "label": "Reward wording",
+      "default": "a mystery pair",
+      "info": "Reads after the bonus message, e.g. \"Buy one more and get a mystery pair\"."
+    },
+    {
+      "type": "product",
+      "id": "bonus1_product",
+      "label": "Product to add",
+      "info": "Added to the cart once this many pairs are in the pack. Leave empty to mention the reward without adding anything."
+    },
+    {
+      "type": "header",
+      "content": "Bonus reward 2"
+    },
+    {
+      "type": "checkbox",
+      "id": "bonus2_enable",
+      "label": "Show this reward",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "bonus2_pairs",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "label": "Pairs needed",
+      "default": 7
+    },
+    {
+      "type": "text",
+      "id": "bonus2_label",
+      "label": "Reward wording",
+      "default": "a gift box",
+      "info": "Reads after the bonus message, e.g. \"Buy one more and get a mystery pair\"."
+    },
+    {
+      "type": "product",
+      "id": "bonus2_product",
+      "label": "Product to add",
+      "info": "Added to the cart once this many pairs are in the pack. Leave empty to mention the reward without adding anything."
+    },
+    {
+      "type": "header",
+      "content": "Bonus reward 3"
+    },
+    {
+      "type": "checkbox",
+      "id": "bonus3_enable",
+      "label": "Show this reward",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "bonus3_pairs",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "label": "Pairs needed",
+      "default": 8
+    },
+    {
+      "type": "text",
+      "id": "bonus3_label",
+      "label": "Reward wording",
+      "default": "a mystery 2-pair",
+      "info": "Reads after the bonus message, e.g. \"Buy one more and get a mystery pair\"."
+    },
+    {
+      "type": "product",
+      "id": "bonus3_product",
+      "label": "Product to add",
+      "info": "Added to the cart once this many pairs are in the pack. Leave empty to mention the reward without adding anything."
+    },
+    {
+      "type": "range",
+      "id": "min_slots",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "label": "Empty boxes to show",
+      "default": 4,
+      "info": "How many boxes the pack lays out before it starts growing."
+    },
+    {
+      "type": "number",
+      "id": "max_socks",
+      "label": "Most socks in a pack",
+      "info": "Add buttons grey out once the pack holds this many. Leave blank for no limit."
+    },
+    {
+      "type": "text",
+      "id": "progress_complete_text",
+      "label": "Message when the pack is full",
+      "default": "[reward] unlocked"
     },
     {
       "type": "text",
@@ -600,10 +773,52 @@
     },
     {
       "type": "checkbox",
+      "id": "show_pack_tiles",
+      "label": "Show the pack size tiles",
+      "default": true,
+      "info": "Turn off to lead with the picker alone. The pack ladder still drives the discount, the progress bar and the rewards; only the tiles are hidden. With them off the builder opens by itself."
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_icon",
+      "label": "Free shipping icon",
+      "default": "https://cdn.shopify.com/s/files/1/0508/3797/9306/files/free-delivery.svg?v=1791203014",
+      "info": "Shown on the free shipping box among the chosen socks. Leave empty for a tick."
+    },
+    {
+      "type": "text",
+      "id": "reward_included_text",
+      "label": "Reward box caption",
+      "default": "Included",
+      "info": "Small line under a reward sitting in the chosen socks."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reward_checklist",
+      "label": "Show claimed rewards",
+      "default": true,
+      "info": "A tick list of free shipping and the bonus rewards, under the price so the builder above does not shift as rewards are claimed."
+    },
+    {
+      "type": "text",
+      "id": "savings_text",
+      "label": "Savings wording",
+      "default": "You save [amount]",
+      "info": "[amount] is the money saved, [percent] the discount percent."
+    },
+    {
+      "type": "checkbox",
       "id": "show_total",
       "label": "Show bundle total",
       "default": true,
       "info": "Uses the discount percent set on each pack."
+    },
+    {
+      "type": "checkbox",
+      "id": "clear_cart_on_add",
+      "label": "Empty the cart before adding a pack",
+      "default": false,
+      "info": "Keeps one pack in the cart at a time, so the discount always matches its contents. This also removes anything else already in the cart."
     },
     {
       "type": "checkbox",
@@ -616,7 +831,7 @@
       "id": "after_add_to_cart",
       "label": "After adding a pack",
       "default": "cart",
-      "info": "A discount code always needs a redirect to be applied, so \"Stay on page\" falls back to the cart when a code is set.",
+      "info": "\"Open the cart drawer\" applies the pack's discount code without leaving the page. It falls back to the cart page if the theme's cart type is not the drawer.",
       "options": [
         {
           "value": "cart",
@@ -628,7 +843,7 @@
         },
         {
           "value": "stay",
-          "label": "Stay on page"
+          "label": "Open the cart drawer"
         }
       ]
     }

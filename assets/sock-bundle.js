@@ -36,14 +36,31 @@ if (!customElements.get('sock-bundle')) {
             code: button.dataset.code || '',
             percent: parseFloat(button.dataset.discount) || 0,
             freeShipping: button.dataset.freeShip === 'true',
+            // Socks the pack makes free outright, e.g. a 6-pack where 3 go free.
+            freeSocks: parseInt(button.dataset.freeSocks, 10) || 0,
           }))
           .sort((a, b) => a.qty - b.qty);
-        // The smallest pack that ships free, if any. It gets its own milestone on the bar.
-        this.shipTier = this.tiers.find((tier) => tier.freeShipping) || null;
+
+        // Rewards past the biggest pack, so the bar never dead-ends. Each can
+        // carry a product, which joins the cart once its rung is reached.
+        try {
+          this.bonusRungs = JSON.parse(
+            this.querySelector('[data-sock-bundle-bonus]')?.textContent || '[]'
+          )
+            .map((rung) => ({ ...rung, bonus: true }))
+            .filter((rung) => Number.isFinite(rung.qty) && rung.label)
+            .sort((a, b) => a.qty - b.qty);
+        } catch (error) {
+          this.bonusRungs = [];
+        }
+
+        this.rungs = [...this.tiers, ...this.bonusRungs].sort((a, b) => a.qty - b.qty);
         this.slotsWrap = this.querySelector('[data-sock-bundle-slots-wrap]');
         this.slotsEl = this.querySelector('[data-sock-bundle-slots]');
         this.progressEl = this.querySelector('[data-sock-bundle-progress]');
         this.summaryEl = this.querySelector('[data-sock-bundle-summary]');
+        this.compareEl = this.querySelector('[data-sock-bundle-compare]');
+        this.saveEl = this.querySelector('[data-sock-bundle-save]');
         this.totalEl = this.querySelector('[data-sock-bundle-total]');
         this.atcButton = this.querySelector('[data-sock-bundle-atc]');
         this.errorEl = this.querySelector('[data-sock-bundle-error]');
@@ -51,10 +68,15 @@ if (!customElements.get('sock-bundle')) {
         this.pickerSlot = this.querySelector('[data-sock-bundle-picker-slot]');
         this.mobileQuery = window.matchMedia('(max-width: 768px)');
 
+        this.rewardsEl = this.querySelector('[data-sock-bundle-rewards]');
+        this.freeShippingLabel = this.dataset.freeShippingLabel || 'Free shipping';
+        this.rewardIncludedText = this.dataset.rewardIncludedText || 'Included';
+        this.freeShippingIcon = this.dataset.freeShippingIcon || '';
+        this.showTiles = this.dataset.showTiles !== 'false';
+
         this.tiersEl = this.querySelector('[data-sock-tiers]');
         this.prevArrow = this.querySelector('[data-sock-tiers-prev]');
         this.nextArrow = this.querySelector('[data-sock-tiers-next]');
-        this.progressBar = this.querySelector('[data-sock-bundle-progressbar]');
         this.progressFill = this.querySelector('[data-sock-bundle-progressfill]');
         this.shipMarker = this.querySelector('[data-sock-bundle-shipmarker]');
         this.shipNote = this.querySelector('[data-sock-bundle-shipnote]');
@@ -71,13 +93,18 @@ if (!customElements.get('sock-bundle')) {
         this.progressCompleteText = this.dataset.progressCompleteText || '[reward] unlocked';
         this.progressStartText =
           this.dataset.progressStartText || 'Add [count] [socks] to save [reward]';
+        this.bonusIncompleteText =
+          this.dataset.bonusIncompleteText || 'Buy one more and get [reward]';
         this.progressShippingNextText =
           this.dataset.progressShippingNextText || 'Add [count] more [socks] to unlock FREE shipping';
         this.progressShippingUnlockedText =
           this.dataset.progressShippingUnlockedText ||
           "You've unlocked FREE shipping + [percent]% off!";
+        this.savingsText = this.dataset.savingsText || 'You save [amount]';
         this.sockWordSingular = this.dataset.sockWordSingular || 'sock';
         this.sockWordPlural = this.dataset.sockWordPlural || 'socks';
+        this.rewardFreeSocksText = this.dataset.rewardFreeSocksText || '[count] socks free';
+        this.freeSockTag = this.dataset.freeSockTag || 'Free';
 
         this.discountPercent = 0;
         this.tierFreeShipping = false;
@@ -88,6 +115,8 @@ if (!customElements.get('sock-bundle')) {
         this.hideDefaultAtc = this.dataset.hideDefaultAtc === 'true';
         this.afterAdd = this.dataset.afterAdd || 'cart';
         this.cartUrl = this.dataset.cartUrl || '/cart';
+        this.cartClearUrl = this.dataset.cartClearUrl || '/cart/clear.js';
+        this.clearCartOnAdd = this.dataset.clearCart === 'true';
         this.moneyFormat = this.dataset.moneyFormat || '${{amount}}';
 
         try {
@@ -99,7 +128,12 @@ if (!customElements.get('sock-bundle')) {
         }
 
         this.quantity = 1;
-        this.maxSlots = 1;
+        // The most socks a pack may hold; 0 means no ceiling.
+        this.maxSocks = Math.max(0, parseInt(this.dataset.maxSocks, 10) || 0);
+        // How many boxes to lay out when the pack is small. Below the ceiling
+        // the pack grows a fresh empty box every time one is filled.
+        this.minSlots = parseInt(this.dataset.minSlots, 10) || 5;
+        if (this.maxSocks) this.minSlots = Math.min(this.minSlots, this.maxSocks);
         this.discountCode = '';
         /** @type {Array<{variantId: string, productId: string, title: string, variantTitle: string, image: string, price: number}|null>} */
         this.slots = [];
@@ -108,7 +142,6 @@ if (!customElements.get('sock-bundle')) {
         this.onPickerClick = this.onPickerClick.bind(this);
         this.onPickerVariantChange = this.onPickerVariantChange.bind(this);
         this.onSlotsClick = this.onSlotsClick.bind(this);
-        this.onSlotVariantChange = this.onSlotVariantChange.bind(this);
         this.onAddToCart = this.onAddToCart.bind(this);
         this.onVariantChange = this.onVariantChange.bind(this);
         this.updateArrows = this.updateArrows.bind(this);
@@ -118,7 +151,6 @@ if (!customElements.get('sock-bundle')) {
       connectedCallback() {
         this.tierButtons.forEach((button) => button.addEventListener('click', this.onTierClick));
         this.slotsEl?.addEventListener('click', this.onSlotsClick);
-        this.slotsEl?.addEventListener('change', this.onSlotVariantChange);
         this.atcButton?.addEventListener('click', this.onAddToCart);
         this.picker?.addEventListener('click', this.onPickerClick);
         this.picker?.addEventListener('change', this.onPickerVariantChange);
@@ -221,7 +253,9 @@ if (!customElements.get('sock-bundle')) {
         this.quantity = parseInt(button.dataset.qty, 10) || 1;
         this.setError('');
 
-        if (this.quantity <= 1 && !this.singleUsesPicker) {
+        // With the tiles hidden there is nothing to click, so the builder has to
+        // open by itself — Single no longer means "buy this product alone".
+        if (this.quantity <= 1 && !this.singleUsesPicker && this.showTiles) {
           this.exitBundleMode();
           return;
         }
@@ -232,9 +266,10 @@ if (!customElements.get('sock-bundle')) {
       enterBundleMode() {
         // Always lay out the full ladder's worth of boxes, whichever pack was
         // clicked. Anything already chosen is kept.
-        this.maxSlots = this.tiers.length ? this.tiers[this.tiers.length - 1].qty : this.quantity;
-        const next = new Array(this.maxSlots).fill(null);
-        this.slots.slice(0, this.maxSlots).forEach((slot, index) => {
+        const kept = this.slots.filter(Boolean);
+        const size = this.capSlots(Math.max(kept.length + 1, this.minSlots));
+        const next = new Array(size).fill(null);
+        kept.forEach((slot, index) => {
           next[index] = slot;
         });
         this.slots = next;
@@ -244,7 +279,7 @@ if (!customElements.get('sock-bundle')) {
         }
 
         this.slotsWrap.hidden = false;
-        this.slotsEl.style.setProperty('--sb-slot-count', String(Math.max(this.maxSlots, 2)));
+        this.slotsEl.style.setProperty('--sb-slot-count', String(Math.max(this.minSlots, 2)));
 
         if (this.hideDefaultAtc) {
           this.infoContainer?.classList.add('sock-bundle-mode');
@@ -306,7 +341,6 @@ if (!customElements.get('sock-bundle')) {
         const variant = this.variantData.find((item) => String(item.id) === String(newId));
         if (!variant) return;
         this.dataset.variantId = String(newId);
-
         this.dataset.productPrice = String(variant.price);
         if (variant.image) this.dataset.productImage = variant.image;
 
@@ -379,6 +413,490 @@ if (!customElements.get('sock-bundle')) {
         this.render();
       }
 
+      firstEmptySlot() {
+        const index = this.slots.findIndex((slot) => !slot);
+        if (index !== -1) return index;
+        if (this.isFull()) return -1;
+        // Below the ceiling: grow a new box rather than refusing.
+        this.slots.push(null);
+        return this.slots.length - 1;
+      }
+
+      /** Keep a trailing empty box, and never shrink below the display floor. */
+      growSlots() {
+        const filled = this.slots.filter(Boolean).length;
+        const want = this.capSlots(Math.max(filled + 1, this.minSlots));
+        // Compact so filled socks stay first, then pad back out.
+        const kept = this.slots.filter(Boolean);
+        this.slots = new Array(want).fill(null);
+        kept.forEach((slot, index) => {
+          this.slots[index] = slot;
+        });
+      }
+
+      /** Never lay out more boxes than the pack may hold. */
+      capSlots(count) {
+        return this.maxSocks ? Math.min(count, this.maxSocks) : count;
+      }
+
+      isFull() {
+        return Boolean(this.maxSocks) && this.slots.filter(Boolean).length >= this.maxSocks;
+      }
+
+      /**
+       * Which slots the pack makes free: the cheapest ones, as Shopify's Buy X
+       * get Y discount picks them. On a tie the later pick goes free.
+       */
+      freeSlotIndexes(count) {
+        if (!count) return new Set();
+        return new Set(
+          this.slots
+            .map((slot, index) => ({ slot, index }))
+            .filter(({ slot }) => slot)
+            .sort((a, b) => (a.slot.price || 0) - (b.slot.price || 0) || b.index - a.index)
+            .slice(0, count)
+            .map(({ index }) => index)
+        );
+      }
+
+      /** The picker card's options, so the slot can offer the same sizes. */
+      readCardVariants(card) {
+        const field = card.querySelector('[data-picker-variant]');
+        if (!field || field.tagName !== 'SELECT') return [];
+        return Array.from(field.options)
+          .filter((option) => !option.disabled)
+          .map((option) => ({
+            id: option.value,
+            title: option.dataset.variantTitle || option.textContent.trim(),
+            price: parseInt(option.dataset.variantPrice, 10) || 0,
+            image: option.dataset.variantImage || '',
+          }));
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Slots                                                               */
+      /* ------------------------------------------------------------------ */
+
+      onSlotsClick(event) {
+        const remove = event.target.closest('[data-slot-remove]');
+        if (!remove) return;
+
+        const index = parseInt(remove.dataset.slotRemove, 10);
+        this.slots[index] = null;
+        this.setError('');
+        this.render();
+      }
+
+      render() {
+        this.growSlots();
+        const filled = this.slots.filter(Boolean).length;
+
+        // What the pack has actually earned, and what one more sock would earn.
+        this.earnedTier = this.tierFor(filled);
+        // The next thing worth reaching, discount or bonus, whichever comes first.
+        this.nextRung =
+          this.rungs.find(
+            (rung) =>
+              rung.qty > filled &&
+              (!this.maxSocks || rung.qty <= this.maxSocks) &&
+              (rung.bonus || rung.percent > 0 || rung.freeSocks > 0)
+          ) || null;
+        this.discountCode = this.earnedTier ? this.earnedTier.code : '';
+        this.tierFreeShipping = this.earnedTier ? this.earnedTier.freeShipping : false;
+        const freeSlots = this.freeSlotIndexes(this.earnedTier ? this.earnedTier.freeSocks : 0);
+
+        const slotMarkup = (slot, index) => {
+          if (!slot) {
+            return `
+              <div class="sock-bundle__slot" role="listitem">
+                <span class="sock-bundle__slot-media"><span class="sock-bundle__slot-plus">+</span></span>
+                <span class="sock-bundle__slot-title">${this.escape(`Sock ${index + 1}`)}</span>
+              </div>`;
+          }
+
+          const free = freeSlots.has(index);
+          return `
+            <div class="sock-bundle__slot sock-bundle__slot--filled${
+              free ? ' sock-bundle__slot--free' : ''
+            }" role="listitem">
+              <button type="button" class="sock-bundle__slot-remove" data-slot-remove="${index}" aria-label="Remove ${this.escape(
+            slot.title
+          )}">&times;</button>
+              <span class="sock-bundle__slot-media">
+                ${slot.image ? `<img src="${slot.image}" alt="" loading="lazy">` : ''}
+                ${free ? `<span class="sock-bundle__slot-free">${this.escape(this.freeSockTag)}</span>` : ''}
+              </span>
+              <span class="sock-bundle__slot-title">${this.escape(slot.title)}</span>
+              ${this.slotVariantMarkup(slot)}
+            </div>`;
+        };
+
+        const rewardMarkup = (reward) => `
+          <div class="sock-bundle__slot sock-bundle__slot--reward" role="listitem">
+            <span class="sock-bundle__slot-media">
+              ${
+                reward.image
+                  ? `<img src="${reward.image}" alt=""${
+                      reward.icon ? ' class="sock-bundle__slot-icon"' : ''
+                    } loading="lazy">`
+                  : '<span class="sock-bundle__slot-gift" aria-hidden="true">&#10003;</span>'
+              }
+            </span>
+            <span class="sock-bundle__slot-title">${this.escape(reward.label)}</span>
+            <span class="sock-bundle__slot-variant">${this.escape(this.rewardIncludedText)}</span>
+          </div>`;
+
+        // Socks first, then the rewards they earned, then the boxes still to fill.
+        this.slotsEl.innerHTML = [
+          ...this.slots.map((slot, index) => (slot ? slotMarkup(slot, index) : '')),
+          ...this.claimedRewards(filled).map(rewardMarkup),
+          ...this.slots.map((slot, index) => (slot ? '' : slotMarkup(slot, index))),
+        ].join('');
+
+        if (this.progressEl) {
+          this.progressEl.textContent = this.selectedCountText(filled);
+        }
+
+        if (this.picker) {
+          const progress = this.picker.querySelector('[data-picker-progress]');
+          if (progress) progress.textContent = this.selectedCountText(filled);
+
+          const full = this.isFull();
+          const counts = {};
+          this.slots.filter(Boolean).forEach((slot) => {
+            counts[slot.productId] = (counts[slot.productId] || 0) + 1;
+          });
+
+          this.picker.querySelectorAll('[data-picker-card]').forEach((card) => {
+            const count = counts[card.dataset.productId] || 0;
+            card.dataset.picked = String(count);
+            const badge = card.querySelector('[data-picker-count]');
+            if (badge) badge.textContent = String(count);
+
+            // Sold-out socks stay unavailable, and everything greys out once
+            // the pack holds as many socks as it may.
+            const add = card.querySelector('[data-picker-add]');
+            if (add) add.disabled = add.dataset.soldout === 'true' || full;
+          });
+        }
+
+        const subtotal = this.slots
+          .filter(Boolean)
+          .reduce((sum, slot) => sum + (slot.price || 0), 0);
+        const freeValue = Array.from(freeSlots).reduce(
+          (sum, index) => sum + (this.slots[index].price || 0),
+          0
+        );
+        const percent = this.earnedTier ? this.earnedTier.percent : 0;
+        const payable = Math.round((subtotal - freeValue) * (1 - percent / 100));
+        // Free socks are expressed as the share of the pack they knock off, so
+        // [percent] and the per-sock estimates still read sensibly.
+        this.discountPercent = subtotal ? Math.round((1 - payable / subtotal) * 100) : percent;
+
+        if (this.summaryEl && this.totalEl) {
+          this.summaryEl.hidden = filled === 0;
+          this.totalEl.textContent = this.formatMoney(payable);
+
+          const saved = subtotal - payable;
+          if (this.compareEl) {
+            this.compareEl.hidden = saved <= 0;
+            this.compareEl.textContent = this.formatMoney(subtotal);
+          }
+          if (this.saveEl) {
+            this.saveEl.hidden = saved <= 0;
+            this.saveEl.textContent = this.savingsText
+              .replace('[amount]', this.formatMoney(saved))
+              .replace('[percent]', this.discountPercent);
+          }
+        }
+
+        this.highlightEarnedTier(filled);
+        this.renderRewards(filled);
+        this.renderProgress(filled, this.shipBasis === 'full' ? subtotal : payable);
+
+        this.atcButton.disabled = filled < 1;
+      }
+
+      /**
+       * Move the selected card to the pack size actually in the slots, so the
+       * card, the discount and the note all say the same thing. With nothing
+       * picked yet there is nothing to move to, so the card stays put.
+       */
+      highlightEarnedTier(filled) {
+        if (filled < 1 || !this.earnedTier) return;
+
+        let selected = null;
+        this.tierButtons.forEach((button) => {
+          const qty = parseInt(button.dataset.qty, 10) || 1;
+          const isEarned = qty === this.earnedTier.qty;
+          button.setAttribute('aria-checked', String(isEarned));
+          if (isEarned) selected = button;
+        });
+
+        // Only chase it when the rung actually changes, so the strip is not
+        // yanked around on every re-render.
+        if (selected && this.lastEarnedQty !== this.earnedTier.qty) {
+          this.lastEarnedQty = this.earnedTier.qty;
+          this.scrollTierIntoView(selected);
+        }
+      }
+
+      scrollTierIntoView(button) {
+        const strip = this.tiersEl;
+        if (!strip) return;
+
+        const left = button.offsetLeft;
+        const right = left + button.offsetWidth;
+        const pad = 12;
+
+        if (left < strip.scrollLeft) {
+          strip.scrollTo({ left: Math.max(0, left - pad), behavior: 'smooth' });
+        } else if (right > strip.scrollLeft + strip.clientWidth) {
+          strip.scrollTo({ left: right - strip.clientWidth + pad, behavior: 'smooth' });
+        }
+      }
+
+      /**
+       * Free shipping and every bonus, always all listed, ticked as they are
+       * earned. Rendering the full list every time keeps its height fixed, so
+       * claiming a reward never nudges the builder above it.
+       */
+      renderRewards(filled) {
+        if (!this.rewardsEl) return;
+
+        const milestones = this.rewardMilestones();
+
+        if (!milestones.length) {
+          this.rewardsEl.hidden = true;
+          return;
+        }
+
+        this.rewardsEl.hidden = false;
+        this.rewardsEl.innerHTML = milestones
+          .map((milestone) => {
+            const claimed = filled >= milestone.qty;
+            return `
+              <li class="sock-bundle__reward${claimed ? ' is-claimed' : ''}">
+                <span class="sock-bundle__reward-mark" aria-hidden="true">${
+                  claimed ? '&#10003;' : ''
+                }</span>
+                <span class="sock-bundle__reward-label">${this.escape(milestone.label)}</span>
+                <span class="sock-bundle__reward-at">${milestone.qty}</span>
+              </li>`;
+          })
+          .join('');
+      }
+
+      /**
+       * Every reward on the ladder that the pack can reach: free shipping once,
+       * at the first pack that gives it, then free socks and bonuses.
+       */
+      rewardMilestones() {
+        const shipping = this.tiers.find((tier) => tier.freeShipping);
+        return [
+          ...(shipping
+            ? [
+                {
+                  qty: shipping.qty,
+                  label: this.freeShippingLabel,
+                  image: this.freeShippingIcon,
+                  icon: true,
+                },
+              ]
+            : []),
+          ...this.tiers
+            .filter((tier) => tier.freeSocks > 0)
+            .map((tier) => ({ qty: tier.qty, label: this.freeSocksText(tier), inSlots: true })),
+          ...this.bonusRungs.map((rung) => ({
+            qty: rung.qty,
+            label: rung.label,
+            image: rung.image || '',
+          })),
+        ]
+          .filter((milestone) => !this.maxSocks || milestone.qty <= this.maxSocks)
+          .sort((a, b) => a.qty - b.qty);
+      }
+
+      /**
+       * Free shipping and any bonus the pack has already earned. Free socks are
+       * tagged on the socks themselves, so they get no box of their own.
+       */
+      claimedRewards(filled) {
+        return this.rewardMilestones().filter(
+          (reward) => filled >= reward.qty && !reward.inSlots
+        );
+      }
+
+      freeSocksText(tier) {
+        return this.rewardFreeSocksText.replace('[count]', tier.freeSocks);
+      }
+
+      selectedCountText(filled) {
+        const word = filled === 1 ? this.sockWordSingular : this.sockWordPlural;
+        return `${filled} ${word} selected`;
+      }
+
+      /** The best tier this many socks qualifies for. */
+      tierFor(count) {
+        let earned = null;
+        this.tiers.forEach((tier) => {
+          if (tier.qty <= count) earned = tier;
+        });
+        return earned;
+      }
+
+      /**
+       * "20%" or "20% + free shipping", from a tier on the ladder. Pass
+       * skipShipping when the pack already ships free, so it is not re-promised.
+       */
+      rewardFor(tier, skipShipping = false) {
+        if (!tier) return '';
+        if (tier.bonus) return tier.label;
+        const parts = [];
+        if (tier.freeSocks > 0) parts.push(this.freeSocksText(tier));
+        if (tier.percent > 0) parts.push(this.rewardDiscountText.replace('[percent]', tier.percent));
+        if (tier.freeShipping && !skipShipping) parts.push(this.rewardShippingText);
+        return parts.join(' + ');
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Progress bar                                                        */
+      /* ------------------------------------------------------------------ */
+
+      /**
+       * The bar tracks slots filled, so a 1-of-2 pack reads 50%.
+       * When free shipping is on, a marker sits at the point in the pack where
+       * the running total crosses the threshold, and the note below counts down
+       * to it in money.
+       */
+      renderProgress(filled, towardsShipping) {
+        if (!this.progressFill) return;
+
+        // The bar measures toward the next reward, not toward a pack size, so it
+        // refills every time a rung is passed and never dead-ends.
+        const percent = this.nextRung
+          ? Math.min(100, (filled / this.nextRung.qty) * 100)
+          : 100;
+        this.progressFill.style.width = `${percent}%`;
+        this.progressFill.classList.toggle('is-complete', !this.nextRung && filled > 0);
+
+        const perSock = filled ? towardsShipping / filled : this.estimatedSockPrice();
+        const shippingOn = this.freeShipping && this.shipThreshold > 0;
+        const packWillShip =
+          this.tierFreeShipping ||
+          (shippingOn && perSock > 0 && towardsShipping >= this.shipThreshold);
+
+        this.renderShipMarker(filled, towardsShipping, perSock, packWillShip);
+
+        if (!this.shipNote) return;
+
+        let message;
+        let shippingUnlocked = false;
+        if (this.nextRung) {
+          // Point at the next rung: "Buy one more, save 15%" or "...get a gift box".
+          const more = this.nextRung.qty - filled;
+          const reward = this.rewardFor(this.nextRung, this.tierFreeShipping);
+          let template;
+          if (filled === 0) {
+            template = this.progressStartText;
+          } else if (this.nextRung.bonus || this.nextRung.freeSocks > 0) {
+            template = this.bonusIncompleteText;
+          } else if (this.nextRung.freeShipping && !this.tierFreeShipping) {
+            // The next pack is the one that ships free: lead with that.
+            template = this.progressShippingNextText;
+          } else {
+            template = this.progressIncompleteText;
+          }
+          message = template
+            .replace('[count]', more)
+            .replace('[socks]', more === 1 ? this.sockWordSingular : this.sockWordPlural)
+            .replace('[reward]', reward);
+        } else if (this.earnedTier?.freeShipping && this.earnedTier.percent > 0) {
+          shippingUnlocked = true;
+          message = this.progressShippingUnlockedText.replace('[percent]', this.earnedTier.percent);
+        } else {
+          // Top of the ladder: say what the pack has earned.
+          const reward = this.rewardFor(this.earnedTier);
+          message = reward ? this.progressCompleteText.replace('[reward]', reward) : '';
+        }
+
+        // Earned the discount but the order still misses free shipping on value.
+        if (
+          !this.nextRung &&
+          shippingOn &&
+          !this.tierFreeShipping &&
+          towardsShipping < this.shipThreshold
+        ) {
+          const gap = this.shipProgressText.replace(
+            '[amount]',
+            this.formatMoney(this.shipThreshold - towardsShipping)
+          );
+          message = message ? `${message} — ${gap}` : gap;
+        }
+
+        const changed = this.shipNote.textContent !== message;
+        this.shipNote.textContent = message;
+        this.shipNote.classList.toggle(
+          'sock-bundle__progress-note--unlocked',
+          !this.nextRung &&
+            Boolean(this.earnedTier) &&
+            (this.earnedTier.percent > 0 || this.earnedTier.freeSocks > 0)
+        );
+        this.shipNote.classList.toggle('sock-bundle__progress-note--shipping', shippingUnlocked);
+        if (changed) this.pulseNote();
+      }
+
+      /** Stand-in price used before the shopper has picked anything. */
+      estimatedSockPrice() {
+        const base = parseInt(this.dataset.productPrice, 10) || 0;
+        return this.shipBasis === 'full'
+          ? base
+          : Math.round(base * (1 - this.discountPercent / 100));
+      }
+
+      renderShipMarker(filled, towardsShipping, perSock, packWillShip) {
+        if (!this.shipMarker) return;
+
+        this.shipMarker.hidden = !packWillShip;
+        if (!packWillShip) return;
+
+        if (this.tierFreeShipping) {
+          this.shipMarker.style.left = '100%';
+          this.shipMarker.classList.toggle(
+            'sock-bundle__progress-marker--reached',
+            towardsShipping >= this.shipThreshold
+          );
+          return;
+        }
+
+        const socksNeeded = Math.ceil(this.shipThreshold / perSock);
+        const denom = this.nextRung ? this.nextRung.qty : Math.max(socksNeeded, 1);
+        this.shipMarker.style.left = `${Math.min(100, (socksNeeded / denom) * 100)}%`;
+        this.shipMarker.classList.toggle(
+          'sock-bundle__progress-marker--reached',
+          towardsShipping >= this.shipThreshold
+        );
+      }
+
+      /** Brief nudge so a changed reward message is noticed. */
+      pulseNote() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        this.shipNote.classList.remove('sock-bundle__progress-note--pulse');
+        void this.shipNote.offsetWidth;
+        this.shipNote.classList.add('sock-bundle__progress-note--pulse');
+      }
+
+      /**
+       * A slot with several sizes gets its own dropdown, since the theme's size
+       * picker is hidden while a pack is being built. One size shows as text.
+       */
+      slotVariantMarkup(slot) {
+        // The size is picked on the catalogue card, so the slot only reports it.
+        return slot.variantTitle
+          ? `<span class="sock-bundle__slot-variant">${this.escape(slot.variantTitle)}</span>`
+          : '';
+      }
+
       /**
        * Liquid can only print one price per card, and `product.price` is the
        * cheapest variant, so a card showing "Men" could quote the Ankle price.
@@ -411,326 +929,22 @@ if (!customElements.get('sock-bundle')) {
         priceEl.textContent = this.formatMoney(price);
       }
 
-      firstEmptySlot() {
-        return this.slots.findIndex((slot) => !slot);
-      }
-
-      /** The picker card's options, so the slot can offer the same sizes. */
-      readCardVariants(card) {
-        const field = card.querySelector('[data-picker-variant]');
-        if (!field || field.tagName !== 'SELECT') return [];
-        return Array.from(field.options)
-          .filter((option) => !option.disabled)
-          .map((option) => ({
-            id: option.value,
-            title: option.dataset.variantTitle || option.textContent.trim(),
-            price: parseInt(option.dataset.variantPrice, 10) || 0,
-            image: option.dataset.variantImage || '',
-          }));
-      }
-
-      /* ------------------------------------------------------------------ */
-      /* Slots                                                               */
-      /* ------------------------------------------------------------------ */
-
-      onSlotsClick(event) {
-        const remove = event.target.closest('[data-slot-remove]');
-        if (!remove) return;
-
-        const index = parseInt(remove.dataset.slotRemove, 10);
-        this.slots[index] = null;
-        this.setError('');
-        this.render();
-      }
-
-      render() {
-        const filled = this.slots.filter(Boolean).length;
-
-        this.slotsEl.innerHTML = this.slots
-          .map((slot, index) => {
-            if (!slot) {
-              return `
-                <div class="sock-bundle__slot" role="listitem">
-                  <span class="sock-bundle__slot-media"><span class="sock-bundle__slot-plus">+</span></span>
-                  <span class="sock-bundle__slot-title">${this.escape(
-                    `Sock ${index + 1}`
-                  )}</span>
-                </div>`;
-            }
-
-            return `
-              <div class="sock-bundle__slot sock-bundle__slot--filled" role="listitem">
-                <button type="button" class="sock-bundle__slot-remove" data-slot-remove="${index}" aria-label="Remove ${this.escape(
-              slot.title
-            )}">&times;</button>
-                <span class="sock-bundle__slot-media">
-                  ${slot.image ? `<img src="${slot.image}" alt="" loading="lazy">` : ''}
-                </span>
-                <span class="sock-bundle__slot-title">${this.escape(slot.title)}</span>
-                ${this.slotVariantMarkup(slot, index)}
-              </div>`;
-          })
-          .join('');
-
-        if (this.progressEl) {
-          this.progressEl.textContent = `${filled} / ${this.maxSlots} selected`;
-        }
-
-        if (this.picker) {
-          const progress = this.picker.querySelector('[data-picker-progress]');
-          if (progress) progress.textContent = `${filled} / ${this.maxSlots} selected`;
-
-          const counts = {};
-          this.slots.filter(Boolean).forEach((slot) => {
-            counts[slot.productId] = (counts[slot.productId] || 0) + 1;
-          });
-
-          const full = filled >= this.maxSlots;
-
-          this.picker.querySelectorAll('[data-picker-card]').forEach((card) => {
-            const count = counts[card.dataset.productId] || 0;
-            card.dataset.picked = String(count);
-            const badge = card.querySelector('[data-picker-count]');
-            if (badge) badge.textContent = String(count);
-
-            // Sold-out socks stay disabled; the rest only while the pack is full.
-            const add = card.querySelector('[data-picker-add]');
-            if (add) add.disabled = add.dataset.soldout === 'true' || full;
-          });
-        }
-
-        // What the pack has actually earned, and what one more sock would earn.
-        this.earnedTier = this.tierFor(filled);
-        this.nextTier =
-          this.tiers.find((tier) => tier.qty > filled && (tier.percent > 0 || tier.freeShipping)) ||
-          null;
-        this.discountCode = this.earnedTier ? this.earnedTier.code : '';
-        this.discountPercent = this.earnedTier ? this.earnedTier.percent : 0;
-        this.tierFreeShipping = this.earnedTier ? this.earnedTier.freeShipping : false;
-
-        const subtotal = this.slots
-          .filter(Boolean)
-          .reduce((sum, slot) => sum + (slot.price || 0), 0);
-        const payable = Math.round(subtotal * (1 - this.discountPercent / 100));
-
-        if (this.summaryEl && this.totalEl) {
-          this.summaryEl.hidden = filled === 0;
-          this.totalEl.textContent = this.formatMoney(payable);
-        }
-
-        this.highlightEarnedTier(filled);
-        this.renderProgress(filled, this.shipBasis === 'full' ? subtotal : payable);
-
-        this.atcButton.disabled = filled < 1;
-      }
-
-      /**
-       * Move the selected card to the pack size actually in the slots, so the
-       * card, the discount and the note all say the same thing. With nothing
-       * picked yet there is nothing to move to, so the card stays put.
-       */
-      highlightEarnedTier(filled) {
-        if (filled < 1 || !this.earnedTier) return;
-        this.tierButtons.forEach((button) => {
-          const qty = parseInt(button.dataset.qty, 10) || 1;
-          button.setAttribute('aria-checked', String(qty === this.earnedTier.qty));
-        });
-      }
-
-      /** The best tier this many socks qualifies for. */
-      tierFor(count) {
-        let earned = null;
-        this.tiers.forEach((tier) => {
-          if (tier.qty <= count) earned = tier;
-        });
-        return earned;
-      }
-
-      /** "20%" or "20% + free shipping", from a tier on the ladder. */
-      rewardFor(tier) {
-        if (!tier) return '';
-        const parts = [];
-        if (tier.percent > 0) parts.push(this.rewardDiscountText.replace('[percent]', tier.percent));
-        if (tier.freeShipping) parts.push(this.rewardShippingText);
-        return parts.join(' + ');
-      }
-
-      /* ------------------------------------------------------------------ */
-      /* Progress bar                                                        */
-      /* ------------------------------------------------------------------ */
-
-      /**
-       * The bar tracks slots filled, so a 1-of-2 pack reads 50%.
-       * When free shipping is on, a marker sits at the point in the pack where
-       * the running total crosses the threshold, and the note below counts down
-       * to it in money.
-       */
-      renderProgress(filled, towardsShipping) {
-        if (!this.progressFill) return;
-
-        const percent = this.maxSlots ? Math.min(100, (filled / this.maxSlots) * 100) : 0;
-        this.progressFill.style.width = `${percent}%`;
-        this.progressFill.classList.toggle('is-complete', filled >= this.maxSlots && filled > 0);
-
-        const perSock = filled ? towardsShipping / filled : this.estimatedSockPrice();
-        const shippingOn = this.freeShipping && this.shipThreshold > 0;
-        const packWillShip =
-          this.tierFreeShipping ||
-          (shippingOn && perSock > 0 && perSock * this.maxSlots >= this.shipThreshold);
-
-        this.renderShipMarker(filled, towardsShipping, perSock, packWillShip);
-
-        if (!this.shipNote) return;
-
-        let message;
-        let shippingUnlocked = false;
-        if (this.nextTier) {
-          const more = this.nextTier.qty - filled;
-          const socks = more === 1 ? this.sockWordSingular : this.sockWordPlural;
-          const reward = this.rewardFor(this.nextTier);
-          // One step from the free shipping pack gets its own nudge;
-          // otherwise point at the next saving: "Buy one more, save 15%".
-          let template = filled === 0 ? this.progressStartText : this.progressIncompleteText;
-          if (this.nextTier.freeShipping && filled > 0) template = this.progressShippingNextText;
-          message = template
-            .replace('[count]', more)
-            .replace('[socks]', socks)
-            .replace('[reward]', reward);
-        } else if (this.earnedTier?.freeShipping) {
-          shippingUnlocked = true;
-          message = this.progressShippingUnlockedText.replace('[percent]', this.earnedTier.percent);
-        } else {
-          // Top of the ladder: say what the pack has earned.
-          const reward = this.rewardFor(this.earnedTier);
-          message = reward ? this.progressCompleteText.replace('[reward]', reward) : '';
-        }
-
-        // Earned the discount but the order still misses free shipping on value.
-        if (
-          !this.nextTier &&
-          shippingOn &&
-          !this.tierFreeShipping &&
-          towardsShipping < this.shipThreshold
-        ) {
-          const gap = this.shipProgressText.replace(
-            '[amount]',
-            this.formatMoney(this.shipThreshold - towardsShipping)
-          );
-          message = message ? `${message} — ${gap}` : gap;
-        }
-
-        const changed = this.shipNote.textContent !== message;
-        this.shipNote.textContent = message;
-        this.shipNote.classList.toggle(
-          'sock-bundle__progress-note--unlocked',
-          !this.nextTier && Boolean(this.earnedTier) && this.earnedTier.percent > 0
-        );
-        this.shipNote.classList.toggle('sock-bundle__progress-note--shipping', shippingUnlocked);
-        if (changed) this.pulseNote();
-      }
-
-      /** Stand-in price used before the shopper has picked anything. */
-      estimatedSockPrice() {
-        const base = parseInt(this.dataset.productPrice, 10) || 0;
-        return this.shipBasis === 'full'
-          ? base
-          : Math.round(base * (1 - this.discountPercent / 100));
-      }
-
-      renderShipMarker(filled, towardsShipping, perSock, packWillShip) {
-        if (!this.shipMarker) return;
-
-        let left = null;
-        let reached = false;
-
-        if (this.shipTier) {
-          // A pack that includes free shipping: the milestone sits at that pack.
-          left = Math.min(100, (this.shipTier.qty / this.maxSlots) * 100);
-          reached = filled >= this.shipTier.qty;
-        } else if (packWillShip) {
-          // Otherwise, at the sock where the running total crosses the threshold.
-          const socksNeeded = Math.ceil(this.shipThreshold / perSock);
-          left = Math.min(100, (socksNeeded / this.maxSlots) * 100);
-          reached = towardsShipping >= this.shipThreshold;
-        }
-
-        this.shipMarker.hidden = left === null;
-        this.progressBar?.classList.toggle('has-milestone', left !== null);
-        if (left === null) return;
-
-        this.shipMarker.style.left = `${left}%`;
-        // Keep the label inside the bar's edges when the milestone sits at an end.
-        this.shipMarker.classList.toggle('sock-bundle__progress-marker--end', left >= 85);
-        this.shipMarker.classList.toggle('sock-bundle__progress-marker--reached', reached);
-      }
-
-      /** Brief nudge so a changed reward message is noticed. */
-      pulseNote() {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        this.shipNote.classList.remove('sock-bundle__progress-note--pulse');
-        void this.shipNote.offsetWidth;
-        this.shipNote.classList.add('sock-bundle__progress-note--pulse');
-      }
-
-      /**
-       * A slot with several sizes gets its own dropdown, since the theme's size
-       * picker is hidden while a pack is being built. One size shows as text.
-       */
-      slotVariantMarkup(slot, index) {
-        const variants = slot.variants || [];
-
-        if (variants.length > 1) {
-          const options = variants
-            .map(
-              (variant) =>
-                `<option value="${this.escape(variant.id)}"${
-                  String(variant.id) === String(slot.variantId) ? ' selected' : ''
-                }>${this.escape(variant.title)}</option>`
-            )
-            .join('');
-          return `<select class="sock-bundle__slot-select" data-slot-variant="${index}" aria-label="Size for ${this.escape(
-            slot.title
-          )}">${options}</select>`;
-        }
-
-        return slot.variantTitle
-          ? `<span class="sock-bundle__slot-variant">${this.escape(slot.variantTitle)}</span>`
-          : '';
-      }
-
-      onSlotVariantChange(event) {
-        const select = event.target.closest('[data-slot-variant]');
-        if (!select) return;
-
-        const index = parseInt(select.dataset.slotVariant, 10);
-        const slot = this.slots[index];
-        if (!slot) return;
-
-        const variant = (slot.variants || []).find(
-          (item) => String(item.id) === String(select.value)
-        );
-        if (!variant) return;
-
-        this.slots[index] = {
-          ...slot,
-          variantId: variant.id,
-          variantTitle: variant.title,
-          price: variant.price,
-          image: variant.image || slot.image,
-        };
-        this.render();
-      }
-
       /* ------------------------------------------------------------------ */
       /* Add to cart                                                         */
       /* ------------------------------------------------------------------ */
 
       async onAddToCart() {
+        const filled = this.slots.filter(Boolean).length;
         const items = this.slots
           .filter(Boolean)
           .map((slot) => ({ id: Number(slot.variantId), quantity: 1 }));
 
-        if (items.length < 1) {
+        // Every bonus the pack has earned, not just the latest one.
+        this.bonusRungs
+          .filter((rung) => rung.qty <= filled && rung.variantId)
+          .forEach((rung) => items.push({ id: Number(rung.variantId), quantity: 1 }));
+
+        if (filled < 1) {
           this.setError('Pick at least one sock to continue.');
           return;
         }
@@ -740,10 +954,18 @@ if (!customElements.get('sock-bundle')) {
         this.setError('');
 
         const body = { items };
-        const addUrl = window.theme?.routes?.cartAdd || '/cart/add.js';
 
         try {
-          const response = await fetch(addUrl, {
+          // One pack in the cart at a time, so the discount code always matches
+          // what is in there. This wipes anything else the shopper had.
+          if (this.clearCartOnAdd) {
+            await fetch(this.cartClearUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            });
+          }
+
+          const response = await fetch(window.theme?.routes?.cartAdd || '/cart/add.js', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -759,7 +981,7 @@ if (!customElements.get('sock-bundle')) {
             return;
           }
 
-          this.applyDiscountAndFinish();
+          await this.applyDiscountAndFinish();
         } catch (error) {
           console.error(error);
           this.setError('Something went wrong. Please try again.');
@@ -769,34 +991,57 @@ if (!customElements.get('sock-bundle')) {
         }
       }
 
-      applyDiscountAndFinish() {
+      async applyDiscountAndFinish() {
         const code = this.discountCode.trim();
+        // Respect the locale prefix (e.g. /en-us/) Shopify adds on translated stores.
+        const root = (window.theme?.routes?.home || '/').replace(/\/?$/, '/');
+        const drawer =
+          this.afterAdd === 'stay' && Boolean(document.querySelector('#CartDrawer'));
 
-        // Redirecting through /discount/CODE is the reliable way to attach a
-        // discount to the cart, so that path wins whenever a code is set.
+        // Stay on the page: attach the code through the Ajax cart, then have
+        // Impulse rebuild its cart drawer and open it, discount included.
+        if (drawer && (!code || (await this.applyDiscountCode(code)))) {
+          document.dispatchEvent(new CustomEvent('cart:build'));
+          document.dispatchEvent(new CustomEvent('cart:open'));
+          return;
+        }
+
+        // Otherwise, or if the Ajax cart would not take the code, redirecting
+        // through /discount/CODE is the reliable way to attach it.
+        const target = this.afterAdd === 'checkout' ? '/checkout' : this.cartUrl;
         if (code) {
-          const target = this.afterAdd === 'checkout' ? '/checkout' : this.cartUrl;
-          // Respect the locale prefix (e.g. /en-us/) Shopify adds on translated stores.
-          const root = (window.theme?.routes?.home || '/').replace(/\/?$/, '/');
           window.location.href = `${root}discount/${encodeURIComponent(
             code
           )}?redirect=${encodeURIComponent(target)}`;
           return;
         }
 
-        if (this.afterAdd === 'checkout') {
-          window.location.href = '/checkout';
-          return;
-        }
+        window.location.href = target;
+      }
 
-        if (this.afterAdd === 'stay') {
-          // Impulse's cart drawer listens for these: rebuild its contents, then open it.
-          document.dispatchEvent(new CustomEvent('cart:build'));
-          document.dispatchEvent(new CustomEvent('cart:open'));
-          return;
-        }
+      /**
+       * Puts the code on the cart without leaving the page. Returns false if
+       * Shopify did not take it, so the caller can fall back to the redirect.
+       */
+      async applyDiscountCode(code) {
+        try {
+          const root = (window.theme?.routes?.home || '/').replace(/\/?$/, '/');
+          const response = await fetch(`${root}cart/update.js`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ discount: code }),
+          });
+          if (!response.ok) return false;
 
-        window.location.href = this.cartUrl;
+          const cart = await response.json();
+          return (cart.discount_codes || []).some(
+            (entry) =>
+              String(entry.code).toLowerCase() === code.toLowerCase() && entry.applicable !== false
+          );
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
       }
 
       /* ------------------------------------------------------------------ */

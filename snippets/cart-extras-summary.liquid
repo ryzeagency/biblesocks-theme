@@ -23,10 +23,18 @@
   endfor
   assign saved = original_total | minus: cart.total_price
 
-  assign threshold = section.settings.free_shipping_threshold | default: 75 | times: 100
-  assign remaining = threshold | minus: cart.total_price
-  if threshold > 0
-    assign percent = cart.total_price | times: 100 | divided_by: threshold | floor
+  # Free shipping is counted in socks by default, to match an automatic free
+  # shipping discount with a minimum quantity. "amount" measures money instead.
+  if section.settings.free_shipping_basis == 'amount'
+    assign goal = section.settings.free_shipping_threshold | default: 75 | times: 100
+    assign progress = cart.total_price
+  else
+    assign goal = section.settings.free_shipping_quantity | default: 5
+    assign progress = cart.item_count
+  endif
+  assign remaining = goal | minus: progress
+  if goal > 0
+    assign percent = progress | times: 100 | divided_by: goal | floor
   else
     assign percent = 100
   endif
@@ -47,14 +55,24 @@
     </div>
   {%- endif -%}
 
-  {%- if section.settings.free_shipping_enable and threshold > 0 -%}
+  {%- if section.settings.free_shipping_enable and goal > 0 -%}
     <div class="cart-extras-shipping{% if remaining <= 0 %} is-unlocked{% endif %}">
       <div class="cart-extras-shipping__text">
-        {%- if remaining > 0 -%}
+        {%- if remaining <= 0 -%}
+          {{ section.settings.free_shipping_unlocked_text | default: "You've unlocked free shipping!" | escape }}
+        {%- elsif section.settings.free_shipping_basis == 'amount' -%}
           {%- assign amount = remaining | money -%}
           {{ section.settings.free_shipping_away_text | default: "You're [amount] away from free shipping" | escape | replace: '[amount]', amount }}
         {%- else -%}
-          {{ section.settings.free_shipping_unlocked_text | default: "You've unlocked free shipping!" | escape }}
+          {%- liquid
+            if remaining == 1
+              assign sock_word = section.settings.sock_word_singular | default: 'sock'
+            else
+              assign sock_word = section.settings.sock_word_plural | default: 'socks'
+            endif
+            assign count_text = remaining | append: ''
+          -%}
+          {{ section.settings.free_shipping_count_text | default: 'Add [count] more [socks] to unlock free shipping' | escape | replace: '[count]', count_text | replace: '[socks]', sock_word }}
         {%- endif -%}
       </div>
       <div

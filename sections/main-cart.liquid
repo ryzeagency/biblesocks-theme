@@ -133,16 +133,61 @@
       "default": true
     },
     {
+      "type": "select",
+      "id": "free_shipping_basis",
+      "label": "Measure free shipping by",
+      "default": "quantity",
+      "options": [
+        {
+          "value": "quantity",
+          "label": "Number of socks in the cart"
+        },
+        {
+          "value": "amount",
+          "label": "Cart total"
+        }
+      ],
+      "info": "Match this to the free shipping discount or rate in Shopify admin."
+    },
+    {
+      "type": "range",
+      "id": "free_shipping_quantity",
+      "label": "Socks needed for free shipping",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_count_text",
+      "label": "Message before free shipping (socks)",
+      "default": "Add [count] more [socks] to unlock free shipping",
+      "info": "[count] is how many more are needed."
+    },
+    {
+      "type": "text",
+      "id": "sock_word_singular",
+      "label": "Sock word, one",
+      "default": "sock"
+    },
+    {
+      "type": "text",
+      "id": "sock_word_plural",
+      "label": "Sock word, many",
+      "default": "socks"
+    },
+    {
       "type": "number",
       "id": "free_shipping_threshold",
-      "label": "Free shipping threshold",
+      "label": "Free shipping threshold (cart total)",
       "default": 75,
-      "info": "In your store currency, without the symbol. Measured against the cart total after discounts. Must match your shipping rate."
+      "info": "Used when measuring by cart total. In your store currency, without the symbol, after discounts."
     },
     {
       "type": "text",
       "id": "free_shipping_away_text",
-      "label": "Message before free shipping",
+      "label": "Message before free shipping (cart total)",
       "default": "You're [amount] away from free shipping",
       "info": "[amount] is how much more is needed."
     },

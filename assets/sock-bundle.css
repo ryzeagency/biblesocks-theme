@@ -207,6 +207,7 @@ sock-bundle {
   margin-bottom: 8px;
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.4;
 }
 
 .sock-bundle__slots-count {
@@ -448,7 +449,7 @@ sock-bundle {
 }
 
 .sock-bundle__progress-note {
-  margin: 8px 0 0;
+  margin: 10px 0 16px;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
@@ -472,9 +473,6 @@ sock-bundle {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--colorTextBody) 7%, transparent);
 }
 
 .sock-bundle__progress-note--shipping::before {

@@ -169,6 +169,8 @@ if (!customElements.get('sock-bundle')) {
         this.syncPickerPlacement();
         this.mobileQuery.addEventListener('change', this.syncPickerPlacement);
 
+        this.restoreSlots();
+
         // Liquid marks one tier checked; run it so the page opens in that state.
         // On a normal product that is Single, which is a no-op.
         const checked =
@@ -392,6 +394,14 @@ if (!customElements.get('sock-bundle')) {
 
         if (!variantField || !variantField.value) return;
 
+        this.slots[index] = this.slotFromCard(card, option);
+
+        this.setError('');
+        this.render();
+      }
+
+      /** A slot for one sock, read off its picker card and the chosen option. */
+      slotFromCard(card, option) {
         let data = {};
         try {
           data = JSON.parse(card.querySelector('[data-picker-data]')?.textContent || '{}');
@@ -399,18 +409,71 @@ if (!customElements.get('sock-bundle')) {
           data = {};
         }
 
-        this.slots[index] = {
-          variantId: variantField.value,
+        return {
+          variantId: option.value,
           productId: card.dataset.productId,
           title: data.title || '',
-          variantTitle: (option?.dataset.variantTitle || '').replace(/^Default Title$/, ''),
-          image: option?.dataset.variantImage || data.image || '',
-          price: parseInt(option?.dataset.variantPrice, 10) || 0,
+          variantTitle: (option.dataset.variantTitle || '').replace(/^Default Title$/, ''),
+          image: option.dataset.variantImage || data.image || '',
+          price: parseInt(option.dataset.variantPrice, 10) || 0,
           variants: this.readCardVariants(card),
         };
+      }
 
-        this.setError('');
-        this.render();
+      /* ------------------------------------------------------------------ */
+      /* Remembering the pack                                                */
+      /* ------------------------------------------------------------------ */
+
+      /**
+       * The chosen socks are kept for the browsing session, so a trip to the cart
+       * and back finds the pack as it was left. Only ids are stored; names and
+       * prices are read fresh from the picker, and anything sold out or no longer
+       * in the picker is dropped.
+       */
+      get storageKey() {
+        return `sock-bundle:${this.dataset.productId}`;
+      }
+
+      saveSlots() {
+        try {
+          const picks = this.slots
+            .filter(Boolean)
+            .map((slot) => ({ productId: slot.productId, variantId: slot.variantId }));
+          window.sessionStorage.setItem(this.storageKey, JSON.stringify(picks));
+        } catch (error) {
+          // Storage can be unavailable (private mode, blocked site data); the
+          // builder still works, it just will not remember the pack.
+        }
+      }
+
+      restoreSlots() {
+        let picks = [];
+        try {
+          picks = JSON.parse(window.sessionStorage.getItem(this.storageKey) || '[]');
+        } catch (error) {
+          return;
+        }
+        if (!Array.isArray(picks) || !this.picker) return;
+
+        const restored = picks
+          .map((pick) => {
+            const card = this.picker.querySelector(
+              `[data-picker-card][data-product-id="${CSS.escape(String(pick.productId))}"]`
+            );
+            const field = card?.querySelector('[data-picker-variant]');
+            if (!field) return null;
+
+            const option =
+              field.tagName === 'SELECT'
+                ? Array.from(field.options).find(
+                    (item) => item.value === String(pick.variantId) && !item.disabled
+                  )
+                : field.value === String(pick.variantId) && field;
+            return option ? this.slotFromCard(card, option) : null;
+          })
+          .filter(Boolean);
+
+        this.slots = this.maxSocks ? restored.slice(0, this.maxSocks) : restored;
       }
 
       firstEmptySlot() {
@@ -489,6 +552,7 @@ if (!customElements.get('sock-bundle')) {
 
       render() {
         this.growSlots();
+        this.saveSlots();
         const filled = this.slots.filter(Boolean).length;
 
         // What the pack has actually earned, and what one more sock would earn.
@@ -961,10 +1025,17 @@ if (!customElements.get('sock-bundle')) {
           // One pack in the cart at a time, so the discount code always matches
           // what is in there. This wipes anything else the shopper had.
           if (this.clearCartOnAdd) {
-            await fetch(this.cartClearUrl, {
+            const clearUrl = this.cartClearUrl.endsWith('.js')
+              ? this.cartClearUrl
+              : `${this.cartClearUrl}.js`;
+            const cleared = await fetch(clearUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             });
+            if (!cleared.ok) {
+              this.setError('Could not empty your cart. Please try again.');
+              return;
+            }
           }
 
           const response = await fetch(window.theme?.routes?.cartAdd || '/cart/add.js', {

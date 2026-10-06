@@ -61,8 +61,15 @@ the free-shipping bar, so keep it equal to the real discount.
   Ticking **This pack includes free shipping** is a promise: back it with a shipping rule
   or a free-shipping discount, since the bar takes your word for it.
 - **Total.** It shows the pack price, the full price struck through, and "You save …".
-- Also ported from BOM and switched off: the 6-pack with free socks, the three bonus
-  rewards, and **Empty the cart before adding a pack**.
+- **The pack is remembered** for the browsing session (per tab), so going to the cart
+  and back finds the same socks in the slots. Only ids are saved; names and prices come
+  fresh from the picker, and a sock that is sold out or no longer in the picker drops out.
+- **Adding a pack empties the cart first** (**Empty the cart before adding a pack**), so
+  the cart only ever holds one pack and its discount code always matches. This also
+  removes anything else in the cart, including socks added from the cart page's
+  suggestions.
+- Also ported from BOM and switched off: the 6-pack with free socks and the three bonus
+  rewards.
 - On a normal product page the block can also be added: **Single** then means "buy this
   product" and the normal add-to-cart stays; multi-packs switch into the picker.
 - Below 769px the picker moves inline under the chosen-sock slots.

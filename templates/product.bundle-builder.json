@@ -98,7 +98,7 @@
             "reward_included_text": "Included",
             "savings_text": "You save [amount]",
             "min_slots": 4,
-            "clear_cart_on_add": false,
+            "clear_cart_on_add": true,
             "tier6_enable": false,
             "tier6_label": "6 Pack",
             "tier6_badge": "3 free",

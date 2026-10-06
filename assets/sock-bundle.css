@@ -835,7 +835,7 @@ sock-bundle {
   .sock-bundle-picker__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px 8px;
-    max-height: 55vh;
+    max-height: 47.5vh;
     overscroll-behavior: contain;
     padding-right: 2px;
   }
@@ -866,7 +866,9 @@ sock-bundle {
     font-size: 11px;
   }
 
-  .sock-bundle-picker__back {
+  /* Scoped so it beats the base rule further down. On mobile the photos are
+     never replaced, so there is nothing to go back to. */
+  .sock-bundle-picker .sock-bundle-picker__back {
     display: none;
   }
 }

@@ -1,1 +1,164 @@
-{"type":"header","name":"t:sections.header-group.name","sections":{"biblesocks_announcement_bar_6q8KUB":{"type":"biblesocks-announcement-bar","blocks":{"message_X68VQW":{"type":"message","settings":{"text":"Free shipping over $75"}}},"block_order":["message_X68VQW"],"name":"BS: Announcement Bar","settings":{}},"header":{"type":"header","blocks":{"header-0":{"type":"logo","settings":{"logo":"shopify:\/\/shop_images\/Bible_logo_1.svg","logo-inverted":"shopify:\/\/shop_images\/Bible_logo_1.svg","desktop_logo_width":280,"mobile_logo_width":150}}},"block_order":["header-0"],"settings":{"main_menu_link_list":"main-menu","hover_menu":true,"mega_menu_images":true,"main_menu_alignment":"left-center","header_style":"sticky","sticky_index":false,"sticky_collection":true,"toolbar_menu":"","toolbar_social":false,"show_locale_selector":true,"show_currency_selector":true,"show_currency_flags":true}},"announcement":{"type":"announcement","blocks":{"announcement-1":{"type":"announcement","settings":{"text":"NEW RELEASE: God Bless America 250 —","link_text":"SHOP NOW","link":"shopify:\/\/products\/god-bless-america-250"}},"announcement_w7RWr4":{"type":"announcement","disabled":true,"settings":{"text":"Back-to-School – 25% Off Sitewide | Code: SCHOOL25 |","link_text":"SHOP NOW","link":"https:\/\/www.biblesocks.com\/collections\/biblesocks"}},"announcement_KNRygA":{"type":"announcement","disabled":true,"settings":{"text":"Labor Day Sale! 25% OFF Everything — Use Code: LABORDAY25","link_text":"","link":"https:\/\/www.biblesocks.com\/discount\/LABORDAY25?redirect=%2Fcollections%2Flabor-day-sale-25-off-all-bible-socks"}}},"block_order":["announcement-1","announcement_w7RWr4","announcement_KNRygA"],"disabled":true,"settings":{"announcement_compact":true}},"rich_text_8bKQ8F":{"type":"rich-text","blocks":{"heading_LHDXpY":{"type":"heading","settings":{"title":"💰🎄 CHRISTMAS IN JULY \"BIBLEBUCKS\" 💰🎄"}},"text_tYrcdy":{"type":"text","settings":{"enlarge_text":true,"text":"<p>Use the code <strong>BIBLEBUCKS15<\/strong> and get $15 off your order of $50 or more.<br\/>Use the code <strong>BIBLEBUCKS35<\/strong> and get $35 off your order of $100 or more.<br\/><\/p><p>Enjoy this Christmas cash to treat yourself or someone else to a gift of our amazingly comfortable Bible-themed socks.<\/p>"}}},"block_order":["heading_LHDXpY","text_tYrcdy"],"disabled":true,"settings":{"align_text":"center","narrow_column":true,"divider":false}},"advanced_content_PQ67tm":{"type":"advanced-content","blocks":{"liquid_yyPHea":{"type":"liquid","settings":{"code":"<div style=\"\n  width: 100%;\n  background-color: #F4D03F;\n  text-align: center;\n  padding: 10px 0;\n  font-family: inherit;\n\">\n  <span style=\"\n    color: #000000;\n    font-size: 14px;\n    letter-spacing: 2px;\n    font-weight: 600;\n  \">\n    OUR HUGE FREESOCKS BOGO ENDS SOON | BUY 1, GET 1 FREE - NO LIMIT!\n  <\/span>\n  <a href=\"https:\/\/www.biblesocks.com\/collections\/free-socks\"\n     style=\"\n       color: #000000;\n       margin-left: 10px;\n       font-weight: 600;\n       text-decoration: none;\n     \">\n    SHOP NOW\n  <\/a>\n<\/div>","width":"100%","alignment":"center"}}},"block_order":["liquid_yyPHea"],"disabled":true,"custom_css":[".custom-content {padding-top: 0 !important; padding-bottom: 0 !important;}",".custom-content .custom__item {padding-top: 0 !important; padding-bottom: 0 !important;}"],"name":"t:sections.advanced-content.presets.custom_content.name","settings":{"full_width":true,"space_around":false,"lazyload_images":true}}},"order":["biblesocks_announcement_bar_6q8KUB","header","announcement","rich_text_8bKQ8F","advanced_content_PQ67tm"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "t:sections.header-group.name",
+  "sections": {
+    "biblesocks_announcement_bar_6q8KUB": {
+      "type": "biblesocks-announcement-bar",
+      "blocks": {
+        "message_X68VQW": {
+          "type": "message",
+          "settings": {
+            "text": "BUY MORE, SAVE MORE — UP TO 20% OFF"
+          }
+        }
+      },
+      "block_order": [
+        "message_X68VQW"
+      ],
+      "name": "BS: Announcement Bar",
+      "settings": {}
+    },
+    "header": {
+      "type": "header",
+      "blocks": {
+        "header-0": {
+          "type": "logo",
+          "settings": {
+            "logo": "shopify://shop_images/Bible_logo_1.svg",
+            "logo-inverted": "shopify://shop_images/Bible_logo_1.svg",
+            "desktop_logo_width": 280,
+            "mobile_logo_width": 150
+          }
+        }
+      },
+      "block_order": [
+        "header-0"
+      ],
+      "settings": {
+        "main_menu_link_list": "main-menu",
+        "hover_menu": true,
+        "mega_menu_images": true,
+        "main_menu_alignment": "left-center",
+        "header_style": "sticky",
+        "sticky_index": false,
+        "sticky_collection": true,
+        "toolbar_menu": "",
+        "toolbar_social": false,
+        "show_locale_selector": true,
+        "show_currency_selector": true,
+        "show_currency_flags": true
+      }
+    },
+    "announcement": {
+      "type": "announcement",
+      "blocks": {
+        "announcement-1": {
+          "type": "announcement",
+          "settings": {
+            "text": "NEW RELEASE: God Bless America 250 —",
+            "link_text": "SHOP NOW",
+            "link": "shopify://products/god-bless-america-250"
+          }
+        },
+        "announcement_w7RWr4": {
+          "type": "announcement",
+          "disabled": true,
+          "settings": {
+            "text": "Back-to-School – 25% Off Sitewide | Code: SCHOOL25 |",
+            "link_text": "SHOP NOW",
+            "link": "https://www.biblesocks.com/collections/biblesocks"
+          }
+        },
+        "announcement_KNRygA": {
+          "type": "announcement",
+          "disabled": true,
+          "settings": {
+            "text": "Labor Day Sale! 25% OFF Everything — Use Code: LABORDAY25",
+            "link_text": "",
+            "link": "https://www.biblesocks.com/discount/LABORDAY25?redirect=%2Fcollections%2Flabor-day-sale-25-off-all-bible-socks"
+          }
+        }
+      },
+      "block_order": [
+        "announcement-1",
+        "announcement_w7RWr4",
+        "announcement_KNRygA"
+      ],
+      "disabled": true,
+      "settings": {
+        "announcement_compact": true
+      }
+    },
+    "rich_text_8bKQ8F": {
+      "type": "rich-text",
+      "blocks": {
+        "heading_LHDXpY": {
+          "type": "heading",
+          "settings": {
+            "title": "💰🎄 CHRISTMAS IN JULY \"BIBLEBUCKS\" 💰🎄"
+          }
+        },
+        "text_tYrcdy": {
+          "type": "text",
+          "settings": {
+            "enlarge_text": true,
+            "text": "<p>Use the code <strong>BIBLEBUCKS15</strong> and get $15 off your order of $50 or more.<br/>Use the code <strong>BIBLEBUCKS35</strong> and get $35 off your order of $100 or more.<br/></p><p>Enjoy this Christmas cash to treat yourself or someone else to a gift of our amazingly comfortable Bible-themed socks.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "heading_LHDXpY",
+        "text_tYrcdy"
+      ],
+      "disabled": true,
+      "settings": {
+        "align_text": "center",
+        "narrow_column": true,
+        "divider": false
+      }
+    },
+    "advanced_content_PQ67tm": {
+      "type": "advanced-content",
+      "blocks": {
+        "liquid_yyPHea": {
+          "type": "liquid",
+          "settings": {
+            "code": "<div style=\"\n  width: 100%;\n  background-color: #F4D03F;\n  text-align: center;\n  padding: 10px 0;\n  font-family: inherit;\n\">\n  <span style=\"\n    color: #000000;\n    font-size: 14px;\n    letter-spacing: 2px;\n    font-weight: 600;\n  \">\n    OUR HUGE FREESOCKS BOGO ENDS SOON | BUY 1, GET 1 FREE - NO LIMIT!\n  </span>\n  <a href=\"https://www.biblesocks.com/collections/free-socks\"\n     style=\"\n       color: #000000;\n       margin-left: 10px;\n       font-weight: 600;\n       text-decoration: none;\n     \">\n    SHOP NOW\n  </a>\n</div>",
+            "width": "100%",
+            "alignment": "center"
+          }
+        }
+      },
+      "block_order": [
+        "liquid_yyPHea"
+      ],
+      "disabled": true,
+      "custom_css": [
+        ".custom-content {padding-top: 0 !important; padding-bottom: 0 !important;}",
+        ".custom-content .custom__item {padding-top: 0 !important; padding-bottom: 0 !important;}"
+      ],
+      "name": "t:sections.advanced-content.presets.custom_content.name",
+      "settings": {
+        "full_width": true,
+        "space_around": false,
+        "lazyload_images": true
+      }
+    }
+  },
+  "order": [
+    "biblesocks_announcement_bar_6q8KUB",
+    "header",
+    "announcement",
+    "rich_text_8bKQ8F",
+    "advanced_content_PQ67tm"
+  ]
+}

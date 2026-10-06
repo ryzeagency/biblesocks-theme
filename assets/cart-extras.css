@@ -158,11 +158,14 @@ cart-extras {
   opacity: 0.75;
 }
 
-.cart-extras-upsell__select {
+.cart-extras-upsell .cart-extras-upsell__select {
   width: 100%;
-  padding: 6px 26px 6px 8px;
-  font-size: 0.8em;
+  height: 32px;
+  padding: 0 24px 0 8px;
+  font-size: 12px !important; /* Impulse forces 16px !important below 960px */
+  line-height: 30px;
   background-position: right 8px center;
+  background-size: 9px;
 }
 
 .cart-extras-upsell__add {

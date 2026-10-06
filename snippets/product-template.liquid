@@ -92,7 +92,7 @@
 
       <div class="grid{% unless image_position == 'left' %} grid--product-images-right{% endunless %}{% if mobile_layout == 'partial' %} grid--product-images--partial{% endif %}">
         {%- if image_position == 'left' -%}
-          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
+          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %} sock-bundle-builder-media{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
             {%- if sock_bundle_block -%}<div class="sock-bundle-gallery">{%- endif -%}
             {%- render 'product-images',
               section_id: section_id,
@@ -123,8 +123,12 @@
         <div class="grid__item {{ product_description_width }}">
 
           <div class="product-single__meta{% if sock_bundle_opens_on_load and sock_bundle_block.settings.hide_default_buy_buttons %} sock-bundle-mode{% endif %}">
-            <div class="product-block product-block--header">
-              {%- if settings.show_breadcrumbs and isModal != true -%}
+            {%- comment -%}
+              On a build-your-own page the pack heading leads, so the breadcrumbs go
+              and the product title stays only for search engines and screen readers.
+            {%- endcomment -%}
+            <div class="product-block product-block--header{% if sock_bundle_opens_on_load %} sock-bundle-builder-header{% endif %}">
+              {%- if settings.show_breadcrumbs and isModal != true and sock_bundle_opens_on_load == false -%}
                 {%- render 'breadcrumbs' -%}
               {%- endif -%}
 
@@ -146,7 +150,7 @@
                   {{ product.title }}
                 </p>
               {%- else -%}
-                <h1 class="h2 product-single__title">
+                <h1 class="h2 product-single__title{% if sock_bundle_opens_on_load %} visually-hidden{% endif %}">
                   {%- unless product.empty? -%}
                     {{ product.title }}
                   {%- else -%}
@@ -447,7 +451,7 @@
         </div>
 
         {%- unless image_position == 'left' -%}
-          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
+          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %} sock-bundle-builder-media{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
             {%- if sock_bundle_block -%}<div class="sock-bundle-gallery">{%- endif -%}
             {%- render 'product-images',
               section_id: section_id,

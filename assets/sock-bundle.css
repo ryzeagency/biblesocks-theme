@@ -862,6 +862,19 @@ sock-bundle {
   }
 }
 
+/* Build-your-own page: the placeholder product's photo means nothing on a phone,
+   where the picker sits inline, so the whole image column goes. */
+@media screen and (max-width: 768px) {
+  .sock-bundle-builder-media {
+    display: none;
+  }
+}
+
+/* Only the visually hidden title is left in the header, so drop its spacing. */
+.product-block--header.sock-bundle-builder-header {
+  margin-bottom: 0;
+}
+
 /* Hide the gallery while picking, when the block is set to replace it.
    Desktop only: on mobile the picker moves inline instead of replacing it. */
 @media screen and (min-width: 769px) {

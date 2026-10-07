@@ -70,8 +70,12 @@ the free-shipping bar, so keep it equal to the real discount.
   suggestions.
 - Also ported from BOM and switched off: the 6-pack with free socks and the three bonus
   rewards.
-- On a normal product page the block can also be added: **Single** then means "buy this
-  product" and the normal add-to-cart stays; multi-packs switch into the picker.
+- **Every sock page has the builder too.** `templates/product.json` (the default product
+  template) carries the same block and settings as `/products/bible-socks`, with two
+  differences: **Show this product first in the picker** is on, and **Only show on socks
+  from this collection** is on, so products outside `all-socks` (3-pair bundles, gift boxes)
+  keep their normal page. The two templates hold separate copies of the settings, so a
+  change to a discount code or wording has to be made in both.
 - Below 769px the picker moves inline under the chosen-sock slots.
 
 ## Site-wide styles to know about

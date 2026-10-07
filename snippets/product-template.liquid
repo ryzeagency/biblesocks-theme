@@ -59,6 +59,17 @@
 {%- liquid
   # Sock bundle: build-your-own pack. The picker takes over the media column.
   assign sock_bundle_block = blocks | where: 'type', 'sock_bundle' | first
+
+  # On a shared template (the default product page), the builder can be limited to
+  # socks that are in its picker collection, so other products keep their own page.
+  if sock_bundle_block and sock_bundle_block.settings.only_picker_socks
+    assign sock_bundle_picker_handle = sock_bundle_block.settings.bundle_collection.handle
+    assign sock_bundle_product_handles = product.collections | map: 'handle'
+    unless sock_bundle_product_handles contains sock_bundle_picker_handle
+      assign sock_bundle_block = nil
+    endunless
+  endif
+
   assign sock_bundle_opens_on_load = false
   if sock_bundle_block and sock_bundle_block.settings.single_uses_picker
     assign sock_bundle_opens_on_load = true
@@ -420,9 +431,11 @@
                       </div>
                     </div>
                   {%- when 'sock_bundle' -%}
-                    <div class="product-block product-block--sock-bundle">
-                      {%- render 'sock-bundle', block: block, section_id: section_id, product: product -%}
-                    </div>
+                    {%- if sock_bundle_block -%}
+                      <div class="product-block product-block--sock-bundle">
+                        {%- render 'sock-bundle', block: block, section_id: section_id, product: product -%}
+                      </div>
+                    {%- endif -%}
                   {%- when 'custom' -%}
                     <div class="product-block" {{ block.shopify_attributes }}>
                       {{ block.settings.code }}

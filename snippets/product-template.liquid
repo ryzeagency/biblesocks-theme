@@ -202,6 +202,45 @@
                         {%- render 'tab', id: tab_id, title: block.settings.title, content: tab_content -%}
                       </div>
                     {% endunless %}
+                  {%- when 'image_tab' -%}
+                    {%- liquid
+                      assign tab_id = block.id | append: product.id
+                      assign tab_image = block.settings.image
+                      assign tab_mobile_image = block.settings.mobile_image | default: tab_image
+                    -%}
+                    {%- capture tab_content -%}
+                      {%- if tab_image != blank -%}
+                        {%- if block.settings.image_link != blank -%}<a href="{{ block.settings.image_link }}" class="product-image-tab__link">{%- endif -%}
+                        <picture class="product-image-tab__picture">
+                          {%- if block.settings.mobile_image != blank -%}
+                            <source
+                              media="(max-width: 768px)"
+                              srcset="{{ tab_mobile_image | image_url: width: 600 }} 600w, {{ tab_mobile_image | image_url: width: 900 }} 900w, {{ tab_mobile_image | image_url: width: 1200 }} 1200w"
+                              sizes="100vw"
+                            >
+                          {%- endif -%}
+                          {{
+                            tab_image
+                            | image_url: width: 1400
+                            | image_tag:
+                              class: 'product-image-tab__image',
+                              widths: '500, 800, 1100, 1400',
+                              sizes: '(min-width: 769px) 50vw, 100vw',
+                              loading: 'lazy',
+                              alt: tab_image.alt
+                          }}
+                        </picture>
+                        {%- if block.settings.image_link != blank -%}</a>{%- endif -%}
+                      {%- endif -%}
+                      {%- if block.settings.content != blank -%}
+                        <div class="product-image-tab__text">{{ block.settings.content }}</div>
+                      {%- endif -%}
+                    {%- endcapture -%}
+                    {%- if tab_image != blank or block.settings.content != blank -%}
+                      <div class="product-block product-block--tab" {{ block.shopify_attributes }}>
+                        {%- render 'tab', id: tab_id, title: block.settings.title, content: tab_content -%}
+                      </div>
+                    {%- endif -%}
                   {%- when 'contact' -%}
                     <div class="product-block product-block--tab" {{ block.shopify_attributes }}>
                       {% assign tab_id = block.id | append: product.id %}

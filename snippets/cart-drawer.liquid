@@ -329,9 +329,11 @@
               {{ 'cart.general.checkout' | t }}
             </button>
 
-            {% if additional_checkout_buttons and settings.cart_additional_buttons %}
-              <div class="additional-checkout-buttons additional-checkout-buttons--vertical">{{ content_for_additional_checkout_buttons }}</div>
-            {% endif %}
+            {%- comment -%}
+              Shop Pay / PayPal express buttons are left out of the drawer so
+              Check out is the one way on from here. The cart page still shows
+              them (Theme settings > Cart > dynamic checkout buttons).
+            {%- endcomment -%}
           </div>
         </div>
       </div>

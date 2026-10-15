@@ -1,0 +1,36 @@
+{% comment %}
+  One collection filter in the sock picker, as a pill or a dropdown option.
+
+  Accepts:
+  - collection: the collection to filter by
+  - as: 'pill' or 'option'
+  - selected: true for the collection the picker opens on
+
+  Usage:
+  {% render 'sock-bundle-picker-filter-label', collection: c, as: 'pill', selected: forloop.first %}
+{% endcomment %}
+
+{%- liquid
+  # Some collection titles are all capitals; tone those down to match the rest.
+  assign label = collection.title
+  assign title_upper = collection.title | upcase
+  if collection.title == title_upper
+    assign label = collection.title | downcase | capitalize
+  endif
+-%}
+
+{%- if as == 'option' -%}
+  <option value="{{ collection.handle | escape }}"{% if selected %} selected{% endif %}>
+    {{- label | escape }} ({{ collection.products_count }})
+  </option>
+{%- else -%}
+  <button
+    type="button"
+    class="sock-bundle-picker__filter"
+    data-picker-filter="{{ collection.handle | escape }}"
+    aria-pressed="{% if selected %}true{% else %}false{% endif %}"
+  >
+    <span class="sock-bundle-picker__filter-label">{{ label | escape }}</span>
+    <span class="sock-bundle-picker__filter-count">{{ collection.products_count }}</span>
+  </button>
+{%- endif -%}

@@ -208,6 +208,33 @@
         </div>
 
         <div class="drawer__footer appear-animation appear-delay-4">
+          {%- comment -%}
+            "You might also like": up to six products from a collection picked at
+            random on each page load (assets/cart-recommendations.js). It sits at
+            the top of the fixed footer so it is in view without scrolling past
+            the items, and outside the regions Impulse redraws, so it stays put.
+          {%- endcomment -%}
+          {%- if settings.cart_drawer_recs_enable and settings.cart_drawer_recs_collections != blank -%}
+            {{ 'sock-bundle.css' | asset_url | stylesheet_tag }}
+            <script src="{{ 'cart-recommendations.js' | asset_url }}" defer="defer"></script>
+            <cart-recommendations
+              class="cart-drawer-recs"
+              data-mode="drawer"
+              data-collections="{{ settings.cart_drawer_recs_collections | map: 'handle' | json | escape }}"
+              data-pack-codes="{{ settings.cart_pack_codes | escape }}"
+              data-cart-add-url="{{ routes.cart_add_url }}"
+              data-cart-update-url="{{ routes.cart_update_url }}"
+              data-cart-url="{{ routes.cart_url }}"
+              hidden
+            >
+              <div class="cart-drawer-recs__heading">
+                {{- settings.cart_drawer_recs_heading | default: 'You might also like' | escape -}}
+              </div>
+              <div class="cart-drawer-recs__grid" role="list" data-cart-recs-target></div>
+              <div class="cart-recs__error" role="alert" data-cart-recs-error></div>
+            </cart-recommendations>
+          {%- endif -%}
+
           <div data-discounts>
             {% if cart.cart_level_discount_applications != blank %}
               <div class="cart__discounts cart__item-sub cart__item-row">

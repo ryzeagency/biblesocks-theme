@@ -4,6 +4,7 @@
   Accepts:
   - sock: the product to render
   - block: the `sock_bundle` block, for the Add button label
+  - pinned: true for the sock being viewed, which stays first in every collection tab
 
   Usage:
   {% render 'sock-bundle-picker-card', sock: sock, block: block %}
@@ -19,6 +20,9 @@
   data-picker-card
   data-product-id="{{ sock.id }}"
   data-picked="0"
+  {% if pinned %}
+    data-picker-pinned
+  {% endif %}
 >
   <span class="sock-bundle-picker__card-media">
     {%- if sock.featured_image -%}
@@ -53,6 +57,7 @@
           value="{{ variant.id }}"
           data-variant-title="{{ variant.title | escape }}"
           data-variant-price="{{ variant.price }}"
+          data-variant-money="{{ variant.price | money | strip_html | escape }}"
           data-variant-image="{{ variant.image | default: sock.featured_image | image_url: width: 200 }}"
           {% unless variant.available %}
             disabled
@@ -72,6 +77,7 @@
       value="{{ sock_variant.id }}"
       data-variant-title="{{ sock_variant.title | escape }}"
       data-variant-price="{{ sock_variant.price }}"
+      data-variant-money="{{ sock_variant.price | money | strip_html | escape }}"
       data-variant-image="{{ sock.featured_image | image_url: width: 200 }}"
     >
   {%- endif -%}

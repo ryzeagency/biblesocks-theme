@@ -1,0 +1,83 @@
+{% comment %}
+  The product tiles inside the after-add-to-cart popup, for one collection.
+  Fetched by assets/cart-upsell.js through the Section Rendering API:
+  /collections/<handle>?section_id=cart-upsell-grid. Not meant to be added to a
+  page.
+
+  Up to six products the shopper can buy. (Adding a pack empties the cart
+  first, so what is in it now does not matter.) A title like "The Armor of God -
+  Bible Verse Crew Socks" shows as "The Armor of God", to fit the tile.
+  data-sock marks socks, which the pack's discount codes cover.
+{% endcomment %}
+
+<div class="cart-upsell__grid" data-cart-upsell-grid>
+  {%- if collection -%}
+    {%- assign shown = 0 -%}
+    {%- for product in collection.products -%}
+      {%- if shown >= 6 -%}{%- break -%}{%- endif -%}
+      {%- if product.available -%}
+          {%- liquid
+            assign label = product.title
+            if product.title contains ' - '
+              assign label = product.title | split: ' - ' | first
+            endif
+            assign first_variant = product.selected_or_first_available_variant
+          -%}
+          <div
+            class="cart-upsell__tile"
+            data-cart-upsell-tile
+            data-sock="{% if product.type == 'Socks' %}true{% else %}false{% endif %}"
+            aria-pressed="false"
+            role="button"
+            tabindex="0"
+          >
+            <span class="cart-upsell__check" aria-hidden="true"></span>
+            <span class="cart-upsell__media">
+              {%- if product.featured_image -%}
+                {{
+                  product.featured_image
+                  | image_url: width: 400
+                  | image_tag: loading: 'lazy', widths: '200, 300, 400', sizes: '(min-width: 750px) 160px, 40vw', alt: product.title
+                }}
+              {%- endif -%}
+            </span>
+            <span class="cart-upsell__title">{{ label | escape }}</span>
+            <span class="cart-upsell__price" data-cart-upsell-price>{{ first_variant.price | money }}</span>
+            {%- if product.has_only_default_variant -%}
+              <input
+                type="hidden"
+                data-cart-upsell-variant
+                value="{{ first_variant.id }}"
+                data-price="{{ first_variant.price }}"
+                data-money="{{ first_variant.price | money | strip_html | escape }}"
+              >
+            {%- else -%}
+              <select class="cart-upsell__variant" data-cart-upsell-variant aria-label="{{ 'Options for ' | append: product.title | escape }}">
+                {%- for variant in product.variants -%}
+                  {%- if variant.available -%}
+                    <option
+                      value="{{ variant.id }}"
+                      data-price="{{ variant.price }}"
+                      data-money="{{ variant.price | money | strip_html | escape }}"
+                      {% if variant.id == first_variant.id %}
+                        selected
+                      {% endif %}
+                    >
+                      {{- variant.title | escape -}}
+                    </option>
+                  {%- endif -%}
+                {%- endfor -%}
+              </select>
+            {%- endif -%}
+          </div>
+          {%- assign shown = shown | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Cart popup products"
+}
+{% endschema %}

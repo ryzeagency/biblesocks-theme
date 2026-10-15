@@ -213,6 +213,43 @@
     },
     {
       "type": "text",
+      "id": "picker_product_type",
+      "label": "Only show this product type",
+      "default": "Socks",
+      "info": "Bundles, gift boxes and the builder product share some collections with the socks; this keeps them out of the picker. Leave blank for every product."
+    },
+    {
+      "type": "collection_list",
+      "id": "picker_filter_collections",
+      "label": "Collection filters",
+      "limit": 15,
+      "info": "Shown as tabs above the socks; tapping one shows only that collection, in full. The picker opens on the first. Leave empty for no tabs."
+    },
+    {
+      "type": "select",
+      "id": "picker_filter_style",
+      "label": "Collection filter style",
+      "default": "pills",
+      "options": [
+        {
+          "value": "pills",
+          "label": "Pills"
+        },
+        {
+          "value": "dropdown",
+          "label": "Dropdown"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "picker_filter_label",
+      "label": "Collection filter label",
+      "default": "Filter by",
+      "info": "Shown before the filters. Leave blank to hide it."
+    },
+    {
+      "type": "text",
       "id": "picker_heading",
       "label": "Picker heading",
       "default": "Pick your socks"

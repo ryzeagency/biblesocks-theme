@@ -18,6 +18,15 @@ if (!customElements.get('cart-extras')) {
         this.sectionId = this.dataset.sectionId;
         this.cartUrl = this.dataset.cartUrl || '/cart';
         this.addUrl = window.theme?.routes?.cartAdd || '/cart/add.js';
+        this.root = window.Shopify?.routes?.root || '/';
+
+        // "2:CODE10, 3:CODE15, 4:CODE20" (Theme settings > Cart), smallest pack first.
+        this.packCodes = (this.dataset.packCodes || '')
+          .split(',')
+          .map((pair) => pair.split(':').map((part) => part.trim()))
+          .filter(([qty, code]) => parseInt(qty, 10) > 0 && code)
+          .map(([qty, code]) => ({ qty: parseInt(qty, 10), code }))
+          .sort((a, b) => a.qty - b.qty);
 
         this.onClick = this.onClick.bind(this);
         this.onChange = this.onChange.bind(this);
@@ -100,6 +109,9 @@ if (!customElements.get('cart-extras')) {
             return;
           }
 
+          // One more sock can tip the cart into a bigger pack.
+          await this.syncPackCode();
+
           // Impulse rebuilds the cart items and drawer; the observer then refreshes us.
           document.dispatchEvent(new CustomEvent('cart:build'));
         } catch (err) {
@@ -108,6 +120,55 @@ if (!customElements.get('cart-extras')) {
           button.disabled = false;
         } finally {
           button.classList.remove('is-loading');
+        }
+      }
+
+      /**
+       * Swap the cart onto the pack code its new size earns. Only pack codes are
+       * swapped; a code the shopper entered themselves stays. item_count also
+       * counts things the codes do not cover (a gift box, a bundle), so a code
+       * may come back not applicable; step down until one applies.
+       */
+      async syncPackCode() {
+        if (!this.packCodes.length) return;
+        const json = { 'Content-Type': 'application/json', Accept: 'application/json' };
+
+        const cart = await fetch(`${this.root}cart.js`, { headers: json }).then((r) => r.json());
+        const packCodes = this.packCodes.map((pack) => pack.code.toLowerCase());
+        const current = (cart.discount_codes || []).map((entry) => String(entry.code).toLowerCase());
+        if (current.some((code) => !packCodes.includes(code))) return;
+
+        const candidates = [
+          ...new Set(
+            this.packCodes
+              .filter((pack) => pack.qty <= cart.item_count)
+              .map((pack) => pack.code)
+              .reverse()
+          ),
+        ];
+        if (!candidates.length || current.includes(candidates[0].toLowerCase())) return;
+
+        const applies = (result, code) =>
+          (result.discount_codes || []).some(
+            (entry) =>
+              String(entry.code).toLowerCase() === code.toLowerCase() && entry.applicable !== false
+          );
+        for (const code of candidates) {
+          const result = await fetch(`${this.root}cart/update.js`, {
+            method: 'POST',
+            headers: json,
+            body: JSON.stringify({ discount: code }),
+          }).then((r) => r.json());
+          if (applies(result, code)) return;
+        }
+
+        // None applied: put back whatever pack code the cart had.
+        if (current.length) {
+          await fetch(`${this.root}cart/update.js`, {
+            method: 'POST',
+            headers: json,
+            body: JSON.stringify({ discount: current.join(',') }),
+          });
         }
       }
     }

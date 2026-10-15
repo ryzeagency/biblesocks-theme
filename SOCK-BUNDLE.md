@@ -78,6 +78,52 @@ the free-shipping bar, so keep it equal to the real discount.
   change to a discount code or wording has to be made in both.
 - Below 769px the picker moves inline under the chosen-sock slots.
 
+## Collection filter tabs
+
+Above "Pick your socks" sits a strip of collection tabs (**Sock bundle → Collection
+filters**, up to 15). The picker opens on the first, shown in full; tapping another
+fetches that collection's socks from `sections/sock-bundle-picker-grid.liquid` through
+the Section Rendering API and keeps it, so tapping back is instant. Socks already in the
+pack stay in it, whichever tab they came from, and a sock being viewed leads any tab
+that holds it. **Collection filter style** switches the pills to a dropdown, and
+**Collection filter label** sets the "Filter by" text.
+
+Only products of type **Socks** appear (**Only show this product type**), since the
+3-pack bundles, gift box, gift card and the builder product share some collections.
+The grid section has its own copy of that setting, defaulting to Socks.
+
+## Popup before the pack goes in
+
+`sections/cart-upsell.liquid`, rendered in `layout/theme.liquid`; it shows up as the
+**Cart popup** section in the theme editor's sidebar, on any page. Pressing **Add bundle to cart** opens it with one of its
+collection blocks picked at random (never the same twice in a row), showing up to six
+products from `sections/cart-upsell-grid.liquid`:
+
+- **Add N to my order** adds the pack and the picks together.
+- **No thanks** adds just the pack.
+- Closing it (or Escape) cancels, and nothing is added.
+
+Picks count toward the pack size, so 3 socks + 2 picks earns the 5-pack code. The codes
+only cover socks, so the code is applied through the Ajax cart and checked: first by
+everything going in, then by socks only, then by the pack alone, stepping down until
+Shopify says one applies. Seeded with New Releases, Patriotic and Bible Stories Kids
+Love, with placeholder wording to edit.
+
+## You might also like (cart drawer)
+
+At the top of the cart drawer's footer, above the subtotal: up to six products not
+already in the cart, from a collection picked at random on each page load
+(**Theme settings → Cart → You might also like (cart drawer)**). Adding one removes it
+from the row and has Impulse rebuild the drawer.
+
+## Pack codes in the cart
+
+**Theme settings → Cart → Pack discount codes** (`2:CODE, 3:CODE, 4:CODE`). When a sock
+is added from the cart page or drawer suggestions, the cart moves onto the code its new
+size earns, e.g. a 3-pack plus one more moves from 15% to 20%. A code the shopper typed
+in themselves is never replaced. Keep these in step with the codes on the Sock bundle
+blocks.
+
 ## Site-wide styles to know about
 
 - `snippets/biblesocks-tokens.liquid` sets `body p { color: #fff !important }` for the dark

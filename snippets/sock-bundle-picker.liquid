@@ -13,6 +13,20 @@
 {%- liquid
   assign bundle_collection = block.settings.bundle_collection
   assign products_limit = block.settings.products_limit | default: 48
+  # Only this product type is offered (Bible Socks: "Socks"), since 3-pack bundles,
+  # gift boxes and the builder product sit in some of the same collections.
+  assign picker_type = block.settings.picker_product_type | strip
+
+  # With collection filters set, the first of them is what the picker opens on,
+  # shown in full, and the others load in when their tab is tapped.
+  assign filters = block.settings.picker_filter_collections
+  assign use_filters = false
+  for filter_collection in filters
+    if forloop.first
+      assign bundle_collection = filter_collection
+      assign use_filters = true
+    endif
+  endfor
 -%}
 
 <div
@@ -30,25 +44,111 @@
     <span class="sock-bundle-picker__progress" data-picker-progress></span>
   </div>
 
+  {%- if use_filters -%}
+    {%- liquid
+      assign filter_label = block.settings.picker_filter_label
+      assign filter_style = block.settings.picker_filter_style | default: 'pills'
+    -%}
+
+    {%- if filter_style == 'dropdown' -%}
+      <div class="sock-bundle-picker__filter-row">
+        {%- if filter_label != blank -%}
+          <label class="sock-bundle-picker__filter-by" for="SockBundleFilter-{{ section_id }}">
+            {{- filter_label | escape -}}
+          </label>
+        {%- endif -%}
+        <div class="sock-bundle-picker__filter-select">
+          <select
+            id="SockBundleFilter-{{ section_id }}"
+            data-picker-filter-select
+            {% if filter_label == blank %}
+              aria-label="Filter socks by collection"
+            {% endif %}
+          >
+            {%- for filter_collection in filters -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'option', selected: forloop.first -%}
+            {%- endfor -%}
+          </select>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    {%- else -%}
+      <div class="sock-bundle-picker__filter-row">
+        {%- if filter_label != blank -%}
+          <span class="sock-bundle-picker__filter-by">{{ filter_label | escape }}</span>
+        {%- endif -%}
+        <div class="sock-bundle-picker__filters-wrap">
+          <button
+            type="button"
+            class="sock-bundle-picker__filters-arrow sock-bundle-picker__filters-arrow--prev"
+            data-picker-filters-prev
+            aria-label="Show previous collections"
+            hidden
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div
+            class="sock-bundle-picker__filters"
+            role="toolbar"
+            aria-label="{{ filter_label | default: 'Filter socks by collection' | escape }}"
+            data-picker-filters
+          >
+            {%- for filter_collection in filters -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: forloop.first -%}
+            {%- endfor -%}
+          </div>
+          <button
+            type="button"
+            class="sock-bundle-picker__filters-arrow sock-bundle-picker__filters-arrow--next"
+            data-picker-filters-next
+            aria-label="Show more collections"
+            hidden
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+
   {%- if bundle_collection == blank or bundle_collection.products_count == 0 -%}
     <p class="sock-bundle-picker__empty">
       Select a collection in the "Sock bundle" block to let customers pick their socks.
     </p>
   {%- else -%}
-    <div class="sock-bundle-picker__grid" role="list">
+    <div class="sock-bundle-picker__grid" role="list" data-picker-grid>
       {%- comment -%}
         The sock being viewed is pinned first, whether or not it is in the chosen
         collection, so the shopper can always put the one they came for in a pack.
       {%- endcomment -%}
       {%- if block.settings.pin_current_product and product.available -%}
-        {%- render 'sock-bundle-picker-card', sock: product, block: block -%}
+        {%- render 'sock-bundle-picker-card', sock: product, block: block, pinned: true -%}
       {%- endif -%}
 
-      {%- for sock in bundle_collection.products limit: products_limit -%}
-        {%- unless block.settings.pin_current_product and sock.id == product.id -%}
-          {%- render 'sock-bundle-picker-card', sock: sock, block: block -%}
-        {%- endunless -%}
-      {%- endfor -%}
+      {%- if use_filters -%}
+        {%- comment -%} The whole collection, matching what its tab loads later. {%- endcomment -%}
+        {%- paginate bundle_collection.products by 250 -%}
+          {%- for sock in bundle_collection.products -%}
+            {%- if picker_type != blank and sock.type != picker_type -%}{%- continue -%}{%- endif -%}
+            {%- unless block.settings.pin_current_product and sock.id == product.id -%}
+              {%- render 'sock-bundle-picker-card', sock: sock, block: block -%}
+            {%- endunless -%}
+          {%- endfor -%}
+        {%- endpaginate -%}
+      {%- else -%}
+        {%- for sock in bundle_collection.products limit: products_limit -%}
+          {%- if picker_type != blank and sock.type != picker_type -%}{%- continue -%}{%- endif -%}
+          {%- unless block.settings.pin_current_product and sock.id == product.id -%}
+            {%- render 'sock-bundle-picker-card', sock: sock, block: block -%}
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endif -%}
     </div>
   {%- endif -%}
 

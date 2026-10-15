@@ -156,6 +156,36 @@ if (!customElements.get('sock-bundle')) {
         this.picker?.addEventListener('change', this.onPickerVariantChange);
         this.syncAllCardPrices();
 
+        // Collection filter tabs above the picker, when the block has any.
+        this.filtersEl = this.picker?.querySelector('[data-picker-filters]');
+        this.filterSelect = this.picker?.querySelector('[data-picker-filter-select]');
+        this.activeFilter =
+          this.filtersEl?.querySelector('[aria-pressed="true"]')?.dataset.pickerFilter ||
+          this.filterSelect?.value ||
+          '';
+        this.filterCache = {};
+        this.filterToken = 0;
+        // The sock being viewed leads any tab whose collection holds it.
+        this.pinnedProductId =
+          this.picker?.querySelector('[data-picker-grid] [data-picker-pinned]')?.dataset.productId || '';
+        this.setUpFilterScrolling();
+        // A mouse wheel only scrolls up and down; let it move the tabs sideways.
+        this.filtersEl?.addEventListener(
+          'wheel',
+          (event) => {
+            const strip = this.filtersEl;
+            if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+            if (strip.scrollWidth <= strip.clientWidth) return;
+            const atStart = strip.scrollLeft <= 0 && event.deltaY < 0;
+            const atEnd =
+              strip.scrollLeft >= strip.scrollWidth - strip.clientWidth - 1 && event.deltaY > 0;
+            if (atStart || atEnd) return;
+            event.preventDefault();
+            strip.scrollLeft += event.deltaY;
+          },
+          { passive: false }
+        );
+
         // Impulse announces every variant switch with a document-level
         // `variant:change` event, which keeps the pre-filled slot in sync.
         document.addEventListener('variant:change', this.onVariantChange);
@@ -364,6 +394,12 @@ if (!customElements.get('sock-bundle')) {
       /* ------------------------------------------------------------------ */
 
       onPickerClick(event) {
+        const filterButton = event.target.closest('[data-picker-filter]');
+        if (filterButton) {
+          this.applyFilter(filterButton.dataset.pickerFilter);
+          return;
+        }
+
         const backButton = event.target.closest('[data-picker-back]');
         if (backButton) {
           const hidden = this.mediaContainer?.classList.toggle('sock-bundle-gallery-hidden');
@@ -436,9 +472,9 @@ if (!customElements.get('sock-bundle')) {
 
       saveSlots() {
         try {
-          const picks = this.slots
-            .filter(Boolean)
-            .map((slot) => ({ productId: slot.productId, variantId: slot.variantId }));
+          // The whole slot is kept, since with collection tabs a sock may come
+          // from a tab whose cards are not on the page when it reloads.
+          const picks = this.slots.filter(Boolean);
           window.sessionStorage.setItem(this.storageKey, JSON.stringify(picks));
         } catch (error) {
           // Storage can be unavailable (private mode, blocked site data); the
@@ -461,8 +497,11 @@ if (!customElements.get('sock-bundle')) {
               `[data-picker-card][data-product-id="${CSS.escape(String(pick.productId))}"]`
             );
             const field = card?.querySelector('[data-picker-variant]');
-            if (!field) return null;
 
+            // Not in the grid on screen (another tab): use what was saved.
+            if (!field) return pick.title && pick.variantId ? pick : null;
+
+            // On screen: read it fresh, and drop it if that size has sold out.
             const option =
               field.tagName === 'SELECT'
                 ? Array.from(field.options).find(
@@ -474,6 +513,160 @@ if (!customElements.get('sock-bundle')) {
           .filter(Boolean);
 
         this.slots = this.maxSocks ? restored.slice(0, this.maxSocks) : restored;
+      }
+
+      /**
+       * Show only the socks in one collection. Each collection's grid is fetched
+       * once through the Section Rendering API and kept, so tapping back to a
+       * tab is instant. Socks already in the pack are untouched.
+       */
+      async applyFilter(handle) {
+        const grid = this.picker?.querySelector('[data-picker-grid]');
+        if (!handle || !grid || handle === this.activeFilter) return;
+
+        const previous = this.activeFilter;
+        if (previous && !this.filterCache[previous]) this.filterCache[previous] = grid.innerHTML;
+
+        this.setFilterPressed(handle);
+        const token = ++this.filterToken;
+
+        let html = this.filterCache[handle];
+        if (!html) {
+          grid.classList.add('is-loading');
+          grid.setAttribute('aria-busy', 'true');
+          try {
+            const root = window.Shopify?.routes?.root || '/';
+            const response = await fetch(
+              `${root}collections/${encodeURIComponent(handle)}?section_id=sock-bundle-picker-grid`
+            );
+            if (!response.ok) throw new Error(`Status ${response.status}`);
+            const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+            const fresh = doc.querySelector('[data-picker-grid]');
+            if (!fresh) throw new Error('No picker grid in the response');
+            html = fresh.innerHTML;
+            this.filterCache[handle] = html;
+          } catch (error) {
+            console.error(error);
+            if (token === this.filterToken) {
+              grid.classList.remove('is-loading');
+              grid.removeAttribute('aria-busy');
+              this.setFilterPressed(previous);
+              this.setError('Could not load those socks. Please try again.');
+            }
+            return;
+          }
+        }
+
+        // A later tap has taken over while this one was loading.
+        if (token !== this.filterToken) return;
+
+        this.activeFilter = handle;
+        grid.innerHTML = html;
+        this.pinViewedSock(grid);
+        grid.scrollTop = 0;
+        grid.classList.remove('is-loading');
+        grid.removeAttribute('aria-busy');
+        this.setError('');
+        this.syncAllCardPrices();
+        // Re-mark which of these socks are already in the pack.
+        if (!this.slotsWrap.hidden) this.render();
+      }
+
+      /**
+       * The tab strip scrolls sideways. Touch and trackpads do that natively;
+       * a desktop mouse gets arrows, click-and-drag and its wheel.
+       */
+      setUpFilterScrolling() {
+        const strip = this.filtersEl;
+        if (!strip) return;
+
+        const prev = this.picker.querySelector('[data-picker-filters-prev]');
+        const next = this.picker.querySelector('[data-picker-filters-next]');
+        const updateArrows = () => {
+          const max = strip.scrollWidth - strip.clientWidth;
+          if (prev) prev.hidden = max <= 2 || strip.scrollLeft <= 2;
+          if (next) next.hidden = max <= 2 || strip.scrollLeft >= max - 2;
+        };
+        const step = (direction) =>
+          strip.scrollBy({ left: direction * strip.clientWidth * 0.7, behavior: 'smooth' });
+
+        prev?.addEventListener('click', () => step(-1));
+        next?.addEventListener('click', () => step(1));
+        strip.addEventListener('scroll', updateArrows, { passive: true });
+        window.addEventListener('resize', updateArrows);
+        updateArrows();
+
+        // Click-and-drag with a mouse. A drag never counts as tapping a tab.
+        let drag = null;
+        strip.addEventListener('pointerdown', (event) => {
+          if (event.pointerType !== 'mouse' || event.button !== 0) return;
+          drag = { x: event.clientX, left: strip.scrollLeft, moved: false };
+        });
+        strip.addEventListener('pointermove', (event) => {
+          if (!drag) return;
+          const dx = event.clientX - drag.x;
+          if (!drag.moved && Math.abs(dx) < 5) return;
+          if (!drag.moved) {
+            drag.moved = true;
+            strip.setPointerCapture?.(event.pointerId);
+            strip.classList.add('is-dragging');
+          }
+          strip.scrollLeft = drag.left - dx;
+        });
+        const endDrag = () => {
+          if (!drag) return;
+          const moved = drag.moved;
+          drag = null;
+          strip.classList.remove('is-dragging');
+          if (moved) {
+            strip.addEventListener(
+              'click',
+              (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+              },
+              { capture: true, once: true }
+            );
+          }
+        };
+        strip.addEventListener('pointerup', endDrag);
+        strip.addEventListener('pointercancel', endDrag);
+        strip.addEventListener('dragstart', (event) => event.preventDefault());
+      }
+
+      /**
+       * Move the viewed sock to the front of a tab, when that collection has it.
+       * A tab only ever shows its own collection, so it is never added in.
+       */
+      pinViewedSock(grid) {
+        if (!this.pinnedProductId) return;
+        const card = grid.querySelector(
+          `[data-picker-card][data-product-id="${this.pinnedProductId}"]`
+        );
+        if (card && card !== grid.firstElementChild) grid.prepend(card);
+      }
+
+      /** Mark the active filter, on the pills or in the dropdown. */
+      setFilterPressed(handle) {
+        if (this.filterSelect && this.filterSelect.value !== handle) this.filterSelect.value = handle;
+        if (!this.filtersEl) return;
+        this.filtersEl.querySelectorAll('[data-picker-filter]').forEach((tab) => {
+          const on = tab.dataset.pickerFilter === handle;
+          tab.setAttribute('aria-pressed', String(on));
+          if (on) this.scrollFilterIntoView(tab);
+        });
+      }
+
+      /** Keep the chosen tab in view in its strip, without scrolling the page. */
+      scrollFilterIntoView(tab) {
+        const strip = this.filtersEl;
+        const left = tab.offsetLeft - strip.offsetLeft;
+        const right = left + tab.offsetWidth;
+        if (left < strip.scrollLeft) {
+          strip.scrollTo({ left: Math.max(0, left - 16), behavior: 'smooth' });
+        } else if (right > strip.scrollLeft + strip.clientWidth) {
+          strip.scrollTo({ left: right - strip.clientWidth + 16, behavior: 'smooth' });
+        }
       }
 
       firstEmptySlot() {
@@ -969,6 +1162,11 @@ if (!customElements.get('sock-bundle')) {
        * The displayed price follows the card's dropdown instead.
        */
       onPickerVariantChange(event) {
+        if (event.target.matches?.('[data-picker-filter-select]')) {
+          this.applyFilter(event.target.value);
+          return;
+        }
+
         const field = event.target.closest('[data-picker-variant]');
         if (!field) return;
         this.syncCardPrice(field.closest('[data-picker-card]'));
@@ -1013,6 +1211,25 @@ if (!customElements.get('sock-bundle')) {
         if (filled < 1) {
           this.setError('Pick at least one sock to continue.');
           return;
+        }
+
+        // Before anything goes in the cart, offer a few extras
+        // (sections/cart-upsell.liquid). Closing it cancels the add.
+        this.extraCounts = { all: 0, socks: 0 };
+        const upsell = document.querySelector('cart-upsell');
+        if (typeof upsell?.offer === 'function') {
+          this.atcButton.disabled = true;
+          this.atcButton.classList.add('btn--loading');
+          const choice = await upsell.offer();
+          this.atcButton.classList.remove('btn--loading');
+          this.atcButton.disabled = false;
+          if (!choice.proceed) return;
+          choice.extras.forEach((extra) => items.push({ id: extra.id, quantity: extra.quantity }));
+          // Extras count toward the pack size, and so toward its discount code.
+          this.extraCounts = {
+            all: choice.extras.length,
+            socks: choice.extras.filter((extra) => extra.sock).length,
+          };
         }
 
         this.atcButton.disabled = true;
@@ -1065,31 +1282,58 @@ if (!customElements.get('sock-bundle')) {
       }
 
       async applyDiscountAndFinish() {
-        const code = this.discountCode.trim();
+        const target = this.afterAdd === 'checkout' ? '/checkout' : this.cartUrl;
         // Respect the locale prefix (e.g. /en-us/) Shopify adds on translated stores.
         const root = (window.theme?.routes?.home || '/').replace(/\/?$/, '/');
         const drawer =
           this.afterAdd === 'stay' && Boolean(document.querySelector('#CartDrawer'));
 
-        // Stay on the page: attach the code through the Ajax cart, then have
-        // Impulse rebuild its cart drawer and open it, discount included.
-        if (drawer && (!code || (await this.applyDiscountCode(code)))) {
+        // Attach the code through the Ajax cart, trying the best one first and
+        // stepping down until Shopify actually applies one.
+        const codes = this.codesForCart();
+        let applied = false;
+        for (const code of codes) {
+          if (await this.applyDiscountCode(code)) {
+            applied = true;
+            break;
+          }
+        }
+
+        // The Ajax cart would not take any of them: redirecting through
+        // /discount/CODE is the old reliable way, with the safest code.
+        if (codes.length && !applied) {
+          window.location.href = `${root}discount/${encodeURIComponent(
+            codes[codes.length - 1]
+          )}?redirect=${encodeURIComponent(target)}`;
+          return;
+        }
+
+        // Stay on the page: Impulse rebuilds its cart drawer and opens it.
+        if (drawer) {
           document.dispatchEvent(new CustomEvent('cart:build'));
           document.dispatchEvent(new CustomEvent('cart:open'));
           return;
         }
 
-        // Otherwise, or if the Ajax cart would not take the code, redirecting
-        // through /discount/CODE is the reliable way to attach it.
-        const target = this.afterAdd === 'checkout' ? '/checkout' : this.cartUrl;
-        if (code) {
-          window.location.href = `${root}discount/${encodeURIComponent(
-            code
-          )}?redirect=${encodeURIComponent(target)}`;
-          return;
-        }
-
         window.location.href = target;
+      }
+
+      /**
+       * The pack's codes, best first. Extras from the popup count toward the
+       * pack size, so the first code goes by everything going in. The codes only
+       * cover socks, though, so a gift box or bundle may not count at checkout;
+       * the next code counts the socks only, so the shopper never ends up with
+       * less than the pack alone earned.
+       */
+      codesForCart() {
+        const filled = this.slots.filter(Boolean).length;
+        const extra = this.extraCounts || { all: 0, socks: 0 };
+        const candidates = [
+          this.tierFor(filled + extra.all),
+          this.tierFor(filled + extra.socks),
+          this.tierFor(filled),
+        ].map((tier) => (tier?.code || '').trim());
+        return [...new Set(candidates.filter(Boolean))];
       }
 
       /**

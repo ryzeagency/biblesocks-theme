@@ -1,0 +1,49 @@
+{% comment %}
+  The cards in the cart drawer's "You might also like", for one collection.
+  Fetched by assets/cart-recommendations.js through the Section Rendering API:
+  /collections/<handle>?section_id=cart-drawer-recs-grid. Not meant to be added
+  to a page.
+
+  Up to six products the shopper can buy and does not already have in the cart,
+  as the sock picker's cards: size dropdown, price that follows it, Add button.
+{% endcomment %}
+
+{%- liquid
+  capture in_cart
+    echo ','
+    for item in cart.items
+      echo item.product_id
+      echo ','
+    endfor
+  endcapture
+-%}
+
+<div data-cart-recs-grid>
+  {%- if collection -%}
+    {%- assign shown = 0 -%}
+    {%- for sock in collection.products -%}
+      {%- if shown >= 6 -%}{%- break -%}{%- endif -%}
+      {%- assign key = ',' | append: sock.id | append: ',' -%}
+      {%- if sock.available -%}
+        {%- unless in_cart contains key -%}
+          {%- render 'sock-bundle-picker-card', sock: sock, block: section -%}
+          {%- assign shown = shown | plus: 1 -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Cart drawer suggestions",
+  "settings": [
+    {
+      "type": "text",
+      "id": "picker_add_text",
+      "label": "Add button text",
+      "default": "Add"
+    }
+  ]
+}
+{% endschema %}

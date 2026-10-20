@@ -1,0 +1,163 @@
+{%- comment -%}
+  FAQs page template. Assign it to a page under Online Store > Pages > Theme template: faqs.
+
+  The questions and answers are written here, copied from the old Help Center app page
+  (/apps/help-center). To change one, edit its question or answer below. Anything typed
+  into the page's own content in the admin shows above the questions.
+{%- endcomment -%}
+
+{%- assign faq_schema = '' -%}
+{%- assign faq_separator = '' -%}
+
+<div class="page-width page-width--narrow page-content page-faqs">
+  {%- render 'breadcrumbs' -%}
+
+  <header class="section-header text-center">
+    <h1 class="section-header__title">{{ page.title }}</h1>
+  </header>
+
+  <div class="rte page-faqs__verse text-center">
+    <p><em>&ldquo;Ask, and it shall be given you; seek, and ye shall find; knock, and it shall be opened unto you.&rdquo;</em><br>Matthew 7:7</p>
+  </div>
+
+  {%- if page.content != blank -%}
+    <div class="rte page-faqs__content">
+      {{ page.content }}
+    </div>
+  {%- endif -%}
+
+  <div class="page-faqs__list">
+    {%- capture faq_question -%}What kind of magic do you put into BibleSocks to make them SO comfortable?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>These are not your standard "el-cheapo" novelty foot bags.  Our socks are hand stitched by over 100 sweet grandmothers every day while they listen to beautiful Gospel music  while occasionally taking breaks to witness to each other about the goodness of God.</p>
+<p>OK, just kidding...they are actually a perfect combination of rayon, polyester to keep the designs always looking fresh, and a super soft cotton bottom that give them the most perfect cushioning.  Our customers not only rave about our super cool designs, they also LOVE their amazing quality and how they feel!</p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-1', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+    {%- capture faq_question -%}How do BibleSocks fit? What is your sizing guide?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>BibleSocks have the perfect amount of stretch and are generally a "one size fits most". </p>
+<p>Simply put...</p>
+<p>Our MENS Socks are sized to fit a shoe size 6-13 Man, or a 10-13 Woman.</p>
+<p><em>We've had them fit smaller feet, and we've had them fit bigger, King-Kong type feet.  We've even had some size 15-16 footers love these as well!  </em></p>
+<p>Our WOMEN/YOUTH Socks are sized to fit a shoe size 5-10 Woman or a 3-8 Man</p>
+<p><em>Perfect for the small footed man, and the wife of any age.</em></p>
+<p>Our KIDS Socks are sized to fit a shoe size 10-3 Child</p>
+<p><em>For your smaller and cuter kiddos.</em></p>
+<p>Of course, if they don't fit - just holler at us and we'll either hand sew you a new pair or find another sensible alternative to help you out. </p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-2', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+    {%- capture faq_question -%}Do you ship internationally?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>With over 2 billion Christians around the globe, we&rsquo;d LOVE to spread the joy of BibleSocks far and wide&mdash;from the streets of Rome to the shores of Cape Town, from bustling Seoul to serene Santiago. Can you imagine a world where Bible-inspired socks are walking the talk everywhere? Yeah, we can too!</p>
+<p>But here&rsquo;s the thing&mdash;right now, we&rsquo;re staying local. International shipping brings its own set of &ldquo;David vs. Goliath&rdquo;-level hurdles (shipping giants can be intimidating!). But don&rsquo;t lose heart&mdash;our team is working like the builders of Nehemiah&rsquo;s wall to make it happen.</p>
+<p>In the meantime, thank you for your support, your patience, and your faith. Keep us in your prayers, and we&rsquo;ll keep striving to bring our socks to your doorstep, no matter where in the world you call home.</p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-3', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+    {%- capture faq_question -%}Do you sell in bulk?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>Yes! Whether you're a Youth Leader, Sunday School Teacher, Pastor, or large family with a lot of cousins...we've certainly got you covered!</p>
+<p>For bulk pricing shoot us an email at <a href="mailto:info@biblesocks.com">info@biblesocks.com</a></p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-4', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+    {%- capture faq_question -%}Where are you located?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>We are a Christian family-based business in the United States.  We make, design, and ship the socks here in our home warehouse.  See our FAQ on shipping below.</p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-5', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+    {%- capture faq_question -%}How long does shipping take?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>We are based in the USA so normally it takes about 3-4 days to get them anywhere within the continental USA.  Holiday shipping may delay those times a bit due to the busyness of the USPS.</p>
+<p>All orders are prepared to ship within 1-3 business days of your order date.</p>
+<p><strong>*Due to high holiday demand, orders will take longer to fulfill - but be patient, we will get them to you in a timely manner.</strong></p>
+<p>Shortly after your order is fulfilled, you'll be sent a tracking number via email or text (whichever you provide) so you can be obsessive compulsive and check our order's status every 5 minutes if you'd like. ;) </p>
+<p>You'll receive a shipment and delivery confirmation as well.</p>
+<p>Every once in a while, the good old USPS gets a little ambitious and may send you a "delivered" email before they actually get to you.  We understand...we'd be excited too!  Just hang in there and they'll be there shortly. Please review our Shipping Policy section of our FAQ page below</p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-6', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+    {%- capture faq_question -%}What is your Shipping policy?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>Please be aware that once your order has been fulfilled by us and picked up by USPS (or other shipping provider) you will receive a tracking number from that provider. </p>
+<p>Once you have received your tracking number, your product is out of our hands, and the shipping provider is then responsible to deliver your item(s) to the address you provided in a timely manner.  </p>
+<p>We cannot guarantee a specific delivery date, nor can we guarantee that the shipping provider will accurately deliver your item(s).  </p>
+<p>BibleSocks will not be held responsible for inaccurately delivered packages or untimely deliveries.  Please double check your shipping address and ensure that your place of delivery is secure.  We recommend checking your tracking information often and being aware of estimated delivery times so that you can quickly retrieve your item(s). </p>
+<p>If you provide us an incomplete or inaccurate shipping address, you will be responsible to pay for the order to be reshipped.</p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-7', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+    {%- capture faq_question -%}What is your Return Policy?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>Returns and exchanges must be transacted within 30 days of original purchase.</p>
+<p>To be eligible for a return, your item(s) must be unused and in the same condition as delivered. Item(s) must also be in the original packaging.</p>
+<p>If an item is damaged upon delivery, please contact us immediately at <a href="mailto:info@biblesocks.com">info@biblesocks.com</a> so we can assist you.</p>
+<p>If you have changed your mind or want to return your item(s) for any reason other than damage upon delivery, you will be responsible for the shipping cost to return the item(s).</p>
+<p><strong>Refunds (if applicable)</strong></p>
+<p>Once your return is received and inspected, we will send you an email to notify you that we have received your returned item. We will also notify you of the approval or rejection of your refund.</p>
+<p>If you are approved, then your refund will be processed, and a credit will automatically be applied to your credit card or original method of payment. Banks and other financial institutions vary on the length of time this will take.</p>
+<p><strong>Late or missing refunds (if applicable)</strong></p>
+<p>If you haven’t received a refund yet, first re-check your bank account.</p>
+<p>Then contact your credit card company, it may take some time before your refund is officially posted.</p>
+<p>Next contact your bank. There is often some processing time before a refund is posted.</p>
+<p>If you’ve done all of this and you still have not received your refund yet, please contact us at <a href="mailto:info@biblesocks.com">info@biblesocks.com</a>.</p>
+<p><strong>Exchanges (if applicable)</strong></p>
+<p>We replace items only if they are defective or damaged. If you need to exchange, send us an email at <a href="mailto:info@biblesocks.com">info@biblesocks.com</a> and we will provide instructions on how to return your product. You will be responsible to pay for return shipping if you simply want a different style or size.</p>
+<p><strong>Shipping</strong></p>
+<p>To return your product, please email us at <a href="mailto:info@biblesocks.com">info@biblesocks.com</a> for instructions on how to process the return.</p>
+<p>You will be responsible for paying for your own shipping costs for returning your item unless the product was damaged before delivery. Shipping costs are non-refundable. If you receive a refund, the cost of return shipping will be deducted from your refund.</p>
+<p>The time it may take for your exchanged product to reach you will vary depending on where you live.</p>
+<p>If you are returning items valuing over $75, you should consider using a trackable shipping service or purchasing shipping insurance. We do not guarantee that we will receive your returned item.</p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-8', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+    {%- capture faq_question -%}How do I contact you?{%- endcapture -%}
+    {%- capture faq_answer -%}
+<p>You can reach out to us at <a href="mailto:info@biblesocks.com">info@biblesocks.com</a> and we'll get back to you as soon as we can.</p>
+    {%- endcapture -%}
+    {%- render 'tab', id: 'faq-9', title: faq_question, content: faq_answer -%}
+    {%- capture faq_entry -%}{"@type":"Question","name":{{ faq_question | strip | json }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_answer | strip_html | strip | json }}}}{%- endcapture -%}
+    {%- assign faq_schema = faq_schema | append: faq_separator | append: faq_entry -%}
+    {%- assign faq_separator = ',' -%}
+  </div>
+</div>
+
+<script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{{ faq_schema }}]}
+</script>
+
+<style>
+  .page-faqs__verse {
+    max-width: 560px;
+    margin: 0 auto 40px;
+  }
+
+  .page-faqs__content {
+    margin-bottom: 30px;
+  }
+
+  /* The site sets body p to white for its dark homepage sections; the .rte rule
+     brings answers back to black, and this covers the question text too. */
+  .page-faqs .collapsible-trigger {
+    color: var(--colorTextBody);
+  }
+</style>

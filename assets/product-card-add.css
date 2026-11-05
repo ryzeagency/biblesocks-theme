@@ -1,0 +1,84 @@
+/*
+ * Collection pages: add to cart under each product card, one-line names and
+ * loading more as you scroll (sections/main-collection.liquid).
+ */
+
+/* Add to cart under a product card (Products → Show add to cart under each product).
+   Above the card link's full-cover hit area, so the dropdown and button take taps. */
+.product-card-add {
+  position: relative;
+  z-index: 2;
+  margin-top: 4px;
+}
+
+.product-card-add__form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Impulse draws the select arrow as a background image; keep it, clear of the edge. */
+.product-card-add .product-card-add__size {
+  width: 100%;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 30px 0 10px;
+  border: 1px solid color-mix(in srgb, var(--colorTextBody) 25%, transparent);
+  border-radius: 0;
+  background-color: var(--colorBody);
+  background-position: right 10px center;
+  background-size: 11px;
+  color: var(--colorTextBody);
+  font-family: inherit;
+  font-size: 13px !important;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+}
+
+.product-card-add .product-card-add__button {
+  min-width: 0;
+  padding: 10px 8px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.product-card-add__error {
+  color: var(--colorTextSavings, #c20000);
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* Collection pages: a product's name keeps to one line, ending in "…" when it
+   runs long; its full name shows on hover. */
+.collection-content .grid-product__title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Load more as you scroll: once script takes over, the page links make way for
+   a spinner while the next page loads. */
+collection-infinite-scroll {
+  display: block;
+}
+
+collection-infinite-scroll.is-active {
+  min-height: 1px;
+}
+
+collection-infinite-scroll.is-active .pagination {
+  display: none;
+}
+
+collection-infinite-scroll[aria-busy='true']::after {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 20px auto;
+  border: 3px solid var(--colorTextBody);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}

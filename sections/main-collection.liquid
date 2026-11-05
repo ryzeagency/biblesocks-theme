@@ -6,6 +6,19 @@
   endfor
 -%}
 
+{%- comment -%} Add to cart under each product, one-line names and loading more as you scroll. {%- endcomment -%}
+{{ 'product-card-add.css' | asset_url | stylesheet_tag }}
+{%- for block in section.blocks -%}
+  {%- if block.type == 'product_grid' -%}
+    {%- if block.settings.show_card_add -%}
+      <script src="{{ 'product-card-add.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+    {%- if block.settings.infinite_scroll -%}
+      <script src="{{ 'collection-infinite-scroll.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+
 <div
   class="collection-content"
   data-section-id="{{ section.id }}"
@@ -48,7 +61,7 @@
                   {%- render 'subcollections', per_row: block.settings.subcollections_per_row -%}
                 {%- endif -%}
               {%- when 'product_grid' -%}
-                <div data-scroll-to>
+                <div data-scroll-to data-collection-products>
                   {% render 'collection-grid',
                     collection: collection,
                     items: collection.products,
@@ -58,10 +71,20 @@
                     enable_collection_count: block.settings.enable_collection_count,
                     per_row: block.settings.per_row,
                     mobile_flush_grid: block.settings.mobile_flush_grid,
-                    quick_shop_enable: settings.quick_shop_enable
+                    quick_shop_enable: settings.quick_shop_enable,
+                    show_add_below: block.settings.show_card_add
                   %}
                   {%- if paginate.pages > 1 -%}
-                    {%- render 'pagination', paginate: paginate -%}
+                    {%- if block.settings.infinite_scroll -%}
+                      <collection-infinite-scroll
+                        data-next-url="{{ paginate.next.url }}"
+                        data-section-id="{{ section.id }}"
+                      >
+                        {%- render 'pagination', paginate: paginate -%}
+                      </collection-infinite-scroll>
+                    {%- else -%}
+                      {%- render 'pagination', paginate: paginate -%}
+                    {%- endif -%}
                   {%- endif -%}
                 </div>
               {%- endcase -%}
@@ -201,6 +224,20 @@
           "id": "mobile_flush_grid",
           "label": "t:sections.main-collection.blocks.products.settings.mobile_flush_grid.label",
           "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_card_add",
+          "label": "Show add to cart under each product",
+          "info": "A size dropdown with each size's price, for products with more than one, and an add to cart button. Cards with the dropdown drop their price line.",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "infinite_scroll",
+          "label": "Load more as you scroll",
+          "info": "The next page's products join the grid as shoppers reach its end, in place of page links.",
+          "default": true
         }
       ],
       "limit": 1

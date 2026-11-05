@@ -1216,3 +1216,942 @@ sock-bundle {
 .cart-drawer-recs .cart-recs__error:empty {
   display: none;
 }
+
+/* ==========================================================================
+   Product first (Layout: "Product first, buy more save more")
+   Under the theme's buy box, the mix & match builder: a ladder of boxes that
+   becomes the pack. See sock-bundle-teaser.liquid.
+   ========================================================================== */
+
+/* ---------- The builder below the buy box ---------- */
+
+.sock-bundle--teaser {
+  --sb-accent: #f3c24a;
+  --sb-tile-bg: color-mix(in srgb, var(--colorTextBody) 4%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------- The ladder ---------- */
+
+.sock-bundle__teaser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1.5px dashed var(--colorTextBody);
+  border-radius: 12px;
+  background: var(--colorBody);
+}
+
+body.sock-bundle-packing .sock-bundle__teaser,
+.sock-bundle--build-own .sock-bundle__teaser {
+  border-style: solid;
+}
+
+/* ---------- Build your own pack ----------
+   A build-your-own product opens on the picker and the pack. Its own name is
+   no sock's, so it stays for screen readers only, and the picker shows from
+   the first paint at every width, not just on desktop. */
+
+.sock-bundle-picker--teaser.sock-bundle-picker--open-on-load {
+  display: block;
+}
+
+.sock-bundle__teaser-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.sock-bundle__teaser-note {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+/* Only a phone's docked pack folds; see the mobile rules. */
+.sock-bundle__teaser-toggle {
+  display: none;
+}
+
+/* Four across; a fifth step or pair starts a second row, with room between
+   the rows for the remove buttons that sit on a box's corner. */
+.sock-bundle__teaser-slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Holds two rows' height, the usual five-step ladder, until the script lays
+   the boxes out. */
+.sock-bundle__teaser-slots:empty {
+  aspect-ratio: 2 / 1;
+}
+
+.sock-bundle__teaser-slot {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background: var(--sb-tile-bg);
+}
+
+.sock-bundle__teaser-tile {
+  /* Grows past square when a filled box makes the row taller, so the dashed
+     edge stays on the box's edge rather than ending above its background. */
+  flex: 1 0 auto;
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1.5px dashed transparent;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  text-align: center;
+}
+
+button.sock-bundle__teaser-tile {
+  border-color: color-mix(in srgb, var(--colorTextBody) 25%, transparent);
+  cursor: pointer;
+}
+
+button.sock-bundle__teaser-tile:hover {
+  border-color: var(--colorTextBody);
+}
+
+.sock-bundle__teaser-tile span {
+  font-size: 12px;
+  line-height: 1.2;
+  opacity: 0.7;
+}
+
+.sock-bundle__teaser-tile strong {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+/* The top of the ladder, the deal worth reaching for. */
+.sock-bundle__teaser-slot.is-best:not(.is-filled) {
+  background: var(--sb-accent);
+}
+
+.sock-bundle__teaser-slot.is-best:not(.is-filled) .sock-bundle__teaser-tile span {
+  opacity: 1;
+}
+
+.sock-bundle__teaser-slot.is-filled {
+  border: 1.5px solid var(--colorTextBody);
+  background: var(--colorBody);
+  animation: sock-bundle-slot-in 0.25s ease;
+}
+
+.sock-bundle__teaser-slot.is-filled img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px 6px 0 0;
+  display: block;
+}
+
+/* The first pair's size; wraps rather than cutting off a long one. */
+.sock-bundle__teaser-cap {
+  padding: 6px 4px;
+  border-radius: 0 0 6px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.sock-bundle__teaser-remove {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--colorTextBody);
+  color: var(--colorBody);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* A bigger target for a finger than the circle shows. */
+.sock-bundle__teaser-remove::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+}
+
+@keyframes sock-bundle-slot-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+.sock-bundle__teaser-msg {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  transform-origin: left center;
+}
+
+.sock-bundle__teaser-progress {
+  margin-top: 0;
+}
+
+/* What waits at the end of the bar: free shipping. */
+.sock-bundle__teaser-goal {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.sock-bundle__teaser-goal[hidden] {
+  display: none;
+}
+
+.sock-bundle__teaser-msg.sock-bundle__progress-note--pulse {
+  animation: sock-bundle-pop 0.4s ease;
+}
+
+.sock-bundle__teaser-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--colorTextBody) 14%, transparent);
+}
+
+.sock-bundle__teaser-foot[hidden] {
+  display: none;
+}
+
+.sock-bundle__teaser-subtotal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sock-bundle__teaser-compare {
+  margin-right: 6px;
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.sock-bundle__teaser-total {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* Beside the prices, ahead of the crossed-out one. */
+.sock-bundle__teaser-save {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--sb-accent);
+  color: #111;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sock-bundle__teaser-save[hidden],
+.sock-bundle__teaser-compare[hidden] {
+  display: none;
+}
+
+.sock-bundle--teaser .sock-bundle__atc {
+  width: 100%;
+}
+
+/* Before a pack is started, the builder is just where it stands and its
+   button; the quantity options above already show the ladder. A
+   build-your-own product opens packing, so it always shows the pack. */
+body:not(.sock-bundle-packing) .sock-bundle--teaser:not(.sock-bundle--build-own, .has-pairs) :is(.sock-bundle__teaser-progress, .sock-bundle__teaser-slots) {
+  display: none;
+}
+
+/* The ladder's yellow, so it reads as the way into the savings. */
+.sock-bundle--teaser .sock-bundle__teaser-open {
+  width: 100%;
+  border-color: var(--sb-accent, #f3c24a);
+  background: var(--sb-accent, #f3c24a);
+  color: #111;
+  font-weight: 700;
+}
+
+.sock-bundle--teaser .sock-bundle__teaser-open:hover {
+  border-color: #111;
+  background: var(--sb-accent, #f3c24a);
+  color: #111;
+  box-shadow: 0 0 15px -8px rgba(0, 0, 0, 0.9);
+}
+
+/* Once there is a pack, its empty boxes open the picker instead. */
+body.sock-bundle-packing .sock-bundle__teaser-open,
+.sock-bundle--build-own .sock-bundle__teaser-open,
+.sock-bundle--teaser.has-pairs .sock-bundle__teaser-open {
+  display: none;
+}
+
+/* ---------- Picker, product first ---------- */
+
+.sock-bundle-picker--teaser {
+  scroll-margin-top: 100px;
+}
+
+/* Each size in the dropdown carries its price, so the card's price line steps aside.
+   (Named without "price": theme.css hides anything named *price* inside *bundle*.) */
+.sock-bundle-picker .sock-bundle-picker__card--sizes-with-cost .sock-bundle-picker__card-price {
+  /* !important to beat the rule near the top that restores card prices. */
+  display: none !important;
+}
+
+.sock-bundle-picker--teaser [data-picker-quick-view] {
+  cursor: pointer;
+}
+
+.sock-bundle-picker--teaser .sock-bundle-picker__card-title {
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.sock-bundle-picker--teaser .sock-bundle-picker__card-title:hover {
+  text-decoration-color: currentColor;
+}
+
+.sock-bundle-picker--teaser .sock-bundle-picker__card-add {
+  min-height: 38px;
+  border-radius: 999px;
+  background: var(--colorTextBody);
+  color: var(--colorBody);
+  letter-spacing: 0.04em;
+}
+
+.sock-bundle-picker--teaser .sock-bundle-picker__card-add.is-added {
+  border-color: var(--sb-accent, #f3c24a);
+  background: var(--sb-accent, #f3c24a);
+  color: #111;
+}
+
+/* ---------- Reward unlocked toast ---------- */
+
+.sock-bundle__toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 10001;
+  max-width: calc(100vw - 32px);
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--colorTextBody);
+  color: var(--colorBody);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translate(-50%, 16px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+
+.sock-bundle__toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------- Quick view ---------- */
+
+html.sock-bundle-qv-open {
+  overflow: hidden;
+}
+
+.sock-bundle-qv {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: none;
+}
+
+.sock-bundle-qv[hidden] {
+  display: none;
+}
+
+.sock-bundle-qv__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.55);
+  animation: sock-bundle-qv-fade 0.2s ease;
+}
+
+.sock-bundle-qv__box {
+  position: relative;
+  width: min(860px, 100%);
+  max-height: calc(100svh - 40px);
+  overflow: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-radius: 16px;
+  background: var(--colorBody);
+  color: var(--colorTextBody);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  outline: none;
+  animation: sock-bundle-qv-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes sock-bundle-qv-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sock-bundle-qv-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+.sock-bundle-qv__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--colorBody);
+  color: inherit;
+  cursor: pointer;
+}
+
+.sock-bundle-qv__close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sock-bundle-qv__media img {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  display: block;
+  background: color-mix(in srgb, var(--colorTextBody) 5%, transparent);
+}
+
+.sock-bundle-qv__info {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px 28px 24px;
+}
+
+.sock-bundle-qv__title {
+  margin: 0;
+  padding-right: 36px;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.sock-bundle-qv__price {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.sock-bundle-qv__desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  opacity: 0.75;
+}
+
+.sock-bundle-qv__desc:empty {
+  display: none;
+}
+
+.sock-bundle-qv__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sock-bundle-qv__sizes[hidden] {
+  display: none;
+}
+
+.sock-bundle-qv__size {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--colorTextBody);
+  border-radius: 999px;
+  background: var(--colorBody);
+  color: inherit;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sock-bundle-qv__size[aria-pressed='true'] {
+  background: var(--colorTextBody);
+  color: var(--colorBody);
+}
+
+.sock-bundle-qv__size[disabled] {
+  opacity: 0.35;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.sock-bundle-qv__add {
+  width: 100%;
+}
+
+.sock-bundle-qv__unlock {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.sock-bundle-qv__unlock[hidden] {
+  display: none;
+}
+
+.sock-bundle-qv__link {
+  align-self: center;
+  font-size: 13px;
+  color: inherit;
+}
+
+/* ---------- Photo lightbox ---------- */
+
+.sock-bundle-picker [data-picker-zoom] {
+  cursor: zoom-in;
+}
+
+/* The magnifying glass on the photo's top left, opposite the count. */
+.sock-bundle-picker__card-zoom {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--colorBody);
+  color: var(--colorTextBody);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+}
+
+.sock-bundle-picker__card-zoom svg {
+  width: 15px;
+  height: 15px;
+}
+
+.sock-bundle-lb {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.sock-bundle-lb[hidden] {
+  display: none;
+}
+
+.sock-bundle-lb__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.8);
+  animation: sock-bundle-qv-fade 0.2s ease;
+}
+
+.sock-bundle-lb__box {
+  position: relative;
+  width: min(800px, 100%);
+  outline: none;
+  animation: sock-bundle-qv-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sock-bundle-lb__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100svh - 40px);
+  object-fit: contain;
+  border-radius: 12px;
+  background: var(--colorBody);
+}
+
+.sock-bundle-lb__button {
+  position: absolute;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--colorBody);
+  color: var(--colorTextBody);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.sock-bundle-lb__button[hidden] {
+  display: none;
+}
+
+.sock-bundle-lb__button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sock-bundle-lb__close {
+  top: 10px;
+  right: 10px;
+}
+
+.sock-bundle-lb__step {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.sock-bundle-lb__step--prev {
+  left: 10px;
+}
+
+.sock-bundle-lb__step--next {
+  right: 10px;
+}
+
+.sock-bundle-lb__count {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.6);
+  color: #fff;
+  font-size: 13px;
+}
+
+.sock-bundle-lb__count:empty {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sock-bundle__teaser-slot.is-filled,
+  .sock-bundle-qv__overlay,
+  .sock-bundle-qv__box,
+  .sock-bundle-lb__overlay,
+  .sock-bundle-lb__box {
+    animation: none;
+  }
+
+  .sock-bundle__toast {
+    transition: none;
+  }
+}
+
+/* ---------- Mobile ---------- */
+
+@media screen and (max-width: 768px) {
+  /* The picker sits where the photos were, at the top of the page, so it
+     drops the inline styling the builder layout gives it on mobile. */
+  .sock-bundle-picker.sock-bundle-picker--teaser {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .sock-bundle-picker.sock-bundle-picker--teaser .sock-bundle-picker__back {
+    display: inline-flex;
+  }
+
+  /* The picker starts just under the header, not after the section's top padding. */
+  body.sock-bundle-packing .page-content--product {
+    padding-top: 16px;
+  }
+
+  .sock-bundle-picker--teaser .sock-bundle-picker__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 8px;
+    max-height: max(280px, calc(100svh - 440px));
+  }
+
+  .sock-bundle-picker--teaser .sock-bundle-picker__card-title,
+  .sock-bundle-picker--teaser .sock-bundle-picker__card-price {
+    font-size: 12px;
+  }
+
+  /* Three across leaves the dropdown narrow; a smaller size keeps "Men - $16.95" whole. */
+  .sock-bundle-picker.sock-bundle-picker--teaser .sock-bundle-picker__card-variants {
+    padding: 0 16px 0 4px;
+    font-size: 10px !important;
+    background-position: right 4px center;
+  }
+
+  .sock-bundle-picker--teaser .sock-bundle-picker__card-add {
+    min-height: 34px;
+    font-size: 11.5px;
+  }
+
+  /* While packing, the pack docks to the bottom of the screen. */
+  body.sock-bundle-packing {
+    padding-bottom: 300px;
+  }
+
+  body.sock-bundle-packing.sock-bundle-pack-folded {
+    padding-bottom: 220px;
+  }
+
+  /* The fold button sits at the end of the top row, after the count. */
+  body.sock-bundle-packing .sock-bundle__teaser-top {
+    align-items: center;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-note {
+    margin-left: auto;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-toggle {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin: -6px -4px -6px 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--colorTextBody) 6%, transparent);
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .sock-bundle__teaser-toggle svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+  }
+
+  .sock-bundle__teaser.is-folded .sock-bundle__teaser-toggle svg {
+    transform: rotate(180deg);
+  }
+
+  /* Folded, the pack keeps its message, bar, subtotal and checkout; the pairs and
+     the free shipping goal go. */
+  body.sock-bundle-packing .sock-bundle__teaser.is-folded .sock-bundle__teaser-slots,
+  body.sock-bundle-packing .sock-bundle__teaser.is-folded .sock-bundle__teaser-goal {
+    display: none;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    max-height: 60svh;
+    overflow-y: auto;
+    gap: 8px;
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    border: 0;
+    border-top: 1.5px solid var(--colorTextBody);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Five in view across the docked pack, sliding sideways for more, with room
+     above and at the end for the remove buttons. */
+  body.sock-bundle-packing .sock-bundle__teaser-slots {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 24px) / 5);
+    gap: 6px;
+    padding: 10px 10px 2px 2px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-slots::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-slot {
+    scroll-snap-align: start;
+  }
+
+  .sock-bundle__teaser-tile span {
+    font-size: 10px;
+  }
+
+  .sock-bundle__teaser-tile strong {
+    font-size: 12px;
+  }
+
+  /* Tighter on the narrow boxes. */
+  .sock-bundle__teaser-cap {
+    padding: 4px 2px;
+    font-size: 9.5px;
+    line-height: 1.1;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-msg {
+    font-size: 13px;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-foot {
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-total {
+    font-size: 18px;
+  }
+
+  /* Above the docked pack rather than behind it. */
+  .sock-bundle__toast {
+    top: calc(env(safe-area-inset-top, 0px) + 90px);
+    bottom: auto;
+    transform: translate(-50%, -16px);
+  }
+
+  /* The picker keeps to the socks on a phone; the collection tabs stay on desktop. */
+  .sock-bundle-picker--teaser .sock-bundle-picker__filter-row {
+    display: none;
+  }
+
+  .sock-bundle--teaser {
+    gap: 14px;
+  }
+
+  /* The pack keeps to the photos and totals on a phone: no savings pill. */
+  .sock-bundle__teaser-save {
+    display: none;
+  }
+
+  .sock-bundle-qv {
+    align-items: end;
+    padding: 0;
+  }
+
+  .sock-bundle-qv__box {
+    grid-template-columns: 1fr;
+    max-height: 92svh;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .sock-bundle-qv__media img {
+    min-height: 0;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .sock-bundle-qv__info {
+    gap: 12px;
+    padding: 18px 16px 20px;
+  }
+
+  .sock-bundle-qv__title {
+    font-size: 22px;
+  }
+}
+
+.sock-bundle-picker--teaser .sock-bundle-picker__card-add:not(.is-added):not([data-soldout])::before {
+  content: '+ ';
+}
+
+/* ---------- Impulse / Bible Socks ---------- */
+
+/* Phones: the photos step aside for the picker, which sits in their column. */
+@media screen and (max-width: 768px) {
+  .sock-bundle-gallery-hidden-mobile .sock-bundle-gallery {
+    display: none;
+  }
+}
+
+/* The site sets body p to white for its dark homepage sections; these dialogs
+   sit on <body> with their own white background. */
+.sock-bundle-qv p,
+.sock-bundle-qv .sock-bundle-qv__desc,
+.sock-bundle-qv .sock-bundle-qv__unlock {
+  color: var(--colorTextBody) !important;
+}
+
+.sock-bundle-lb .sock-bundle-lb__count {
+  color: #fff !important;
+}
+
+.sock-bundle--teaser .sock-bundle__teaser-msg,
+.sock-bundle--teaser .sock-bundle__error {
+  color: var(--colorTextBody);
+}
+
+.sock-bundle--teaser .sock-bundle__error {
+  color: #d72c0d;
+  font-size: 13px;
+}
+
+.sock-bundle--teaser .sock-bundle__error:empty {
+  display: none;
+}
+
+/* Impulse's headings carry its letter-spacing and case; the quick view keeps its own. */
+.sock-bundle-qv__title {
+  font-family: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}

@@ -1,0 +1,95 @@
+{% comment %}
+  The "Product first" layout of the sock bundle block: the mix & match builder
+  that sits below the buy box. Its button opens the picker in place of the
+  photos, and the buy-more-save-more ladder becomes the pack as pairs go in.
+  This sock's own size, quantity and add to cart are the theme's buy box.
+  Rendered inside <sock-bundle>, which paints the ladder boxes and drives
+  everything here.
+
+  Accepts:
+  - block: the `sock_bundle` block from sections/main-product.liquid
+
+  Usage:
+  {% render 'sock-bundle-teaser', block: block %}
+{% endcomment %}
+
+<div class="sock-bundle__teaser" data-sock-teaser>
+  <div class="sock-bundle__teaser-top">
+    {%- comment -%} Leads with where the pack stands: "Add 2 pairs to save 10%". {%- endcomment -%}
+    <div class="sock-bundle__teaser-msg" data-sock-bundle-shipnote aria-live="polite" hidden></div>
+    <span
+      class="sock-bundle__teaser-note"
+      data-sock-teaser-note
+      data-default-text="{{ block.settings.teaser_note | escape }}"
+    >
+      {{- block.settings.teaser_note | escape -}}
+    </span>
+    {%- comment -%} Folds the docked pack on a phone down to its bar, subtotal and checkout. {%- endcomment -%}
+    <button
+      type="button"
+      class="sock-bundle__teaser-toggle"
+      data-sock-teaser-toggle
+      aria-expanded="true"
+      aria-label="{{ block.settings.teaser_heading | default: 'Your pack' | escape }}"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  {%- comment -%}
+    The builder's progress bar, filling toward the top of the ladder; sock-bundle.js
+    hides the goal at its end when the top pack has no free shipping.
+  {%- endcomment -%}
+  {%- if block.settings.show_progress_bar -%}
+    <div class="sock-bundle__progress sock-bundle__teaser-progress" data-sock-bundle-progressbar>
+      <div class="sock-bundle__progress-track">
+        <div class="sock-bundle__progress-fill" data-sock-bundle-progressfill style="width: 0%"></div>
+        {%- if block.settings.free_shipping_enable -%}
+          <span class="sock-bundle__progress-marker" data-sock-bundle-shipmarker hidden>
+            <span class="sock-bundle__progress-marker-dot"></span>
+          </span>
+        {%- endif -%}
+      </div>
+      <span class="sock-bundle__teaser-goal" data-sock-teaser-goal>
+        {{- block.settings.tier_free_shipping_label | default: 'Free shipping' | escape -}}
+      </span>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} sock-bundle.js lays the ladder out here, one box per pair. {%- endcomment -%}
+  <ul class="sock-bundle__teaser-slots" role="list" data-sock-teaser-slots></ul>
+
+  {%- comment -%} Starts a pack; gone once one is under way. {%- endcomment -%}
+  <button
+    type="button"
+    class="btn sock-bundle__teaser-open"
+    data-sock-teaser-open
+  >
+    {{ block.settings.teaser_open_text | default: 'Mix & match designs' | escape }}
+  </button>
+
+  <div class="sock-bundle__teaser-foot" data-sock-bundle-summary hidden>
+    <div class="sock-bundle__teaser-subtotal">
+      <span>
+        {{- 'cart.general.subtotal' | t }} (<span data-sock-teaser-count></span>)
+      </span>
+      <span>
+        <span class="sock-bundle__teaser-save" data-sock-bundle-save hidden></span>
+        <s class="sock-bundle__teaser-compare" data-sock-bundle-compare hidden></s>
+        <strong class="sock-bundle__teaser-total" data-sock-bundle-total></strong>
+      </span>
+    </div>
+    <button
+      type="button"
+      class="btn btn--full sock-bundle__atc"
+      data-sock-bundle-atc
+      disabled
+    >
+      {{ block.settings.checkout_text | default: 'Checkout' | escape }}
+    </button>
+  </div>
+
+  <div class="sock-bundle__error" data-sock-bundle-error role="alert"></div>
+</div>

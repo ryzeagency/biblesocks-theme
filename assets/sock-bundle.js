@@ -109,9 +109,34 @@ if (!customElements.get('sock-bundle')) {
         this.discountPercent = 0;
         this.tierFreeShipping = false;
 
+        // "Product first" (snippets/sock-bundle-teaser.liquid): the page opens on
+        // this sock and the theme's buy box; this block's button starts a mix &
+        // match pack, and a ladder of boxes fills up as pairs go in. The builder
+        // layout ignores all of this.
+        this.teaser = this.dataset.layout === 'teaser';
+        this.packing = false;
+        this.lastToastQty = 0;
+        this.teaserDiscountText = this.dataset.teaserDiscountText || '[percent]% off';
+        this.teaserShippingText = this.dataset.teaserShippingText || 'Free ship';
+        this.pickerAddedText = this.dataset.pickerAddedText || 'Added';
+        this.quickViewAddText = this.dataset.quickViewAddText || 'Add to my pack';
+        this.quickViewUnlockText =
+          this.dataset.quickViewUnlockText || 'Adding this unlocks [reward] on your pack';
+        this.quickViewDetailsText = this.dataset.quickViewDetailsText || 'View full details';
+        this.unlockedToastText = this.dataset.unlockedToastText || '[reward] unlocked!';
+
+        // The photo lightbox, in both layouts.
+        this.closeText = this.dataset.closeText || 'Close';
+        this.zoomText = this.dataset.zoomText || 'Open featured media in gallery view';
+        this.previousText = this.dataset.previousText || 'Previous';
+        this.nextText = this.dataset.nextText || 'Next';
+
         this.pickerReplacesGallery = this.dataset.pickerReplacesGallery === 'true';
         this.prefillCurrent = this.dataset.prefillCurrent === 'true';
         this.singleUsesPicker = this.dataset.singleUsesPicker === 'true';
+        // Product first on a build-your-own product: there is no sock of its
+        // own to show, so the page opens on the picker and the pack, and stays.
+        this.buildOwn = this.teaser && this.singleUsesPicker;
         this.hideDefaultAtc = this.dataset.hideDefaultAtc === 'true';
         this.afterAdd = this.dataset.afterAdd || 'cart';
         this.cartUrl = this.dataset.cartUrl || '/cart';
@@ -154,7 +179,14 @@ if (!customElements.get('sock-bundle')) {
         this.atcButton?.addEventListener('click', this.onAddToCart);
         this.picker?.addEventListener('click', this.onPickerClick);
         this.picker?.addEventListener('change', this.onPickerVariantChange);
+        this.picker?.addEventListener('keydown', (event) => {
+          const zoom = event.target.closest('[data-picker-zoom]');
+          if (!zoom || (event.key !== 'Enter' && event.key !== ' ')) return;
+          event.preventDefault();
+          this.openLightbox(zoom.closest('[data-picker-card]'));
+        });
         this.syncAllCardPrices();
+        this.prepareZoom();
 
         // Collection filter tabs above the picker, when the block has any.
         this.filtersEl = this.picker?.querySelector('[data-picker-filters]');
@@ -201,12 +233,16 @@ if (!customElements.get('sock-bundle')) {
 
         this.restoreSlots();
 
-        // Liquid marks one tier checked; run it so the page opens in that state.
-        // On a normal product that is Single, which is a no-op.
-        const checked =
-          this.tierButtons.find((tier) => tier.getAttribute('aria-checked') === 'true') ||
-          this.tierButtons[0];
-        if (checked) this.selectTier(checked);
+        if (this.teaser) {
+          this.setUpTeaser();
+        } else {
+          // Liquid marks one tier checked; run it so the page opens in that state.
+          // On a normal product that is Single, which is a no-op.
+          const checked =
+            this.tierButtons.find((tier) => tier.getAttribute('aria-checked') === 'true') ||
+            this.tierButtons[0];
+          if (checked) this.selectTier(checked);
+        }
 
         // The server-side open state has done its job; let JS own it from here.
         this.picker?.classList.remove('sock-bundle-picker--open-on-load');
@@ -218,6 +254,13 @@ if (!customElements.get('sock-bundle')) {
         this.tiersEl?.removeEventListener('scroll', this.updateArrows);
         window.removeEventListener('resize', this.updateArrows);
         this.mobileQuery.removeEventListener('change', this.syncPickerPlacement);
+
+        // These live on <body>, so the theme editor re-rendering the section
+        // would otherwise leave them behind.
+        this.quickView?.remove();
+        this.lightbox?.remove();
+        this.toastEl?.remove();
+        if (this.teaser) document.body.classList.remove('sock-bundle-packing', 'sock-bundle-pack-folded');
       }
 
       /* ------------------------------------------------------------------ */
@@ -232,6 +275,10 @@ if (!customElements.get('sock-bundle')) {
        */
       syncPickerPlacement() {
         if (!this.picker) return;
+
+        // Product first: the picker takes the photos' place at every width,
+        // which on mobile puts it at the top of the page.
+        if (this.teaser) return;
 
         if (this.mobileQuery.matches) {
           if (this.pickerSlot && this.picker.parentElement !== this.pickerSlot) {
@@ -376,8 +423,9 @@ if (!customElements.get('sock-bundle')) {
         this.dataset.productPrice = String(variant.price);
         if (variant.image) this.dataset.productImage = variant.image;
 
-        // Only the pre-filled first slot tracks the main variant picker.
-        if (this.prefillCurrent && this.slots[0]?.productId === this.dataset.productId) {
+        // Only the pre-filled first slot tracks the main variant picker; in
+        // Product first the pack keeps the sizes its pairs went in with.
+        if (!this.teaser && this.prefillCurrent && this.slots[0]?.productId === this.dataset.productId) {
           this.slots[0] = {
             ...this.slots[0],
             variantId: String(newId),
@@ -387,6 +435,9 @@ if (!customElements.get('sock-bundle')) {
           };
           this.render();
         }
+
+        // The ladder's single pair quotes the size picked in the buy box.
+        if (this.teaser) this.render();
       }
 
       /* ------------------------------------------------------------------ */
@@ -400,7 +451,27 @@ if (!customElements.get('sock-bundle')) {
           return;
         }
 
+        const zoom = event.target.closest('[data-picker-zoom]');
+        if (zoom) {
+          this.openLightbox(zoom.closest('[data-picker-card]'));
+          return;
+        }
+
+        if (this.teaser) {
+          const quickView = event.target.closest('[data-picker-quick-view]');
+          if (quickView) {
+            this.openQuickView(quickView.closest('[data-picker-card]'));
+            return;
+          }
+        }
+
         const backButton = event.target.closest('[data-picker-back]');
+        if (backButton && this.teaser) {
+          // The pack is kept; the ladder's boxes or add to cart bring it back.
+          this.exitPacking();
+          this.scrollToTop(this.mediaContainer);
+          return;
+        }
         if (backButton) {
           const hidden = this.mediaContainer?.classList.toggle('sock-bundle-gallery-hidden');
           backButton.textContent = hidden
@@ -416,10 +487,15 @@ if (!customElements.get('sock-bundle')) {
         const card = addButton.closest('[data-picker-card]');
         if (!card) return;
 
+        this.addCard(card);
+      }
+
+      /** Puts a picker card's sock, in its chosen size, into the next free slot. */
+      addCard(card) {
         const index = this.firstEmptySlot();
         if (index === -1) {
           this.setError('Your pack is full. Remove a sock to swap it out.');
-          return;
+          return false;
         }
 
         const variantField = card.querySelector('[data-picker-variant]');
@@ -428,12 +504,13 @@ if (!customElements.get('sock-bundle')) {
             ? variantField.options[variantField.selectedIndex]
             : variantField;
 
-        if (!variantField || !variantField.value) return;
+        if (!variantField || !variantField.value) return false;
 
         this.slots[index] = this.slotFromCard(card, option);
 
         this.setError('');
         this.render();
+        return true;
       }
 
       /** A slot for one sock, read off its picker card and the chosen option. */
@@ -568,8 +645,10 @@ if (!customElements.get('sock-bundle')) {
         grid.removeAttribute('aria-busy');
         this.setError('');
         this.syncAllCardPrices();
+        this.prepareZoom();
+        this.enhanceCards();
         // Re-mark which of these socks are already in the pack.
-        if (!this.slotsWrap.hidden) this.render();
+        if (this.teaser || !this.slotsWrap.hidden) this.render();
       }
 
       /**
@@ -804,11 +883,13 @@ if (!customElements.get('sock-bundle')) {
           </div>`;
 
         // Socks first, then the rewards they earned, then the boxes still to fill.
-        this.slotsEl.innerHTML = [
-          ...this.slots.map((slot, index) => (slot ? slotMarkup(slot, index) : '')),
-          ...this.claimedRewards(filled).map(rewardMarkup),
-          ...this.slots.map((slot, index) => (slot ? '' : slotMarkup(slot, index))),
-        ].join('');
+        if (this.slotsEl) {
+          this.slotsEl.innerHTML = [
+            ...this.slots.map((slot, index) => (slot ? slotMarkup(slot, index) : '')),
+            ...this.claimedRewards(filled).map(rewardMarkup),
+            ...this.slots.map((slot, index) => (slot ? '' : slotMarkup(slot, index))),
+          ].join('');
+        }
 
         if (this.progressEl) {
           this.progressEl.textContent = this.selectedCountText(filled);
@@ -834,6 +915,13 @@ if (!customElements.get('sock-bundle')) {
             // the pack holds as many socks as it may.
             const add = card.querySelector('[data-picker-add]');
             if (add) add.disabled = add.dataset.soldout === 'true' || full;
+
+            // Product first: the button itself says how many are in the pack.
+            if (add && this.teaser && add.dataset.soldout !== 'true') {
+              add.dataset.label = add.dataset.label || add.textContent.trim();
+              add.textContent = count ? `${this.pickerAddedText} ×${count}` : add.dataset.label;
+              add.classList.toggle('is-added', count > 0);
+            }
           });
         }
 
@@ -872,6 +960,11 @@ if (!customElements.get('sock-bundle')) {
         this.renderProgress(filled, this.shipBasis === 'full' ? subtotal : payable);
 
         this.atcButton.disabled = filled < 1;
+
+        if (this.teaser) {
+          this.renderTeaser(filled, freeSlots);
+          this.announceUnlock();
+        }
       }
 
       /**
@@ -1027,15 +1120,21 @@ if (!customElements.get('sock-bundle')) {
        * to it in money.
        */
       renderProgress(filled, towardsShipping) {
-        if (!this.progressFill) return;
+        if (!this.progressFill && !this.shipNote) return;
 
         // The bar measures toward the next reward, not toward a pack size, so it
-        // refills every time a rung is passed and never dead-ends.
-        const percent = this.nextRung
-          ? Math.min(100, (filled / this.nextRung.qty) * 100)
-          : 100;
-        this.progressFill.style.width = `${percent}%`;
-        this.progressFill.classList.toggle('is-complete', !this.nextRung && filled > 0);
+        // refills every time a rung is passed and never dead-ends. Product first
+        // fills toward the top of its ladder instead, where free shipping waits.
+        const goal = this.teaser ? this.teaserGoal() : null;
+        if (this.progressFill) {
+          let percent = this.nextRung ? Math.min(100, (filled / this.nextRung.qty) * 100) : 100;
+          if (goal) percent = Math.min(100, (filled / goal.qty) * 100);
+          this.progressFill.style.width = `${percent}%`;
+          this.progressFill.classList.toggle(
+            'is-complete',
+            goal ? filled >= goal.qty : !this.nextRung && filled > 0
+          );
+        }
 
         const perSock = filled ? towardsShipping / filled : this.estimatedSockPrice();
         const shippingOn = this.freeShipping && this.shipThreshold > 0;
@@ -1093,6 +1192,8 @@ if (!customElements.get('sock-bundle')) {
           message = message ? `${message} — ${gap}` : gap;
         }
 
+        if (this.teaser) this.shipNote.hidden = !message;
+
         const changed = this.shipNote.textContent !== message;
         this.shipNote.textContent = message;
         this.shipNote.classList.toggle(
@@ -1129,7 +1230,9 @@ if (!customElements.get('sock-bundle')) {
         }
 
         const socksNeeded = Math.ceil(this.shipThreshold / perSock);
-        const denom = this.nextRung ? this.nextRung.qty : Math.max(socksNeeded, 1);
+        // Same scale as the bar: the ladder's top in Product first, else the next rung.
+        const goal = this.teaser ? this.teaserGoal() : null;
+        const denom = goal ? goal.qty : this.nextRung ? this.nextRung.qty : Math.max(socksNeeded, 1);
         this.shipMarker.style.left = `${Math.min(100, (socksNeeded / denom) * 100)}%`;
         this.shipMarker.classList.toggle(
           'sock-bundle__progress-marker--reached',
@@ -1191,6 +1294,651 @@ if (!customElements.get('sock-bundle')) {
         if (!Number.isFinite(price)) return;
 
         priceEl.textContent = this.formatMoney(price);
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Product first                                                       */
+      /* ------------------------------------------------------------------ */
+
+      setUpTeaser() {
+        this.teaserSlotsEl = this.querySelector('[data-sock-teaser-slots]');
+        this.teaserNoteEl = this.querySelector('[data-sock-teaser-note]');
+        this.teaserCountEl = this.querySelector('[data-sock-teaser-count]');
+        this.teaserEl = this.querySelector('[data-sock-teaser]');
+        this.teaserToggle = this.querySelector('[data-sock-teaser-toggle]');
+        // The bar's end reads "Free shipping" only when the top pack ships free.
+        const goalEl = this.querySelector('[data-sock-teaser-goal]');
+        if (goalEl) goalEl.hidden = !this.teaserGoal()?.freeShipping;
+
+        this.teaserToggle?.addEventListener('click', () =>
+          this.foldPack(this.teaserToggle.getAttribute('aria-expanded') === 'true')
+        );
+        this.teaserSlotsEl?.addEventListener('click', (event) => this.onTeaserSlotsClick(event));
+        this.querySelector('[data-sock-teaser-open]')?.addEventListener('click', () => this.enterPacking());
+        this.picker?.addEventListener('keydown', (event) => {
+          const quickView = event.target.closest('[data-picker-quick-view]');
+          if (!quickView || (event.key !== 'Enter' && event.key !== ' ')) return;
+          event.preventDefault();
+          this.openQuickView(quickView.closest('[data-picker-card]'));
+        });
+
+        this.enhanceCards();
+
+        if (this.buildOwn) {
+          // The product itself costs nothing, so the ladder quotes a pair's price.
+          this.dataset.productPrice = String(this.firstSockPrice());
+          this.enterPacking(false);
+        } else {
+          this.render();
+        }
+      }
+
+      /** A pair's price, from the first sock in the picker that has one. */
+      firstSockPrice() {
+        const fields = this.picker?.querySelectorAll('[data-picker-variant]') || [];
+        for (const field of fields) {
+          const source = field.tagName === 'SELECT' ? field.options[field.selectedIndex] : field;
+          const price = parseInt(source?.dataset.variantPrice, 10);
+          if (price > 0) return price;
+        }
+        return 0;
+      }
+
+      currentVariant() {
+        return this.variantData.find((item) => String(item.id) === String(this.dataset.variantId));
+      }
+
+      /** Swap the photos for the picker; the ladder becomes the pack. */
+      enterPacking(scroll = true) {
+        const opening = !this.packing;
+        this.packing = true;
+        document.body.classList.add('sock-bundle-packing');
+        this.picker?.classList.add('is-visible');
+        this.mediaContainer?.classList.add(
+          'sock-bundle-gallery-hidden',
+          'sock-bundle-gallery-hidden-mobile'
+        );
+        this.render();
+        // On a phone the docked pack opens folded, leaving the picker the screen.
+        if (opening && this.mobileQuery.matches) this.foldPack(true);
+        if (opening && scroll) this.scrollToTop(this.picker);
+      }
+
+      /** On a phone, folds the docked pack down to its bar, subtotal and checkout. */
+      foldPack(folded) {
+        this.teaserEl?.classList.toggle('is-folded', folded);
+        document.body.classList.toggle('sock-bundle-pack-folded', folded);
+        this.teaserToggle?.setAttribute('aria-expanded', String(!folded));
+      }
+
+      exitPacking() {
+        this.packing = false;
+        // Next time the pack docks, it opens in full.
+        this.foldPack(false);
+        document.body.classList.remove('sock-bundle-packing');
+        this.picker?.classList.remove('is-visible');
+        this.mediaContainer?.classList.remove(
+          'sock-bundle-gallery-hidden',
+          'sock-bundle-gallery-hidden-mobile'
+        );
+        this.render();
+      }
+
+      /** Bring an element's top into view, unless it already is. */
+      scrollToTop(element) {
+        if (!element) return;
+        const top = element.getBoundingClientRect().top;
+        if (top >= 0 && top < window.innerHeight * 0.4) return;
+        element.scrollIntoView({
+          block: 'start',
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        });
+      }
+
+      onTeaserSlotsClick(event) {
+        const remove = event.target.closest('[data-teaser-remove]');
+        if (remove) {
+          const hadFocus = remove === document.activeElement;
+          this.slots[parseInt(remove.dataset.teaserRemove, 10)] = null;
+          this.setError('');
+          // A build-your-own pack has no product to go back to, so it stays open empty.
+          if (this.slots.some(Boolean) || this.buildOwn) {
+            this.render();
+            if (hadFocus) this.teaserSlotsEl.querySelector('[data-teaser-remove]')?.focus();
+          } else {
+            this.exitPacking();
+          }
+          return;
+        }
+
+        if (!event.target.closest('[data-teaser-open]')) return;
+        if (this.packing) {
+          this.scrollToTop(this.picker);
+        } else {
+          this.enterPacking();
+        }
+      }
+
+      /**
+       * The ladder as boxes: "1 pair / $16.95", "2 pairs / 10% off" and so on,
+       * the last reading "5+ pairs". A box's wording is what that pair earns.
+       */
+      teaserLadder() {
+        const price = this.buildOwn
+          ? parseInt(this.dataset.productPrice, 10) || 0
+          : this.currentVariant()?.price ?? (parseInt(this.dataset.productPrice, 10) || 0);
+        let previous = 0;
+        const rungs = this.tiers
+          .filter((tier) => !this.maxSocks || tier.qty <= this.maxSocks)
+          .map((tier) => {
+            let main;
+            if (tier.qty <= 1) {
+              main = this.formatMoney(price);
+            } else if (tier.freeSocks > 0) {
+              main = this.freeSocksText(tier);
+            } else if (tier.percent > previous || !tier.freeShipping) {
+              main = this.teaserDiscountText.replace('[percent]', tier.percent);
+            } else {
+              main = this.teaserShippingText;
+            }
+            previous = Math.max(previous, tier.percent);
+            return { qty: tier.qty, top: this.pairsText(tier.qty), main, best: false };
+          });
+
+        const last = rungs[rungs.length - 1];
+        if (last && last.qty > 1) {
+          last.top = `${last.qty}+ ${this.sockWordPlural}`;
+          last.best = true;
+        }
+        return rungs;
+      }
+
+      /** The top of the ladder, which Product first's bar fills toward. */
+      teaserGoal() {
+        const tiers = this.tiers.filter(
+          (tier) => tier.qty > 1 && (!this.maxSocks || tier.qty <= this.maxSocks)
+        );
+        return tiers[tiers.length - 1] || null;
+      }
+
+      pairsText(count) {
+        return `${count} ${count === 1 ? this.sockWordSingular : this.sockWordPlural}`;
+      }
+
+      renderTeaser(filled, freeSlots) {
+        if (!this.teaserSlotsEl) return;
+
+        const ladder = this.teaserLadder();
+        const top = ladder[ladder.length - 1] || { qty: 1, top: this.pairsText(1), main: '' };
+        // A pair with no pack of its own (a tier switched off) reads as just a pair.
+        const rungAt = (count) =>
+          ladder.find((rung) => rung.qty === count) ||
+          (count > top.qty ? top : { qty: count, top: this.pairsText(count), main: '' });
+
+        const emptyMarkup = (rung) => {
+          const classes = `sock-bundle__teaser-slot${rung.best ? ' is-best' : ''}`;
+          const lines = `<span>${this.escape(rung.top)}</span><strong>${this.escape(rung.main)}</strong>`;
+          // Once there is a pack, every empty box is a way back to the picker.
+          if (!filled) return `<li class="${classes}"><span class="sock-bundle__teaser-tile">${lines}</span></li>`;
+          return `<li class="${classes}"><button type="button" class="sock-bundle__teaser-tile" data-teaser-open><span>${this.escape(
+            rung.top
+          )}</span><strong>+ ${this.escape(rung.main || this.sockWordSingular)}</strong></button></li>`;
+        };
+
+        const filledMarkup = (slot, index) => {
+          // Each pair names its size, so a mixed pack reads at a glance; a
+          // one-size sock has none to name.
+          const caption = slot.variantTitle === 'Default Title' ? '' : slot.variantTitle;
+          const label = caption ? `${slot.title}, ${caption}` : slot.title;
+          const free = freeSlots.has(index);
+          return `
+            <li class="sock-bundle__teaser-slot is-filled" title="${this.escape(label)}">
+              ${slot.image ? `<img src="${slot.image}" alt="${this.escape(label)}" width="200" height="200" loading="lazy">` : ''}
+              ${free ? `<span class="sock-bundle__slot-free">${this.escape(this.freeSockTag)}</span>` : ''}
+              ${caption ? `<span class="sock-bundle__teaser-cap">${this.escape(caption)}</span>` : ''}
+              <button type="button" class="sock-bundle__teaser-remove" data-teaser-remove="${index}" aria-label="Remove ${this.escape(
+            label
+          )}">&times;</button>
+            </li>`;
+        };
+
+        // render() keeps the chosen socks first, so slot i is pair i + 1.
+        const boxes = [];
+        for (let i = 0; i < Math.max(top.qty, filled); i += 1) {
+          const rung = rungAt(i + 1);
+          boxes.push(i < filled ? filledMarkup(this.slots[i], i) : emptyMarkup(rung));
+        }
+        this.teaserSlotsEl.innerHTML = boxes.join('');
+        // A pack under way keeps its boxes in view, even back on the photos.
+        this.classList.toggle('has-pairs', filled > 0);
+
+        if (this.teaserNoteEl) {
+          this.teaserNoteEl.textContent = filled
+            ? this.selectedCountText(filled)
+            : this.teaserNoteEl.dataset.defaultText || '';
+        }
+        if (this.teaserCountEl) this.teaserCountEl.textContent = this.pairsText(filled);
+      }
+
+      /** "10% off", "free shipping": what reaching this pack adds to the last one. */
+      unlockedReward(tier) {
+        const before = this.tierFor(tier.qty - 1);
+        const parts = [];
+        if (tier.freeSocks > 0) parts.push(this.freeSocksText(tier));
+        if (tier.percent > (before ? before.percent : 0)) {
+          parts.push(this.teaserDiscountText.replace('[percent]', tier.percent));
+        }
+        if (tier.freeShipping && !before?.freeShipping) parts.push(this.rewardShippingText);
+        return parts.join(' + ');
+      }
+
+      /** A brief "15% off unlocked!" each time the pack climbs a rung. */
+      announceUnlock() {
+        const qty = this.earnedTier && this.earnedTier.qty > 1 ? this.earnedTier.qty : 0;
+        if (qty > this.lastToastQty) {
+          const reward = this.unlockedReward(this.earnedTier);
+          if (reward) {
+            const text = this.unlockedToastText.replace('[reward]', reward);
+            this.toast(text.charAt(0).toUpperCase() + text.slice(1));
+          }
+        }
+        this.lastToastQty = qty;
+      }
+
+      toast(message) {
+        if (!this.toastEl) {
+          this.toastEl = document.createElement('div');
+          this.toastEl.className = `sock-bundle__toast ${this.schemeClass()}`;
+          this.toastEl.setAttribute('role', 'status');
+          this.toastEl.style.setProperty('--sb-accent', getComputedStyle(this).getPropertyValue('--sb-accent'));
+          document.body.appendChild(this.toastEl);
+        }
+        this.toastEl.textContent = message;
+        this.toastEl.classList.add('is-visible');
+        clearTimeout(this.toastTimer);
+        this.toastTimer = setTimeout(() => this.toastEl.classList.remove('is-visible'), 2200);
+      }
+
+      /**
+       * Picker cards, product first: each size in the dropdown carries its
+       * price, and the name opens a quick view (the photo opens the lightbox, as
+       * in the builder). Safe to run again after a collection tab swaps the cards in.
+       */
+      enhanceCards() {
+        if (!this.teaser || !this.picker) return;
+
+        this.picker.querySelectorAll('[data-picker-card]').forEach((card) => {
+          if (!card.dataset.enhanced) {
+            card.dataset.enhanced = 'true';
+
+            const title = card.querySelector('.sock-bundle-picker__card-title');
+            if (title) {
+              title.dataset.pickerQuickView = '';
+              title.setAttribute('role', 'button');
+              title.tabIndex = 0;
+            }
+
+            // Sold-out sizes keep their "Sold out"; the rest say what they cost.
+            const select = card.querySelector('select[data-picker-variant]');
+            if (select) {
+              Array.from(select.options).forEach((option) => {
+                const price = parseInt(option.dataset.variantPrice, 10);
+                if (option.disabled || !Number.isFinite(price)) return;
+                const name = option.dataset.variantTitle || option.textContent.trim();
+                option.textContent = `${name} - ${this.formatMoney(price)}`;
+              });
+              card.classList.add('sock-bundle-picker__card--sizes-with-cost');
+            }
+          }
+        });
+      }
+
+      /**
+       * The theme's colours only exist inside a colour scheme class, and the
+       * quick view and toast sit on <body>, outside the section that has one.
+       */
+      schemeClass() {
+        const section = this.closest('[class*="color-scheme"]');
+        return (
+          Array.from(section?.classList || []).find((name) => name.startsWith('color-scheme')) ||
+          'color-scheme-1'
+        );
+      }
+
+      /* ---------- Quick view ---------- */
+
+      buildQuickView() {
+        const id = `SockBundleQuickView-${this.sectionId}`;
+        const dialog = document.createElement('div');
+        dialog.className = `sock-bundle-qv ${this.schemeClass()}`;
+        dialog.hidden = true;
+        dialog.style.setProperty('--sb-accent', getComputedStyle(this).getPropertyValue('--sb-accent'));
+        dialog.innerHTML = `
+          <div class="sock-bundle-qv__overlay" data-qv-close></div>
+          <div class="sock-bundle-qv__box" role="dialog" aria-modal="true" aria-labelledby="${id}-title" tabindex="-1">
+            <button type="button" class="sock-bundle-qv__close" data-qv-close aria-label="${this.escape(this.closeText)}">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="sock-bundle-qv__media"><img alt="" data-qv-image></div>
+            <div class="sock-bundle-qv__info">
+              <h2 class="sock-bundle-qv__title" id="${id}-title" data-qv-title></h2>
+              <div class="sock-bundle-qv__price" data-qv-price></div>
+              <p class="sock-bundle-qv__desc" data-qv-desc></p>
+              <div class="sock-bundle-qv__sizes" role="group" data-qv-sizes></div>
+              <button type="button" class="button button--solid button--medium sock-bundle-qv__add" data-qv-add>${this.escape(
+                this.quickViewAddText
+              )}</button>
+              <p class="sock-bundle-qv__unlock" data-qv-unlock></p>
+              <a class="sock-bundle-qv__link" data-qv-link>${this.escape(this.quickViewDetailsText)}</a>
+            </div>
+          </div>`;
+
+        dialog.addEventListener('click', (event) => {
+          if (event.target.closest('[data-qv-close]')) {
+            this.closeQuickView();
+            return;
+          }
+          const size = event.target.closest('[data-qv-size]');
+          if (size) {
+            this.quickViewSize = size.dataset.qvSize;
+            dialog.querySelectorAll('[data-qv-size]').forEach((button) => {
+              button.setAttribute('aria-pressed', String(button === size));
+            });
+            this.syncQuickViewPrice();
+            return;
+          }
+          if (event.target.closest('[data-qv-add]')) this.addFromQuickView();
+        });
+
+        dialog.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            this.closeQuickView();
+            return;
+          }
+          if (event.key === 'Tab') this.trapFocus(event, dialog);
+        });
+
+        document.body.appendChild(dialog);
+        this.quickView = dialog;
+        return dialog;
+      }
+
+      /** Keeps Tab inside a dialog while it is open. */
+      trapFocus(event, dialog) {
+        const focusable = Array.from(
+          dialog.querySelectorAll('button:not([disabled]), a[href]')
+        ).filter((element) => element.offsetParent);
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+
+      /** The sock's details from the JSON its picker card carries. */
+      cardData(card) {
+        try {
+          return JSON.parse(card.querySelector('[data-picker-data]')?.textContent || '{}');
+        } catch (error) {
+          return {};
+        }
+      }
+
+      openQuickView(card) {
+        if (!card) return;
+
+        const data = this.cardData(card);
+        const dialog = this.quickView || this.buildQuickView();
+        this.quickViewCard = card;
+        this.quickViewReturn = document.activeElement;
+
+        const image = dialog.querySelector('[data-qv-image]');
+        image.src = card.querySelector('.sock-bundle-picker__card-media img')?.currentSrc || data.image || '';
+        image.alt = data.title || '';
+        dialog.querySelector('[data-qv-title]').textContent = data.title || '';
+        dialog.querySelector('[data-qv-desc]').textContent = '';
+        const root = window.Shopify?.routes?.root || '/';
+        dialog.querySelector('[data-qv-link]').href = `${root}products/${data.handle || ''}`;
+
+        // The same sizes as the card, starting on the one the card has chosen.
+        const select = card.querySelector('select[data-picker-variant]');
+        const sizes = dialog.querySelector('[data-qv-sizes]');
+        sizes.hidden = !select;
+        sizes.setAttribute('aria-label', select?.getAttribute('aria-label') || '');
+        this.quickViewSize = select ? select.value : null;
+        sizes.innerHTML = select
+          ? Array.from(select.options)
+              .map(
+                (option) => `<button type="button" class="sock-bundle-qv__size" data-qv-size="${this.escape(
+                  option.value
+                )}" aria-pressed="${option.value === select.value}"${option.disabled ? ' disabled' : ''}>${this.escape(
+                  option.dataset.variantTitle || option.textContent.trim()
+                )}</button>`
+              )
+              .join('')
+          : '';
+        this.syncQuickViewPrice();
+
+        const add = dialog.querySelector('[data-qv-add]');
+        const soldOut = card.querySelector('[data-picker-add]')?.dataset.soldout === 'true';
+        add.disabled = soldOut || this.isFull();
+
+        // Say so when this one pair is what reaches the next reward.
+        const filled = this.slots.filter(Boolean).length;
+        const next = this.tiers.find((tier) => tier.qty === filled + 1 && tier.qty > 1);
+        const reward = next ? this.unlockedReward(next) : '';
+        const unlock = dialog.querySelector('[data-qv-unlock]');
+        unlock.textContent = reward ? this.quickViewUnlockText.replace('[reward]', reward) : '';
+        unlock.hidden = !reward;
+
+        dialog.hidden = false;
+        document.documentElement.classList.add('sock-bundle-qv-open');
+        requestAnimationFrame(() => dialog.querySelector('.sock-bundle-qv__box')?.focus());
+
+        this.loadQuickViewDetails(data.handle);
+      }
+
+      syncQuickViewPrice() {
+        const card = this.quickViewCard;
+        if (!card || !this.quickView) return;
+        const field = card.querySelector('[data-picker-variant]');
+        const option =
+          field && field.tagName === 'SELECT'
+            ? Array.from(field.options).find((item) => item.value === this.quickViewSize)
+            : field;
+        const price = parseInt(option?.dataset.variantPrice, 10);
+        this.quickView.querySelector('[data-qv-price]').textContent = Number.isFinite(price)
+          ? this.formatMoney(price)
+          : card.querySelector('[data-picker-price]')?.textContent || '';
+      }
+
+      /** A sock's product JSON, fetched once and shared by the quick view and the lightbox. */
+      fetchProduct(handle) {
+        if (!handle) return Promise.resolve(null);
+        this.productCache = this.productCache || {};
+        if (!this.productCache[handle]) {
+          const root = window.Shopify?.routes?.root || '/';
+          this.productCache[handle] = fetch(`${root}products/${encodeURIComponent(handle)}.js`)
+            .then((response) => {
+              if (!response.ok) throw new Error(`Status ${response.status}`);
+              return response.json();
+            })
+            .catch((error) => {
+              console.error(error);
+              // Let the next open try again.
+              delete this.productCache[handle];
+              return null;
+            });
+        }
+        return this.productCache[handle];
+      }
+
+      /** A product image URL from the .js endpoint, at a given width. */
+      sizedImage(src, width) {
+        const url = src.startsWith('//') ? `https:${src}` : src;
+        return `${url}${url.includes('?') ? '&' : '?'}width=${width}`;
+      }
+
+      /** The description and a bigger photo. */
+      async loadQuickViewDetails(handle) {
+        if (!handle) return;
+        const token = (this.quickViewToken = (this.quickViewToken || 0) + 1);
+        const product = await this.fetchProduct(handle);
+        if (!product || token !== this.quickViewToken || this.quickView.hidden) return;
+
+        const text = (
+          new DOMParser().parseFromString(product.description || '', 'text/html').body.textContent || ''
+        )
+          .replace(/\s+/g, ' ')
+          .trim();
+        this.quickView.querySelector('[data-qv-desc]').textContent =
+          text.length > 280 ? `${text.slice(0, 277).trimEnd()}…` : text;
+
+        if (product.featured_image) {
+          this.quickView.querySelector('[data-qv-image]').src = this.sizedImage(product.featured_image, 800);
+        }
+      }
+
+      addFromQuickView() {
+        const card = this.quickViewCard;
+        if (!card) return;
+        const select = card.querySelector('select[data-picker-variant]');
+        if (select && this.quickViewSize && select.value !== this.quickViewSize) {
+          select.value = this.quickViewSize;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        if (this.addCard(card)) this.closeQuickView();
+      }
+
+      closeQuickView() {
+        if (!this.quickView || this.quickView.hidden) return;
+        this.quickView.hidden = true;
+        document.documentElement.classList.remove('sock-bundle-qv-open');
+        this.quickViewReturn?.focus?.();
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Photo lightbox                                                      */
+      /* ------------------------------------------------------------------ */
+
+      /**
+       * Every picker card's photo opens the sock large, with its other photos
+       * a step away, and a magnifying glass in its corner says so. Safe to run
+       * again after a collection tab swaps the cards in.
+       */
+      prepareZoom() {
+        this.picker?.querySelectorAll('[data-picker-card]').forEach((card) => {
+          const media = card.querySelector('.sock-bundle-picker__card-media');
+          if (!media || media.hasAttribute('data-picker-zoom') || !media.querySelector('img')) return;
+          const title = card.querySelector('.sock-bundle-picker__card-title')?.textContent.trim() || '';
+          media.setAttribute('data-picker-zoom', '');
+          media.setAttribute('role', 'button');
+          media.setAttribute('aria-haspopup', 'dialog');
+          media.setAttribute('aria-label', title ? `${this.zoomText}: ${title}` : this.zoomText);
+          media.tabIndex = 0;
+          media.insertAdjacentHTML(
+            'beforeend',
+            `<span class="sock-bundle-picker__card-zoom" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m15.5 15.5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>`
+          );
+        });
+      }
+
+      buildLightbox() {
+        const dialog = document.createElement('div');
+        dialog.className = `sock-bundle-lb ${this.schemeClass()}`;
+        dialog.hidden = true;
+        dialog.innerHTML = `
+          <div class="sock-bundle-lb__overlay" data-lb-close></div>
+          <div class="sock-bundle-lb__box" role="dialog" aria-modal="true" tabindex="-1">
+            <img class="sock-bundle-lb__image" alt="" data-lb-image>
+            <button type="button" class="sock-bundle-lb__button sock-bundle-lb__close" data-lb-close aria-label="${this.escape(this.closeText)}">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <button type="button" class="sock-bundle-lb__button sock-bundle-lb__step sock-bundle-lb__step--prev" data-lb-step="-1" aria-label="${this.escape(this.previousText)}">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button type="button" class="sock-bundle-lb__button sock-bundle-lb__step sock-bundle-lb__step--next" data-lb-step="1" aria-label="${this.escape(this.nextText)}">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <p class="sock-bundle-lb__count" data-lb-count></p>
+          </div>`;
+
+        dialog.addEventListener('click', (event) => {
+          if (event.target.closest('[data-lb-close]')) {
+            this.closeLightbox();
+            return;
+          }
+          const step = event.target.closest('[data-lb-step]');
+          if (step) this.showLightboxImage(this.lightboxIndex + Number(step.dataset.lbStep));
+        });
+
+        dialog.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            this.closeLightbox();
+          } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            this.showLightboxImage(this.lightboxIndex + (event.key === 'ArrowLeft' ? -1 : 1));
+          } else if (event.key === 'Tab') {
+            this.trapFocus(event, dialog);
+          }
+        });
+
+        document.body.appendChild(dialog);
+        this.lightbox = dialog;
+        return dialog;
+      }
+
+      async openLightbox(card) {
+        if (!card) return;
+
+        const data = this.cardData(card);
+        const dialog = this.lightbox || this.buildLightbox();
+        this.lightboxReturn = document.activeElement;
+        this.lightboxTitle = data.title || '';
+        dialog.querySelector('.sock-bundle-lb__box').setAttribute('aria-label', this.lightboxTitle);
+
+        // The card's own photo straight away; the full set replaces it once loaded.
+        const shown = card.querySelector('.sock-bundle-picker__card-media img')?.currentSrc || data.image;
+        this.lightboxImages = shown ? [shown] : [];
+        this.showLightboxImage(0);
+
+        dialog.hidden = false;
+        document.documentElement.classList.add('sock-bundle-qv-open');
+        requestAnimationFrame(() => dialog.querySelector('.sock-bundle-lb__box')?.focus());
+
+        const token = (this.lightboxToken = (this.lightboxToken || 0) + 1);
+        const product = await this.fetchProduct(data.handle);
+        if (!product?.images?.length || token !== this.lightboxToken || dialog.hidden) return;
+        this.lightboxImages = product.images.map((src) => this.sizedImage(src, 1600));
+        this.showLightboxImage(0);
+      }
+
+      showLightboxImage(index) {
+        const count = this.lightboxImages?.length || 0;
+        if (!this.lightbox || !count) return;
+        this.lightboxIndex = (index + count) % count;
+
+        const image = this.lightbox.querySelector('[data-lb-image]');
+        image.src = this.lightboxImages[this.lightboxIndex];
+        image.alt = this.lightboxTitle;
+        this.lightbox.querySelectorAll('[data-lb-step]').forEach((button) => {
+          button.hidden = count < 2;
+        });
+        this.lightbox.querySelector('[data-lb-count]').textContent =
+          count > 1 ? `${this.lightboxIndex + 1} / ${count}` : '';
+      }
+
+      closeLightbox() {
+        if (!this.lightbox || this.lightbox.hidden) return;
+        this.lightbox.hidden = true;
+        document.documentElement.classList.remove('sock-bundle-qv-open');
+        this.lightboxReturn?.focus?.();
       }
 
       /* ------------------------------------------------------------------ */

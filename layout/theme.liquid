@@ -154,6 +154,44 @@
     {%- comment -%} The popup offered when Add bundle to cart is pressed. {%- endcomment -%}
     {% section 'cart-upsell' %}
 
+    {%- comment -%}
+      Phones skip the Klaviyo 10% off teaser and the Redo chat bubble, which cover the page.
+      Everywhere, both step aside while a drawer (cart, menu, filters) or the quick view is open,
+      so they never sit on its buttons. Phone product pages are tightened up too.
+    {%- endcomment -%}
+    <style>
+      @media only screen and (max-width: 768px) {
+        [class*="kl-teaser-"],
+        #redo-chat-widget {
+          display: none !important;
+        }
+
+        /* Product page: no breadcrumb, the title closer under the photos, a smaller title and price. */
+        .template-product .product-single__meta .breadcrumb {
+          display: none;
+        }
+
+        .template-product .product-single__meta:not(.sock-bundle-mode) {
+          margin-top: 4px;
+        }
+
+        .template-product .product-single__meta .product-single__title {
+          margin-bottom: 6px;
+          font-size: 16px;
+          line-height: 1.25;
+        }
+
+        .template-product .product-single__meta .product__price {
+          font-size: 16px;
+        }
+      }
+
+      html.js-drawer-open :is([class*="kl-teaser-"], #redo-chat-widget),
+      html.modal-open :is([class*="kl-teaser-"], #redo-chat-widget) {
+        display: none !important;
+      }
+    </style>
+
     </div>
   </div>
 

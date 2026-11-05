@@ -31,6 +31,25 @@ if (!customElements.get('cart-recommendations')) {
         this.addEventListener('click', this.onClick.bind(this));
 
         if (this.dataset.collections) this.loadRandomCollection();
+
+        // The cards leave out what was in the cart when they were fetched. A sock
+        // added since (from a product page or a collection) would still show, so
+        // fetch them again each time the drawer opens.
+        // Impulse marks its open cart drawer with drawer--is-open.
+        const drawer = document.getElementById('CartDrawer');
+        if (this.dataset.mode === 'drawer' && drawer && this.dataset.collections) {
+          this.drawerOpen = drawer.classList.contains('drawer--is-open');
+          this.drawerObserver = new MutationObserver(() => {
+            const open = drawer.classList.contains('drawer--is-open');
+            if (open && !this.drawerOpen) this.reload();
+            this.drawerOpen = open;
+          });
+          this.drawerObserver.observe(drawer, { attributes: true, attributeFilter: ['class'] });
+        }
+      }
+
+      disconnectedCallback() {
+        this.drawerObserver?.disconnect();
       }
 
       /**
@@ -55,26 +74,47 @@ if (!customElements.get('cart-recommendations')) {
           [pool[i], pool[j]] = [pool[j], pool[i]];
         }
 
-        const root = window.Shopify?.routes?.root || '/';
         for (const handle of pool.slice(0, 3)) {
-          try {
-            const response = await fetch(
-              `${root}collections/${encodeURIComponent(handle)}?section_id=cart-drawer-recs-grid`
-            );
-            if (!response.ok) continue;
-            const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
-            const grid = doc.querySelector('[data-cart-recs-grid]');
-            if (!grid || !grid.querySelector('[data-picker-card]')) continue;
-            target.innerHTML = grid.innerHTML;
-            this.hidden = false;
+          if (await this.loadCollection(handle)) {
             try {
               sessionStorage.setItem('biblesocks-drawer-recs-last', handle);
             } catch (error) {}
             return;
-          } catch (error) {
-            console.error(error);
           }
         }
+      }
+
+      /**
+       * Fill the cards from one collection, for the cart as it is now. False
+       * when it has nothing left to suggest.
+       */
+      async loadCollection(handle) {
+        const target = this.querySelector('[data-cart-recs-target]');
+        if (!target) return false;
+        try {
+          const root = window.Shopify?.routes?.root || '/';
+          const response = await fetch(
+            `${root}collections/${encodeURIComponent(handle)}?section_id=cart-drawer-recs-grid`
+          );
+          if (!response.ok) return false;
+          const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+          const grid = doc.querySelector('[data-cart-recs-grid]');
+          if (!grid || !grid.querySelector('[data-picker-card]')) return false;
+          target.innerHTML = grid.innerHTML;
+          this.hidden = false;
+          this.handle = handle;
+          return true;
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+      }
+
+      /** The drawer opened: same collection, refetched; another if it has run out. */
+      async reload() {
+        if (this.handle && (await this.loadCollection(this.handle))) return;
+        this.hidden = true;
+        await this.loadRandomCollection();
       }
 
       selectedOption(card) {

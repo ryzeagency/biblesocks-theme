@@ -71,6 +71,12 @@
   endif
 
   assign sock_bundle_opens_on_load = false
+  # "Product first": the buy box sells this sock and the block below it builds
+  # mix & match packs, swapping the photos for the picker when it is opened.
+  assign sock_bundle_teaser = false
+  if sock_bundle_block and sock_bundle_block.settings.layout == 'teaser'
+    assign sock_bundle_teaser = true
+  endif
   if sock_bundle_block and sock_bundle_block.settings.single_uses_picker
     assign sock_bundle_opens_on_load = true
   endif
@@ -103,7 +109,7 @@
 
       <div class="grid{% unless image_position == 'left' %} grid--product-images-right{% endunless %}{% if mobile_layout == 'partial' %} grid--product-images--partial{% endif %}">
         {%- if image_position == 'left' -%}
-          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %} sock-bundle-builder-media{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
+          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %}{% if sock_bundle_teaser %} sock-bundle-gallery-hidden-mobile{% else %} sock-bundle-builder-media{% endif %}{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
             {%- if sock_bundle_block -%}<div class="sock-bundle-gallery">{%- endif -%}
             {%- render 'product-images',
               section_id: section_id,
@@ -133,7 +139,7 @@
 
         <div class="grid__item {{ product_description_width }}">
 
-          <div class="product-single__meta{% if sock_bundle_opens_on_load and sock_bundle_block.settings.hide_default_buy_buttons %} sock-bundle-mode{% endif %}">
+          <div class="product-single__meta{% if sock_bundle_opens_on_load and sock_bundle_block.settings.hide_default_buy_buttons %} sock-bundle-mode{% endif %}{% if sock_bundle_teaser %} product-single__meta--product-first{% endif %}">
             {%- comment -%}
               On a build-your-own page the pack heading leads, so the breadcrumbs go
               and the product title stays only for search engines and screen readers.
@@ -503,7 +509,7 @@
         </div>
 
         {%- unless image_position == 'left' -%}
-          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %} sock-bundle-builder-media{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
+          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %}{% if sock_bundle_teaser %} sock-bundle-gallery-hidden-mobile{% else %} sock-bundle-builder-media{% endif %}{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
             {%- if sock_bundle_block -%}<div class="sock-bundle-gallery">{%- endif -%}
             {%- render 'product-images',
               section_id: section_id,

@@ -1,0 +1,70 @@
+{% comment %}
+  An add to cart under a product card (Collection → Products → Show add to cart
+  under each product): the size, as a dropdown with each size's price, when the
+  product has more than one, and an Add to cart button. product-card-add.js adds
+  it over Ajax and opens the cart drawer; without script the form posts to /cart/add.
+
+  Accepts:
+  - product: the product on the card
+
+  Usage:
+  {% render 'product-card-add', product: product %}
+{% endcomment %}
+
+{%- assign add_variant = product.selected_or_first_available_variant -%}
+
+<div class="product-card-add">
+  <form
+    action="{{ routes.cart_add_url }}"
+    method="post"
+    enctype="multipart/form-data"
+    class="product-card-add__form"
+    data-product-card-add
+  >
+    <input type="hidden" name="quantity" value="1">
+    {%- if product.has_only_default_variant -%}
+      <input type="hidden" name="id" value="{{ add_variant.id }}">
+    {%- else -%}
+      <select
+        name="id"
+        class="product-card-add__size"
+        aria-label="{{ product.options.first | append: ', ' | append: product.title | escape }}"
+      >
+        {%- for variant in product.variants -%}
+          <option
+            value="{{ variant.id }}"
+            {% if variant.id == add_variant.id %}
+              selected
+            {% endif %}
+            {% unless variant.available %}
+              disabled
+            {% endunless %}
+          >
+            {%- if variant.available -%}
+              {{ variant.title | escape }} - {{ variant.price | money | strip_html }}
+            {%- else -%}
+              {{ variant.title | escape }} - {{ 'products.product.sold_out' | t }}
+            {%- endif -%}
+          </option>
+        {%- endfor -%}
+      </select>
+    {%- endif -%}
+
+    <button
+      type="submit"
+      class="btn btn--full product-card-add__button"
+      {% unless product.available %}
+        disabled
+      {% endunless %}
+    >
+      {%- if product.available -%}
+        {{ 'products.product.add_to_cart' | t }}
+      {%- else -%}
+        {{ 'products.product.sold_out' | t }}
+      {%- endif -%}
+    </button>
+
+    {%- comment -%} Shopify's reason when the add fails, such as no more stock. {%- endcomment -%}
+    <div class="product-card-add__error" role="alert" hidden></div>
+  </form>
+</div>

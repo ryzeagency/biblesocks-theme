@@ -173,6 +173,23 @@
       "content": "Lets shoppers mix and match a 2, 3, 4 or 5 sock pack. Choosing a pack opens a sock picker in the product image column so they can choose which socks go in the pack. Each pack can carry its own Shopify discount code."
     },
     {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "builder",
+      "options": [
+        {
+          "value": "builder",
+          "label": "Pack builder"
+        },
+        {
+          "value": "teaser",
+          "label": "Product first, buy more save more"
+        }
+      ],
+      "info": "Product first shows this sock with its photos and the buy box. Place this block below Buy buttons: its button opens the picker in place of the photos to build a mix & match pack. Settings for it are under \"Product first\" below."
+    },
+    {
       "type": "header",
       "content": "Heading"
     },
@@ -293,7 +310,7 @@
       "id": "single_uses_picker",
       "label": "Single lets the shopper choose any sock",
       "default": false,
-      "info": "For a build-your-own product that is not a sock itself. Single becomes a one-slot pack picked from the collection rather than this product."
+      "info": "For a build-your-own product that is not a sock itself. Single becomes a one-slot pack picked from the collection rather than this product. In Product first, the page opens on the picker and the pack, without this product's title, photos or add to cart."
     },
     {
       "type": "checkbox",
@@ -890,6 +907,85 @@
           "label": "Open the cart drawer"
         }
       ]
+    },
+    {
+      "type": "header",
+      "content": "Product first",
+      "info": "Only used when Layout is \"Product first\". The pair counts on the ladder use the sock words above."
+    },
+    {
+      "type": "text",
+      "id": "teaser_heading",
+      "label": "Ladder name",
+      "default": "Buy more, save more",
+      "info": "Read out by screen readers as the pack's name."
+    },
+    {
+      "type": "text",
+      "id": "teaser_note",
+      "label": "Ladder note",
+      "default": "Mix & match any designs"
+    },
+    {
+      "type": "text",
+      "id": "teaser_open_text",
+      "label": "Open the picker button",
+      "default": "Mix & match designs"
+    },
+    {
+      "type": "text",
+      "id": "teaser_discount_text",
+      "label": "Discount box wording",
+      "default": "[percent]% off",
+      "info": "[percent] is that pack's discount percent."
+    },
+    {
+      "type": "text",
+      "id": "teaser_shipping_text",
+      "label": "Free shipping box wording",
+      "default": "Free ship",
+      "info": "For a pack whose only new reward is free shipping."
+    },
+    {
+      "type": "color",
+      "id": "teaser_accent",
+      "label": "Highlight colour",
+      "default": "#f3c24a",
+      "info": "The top box on the ladder, and each box once it is earned."
+    },
+    {
+      "type": "text",
+      "id": "checkout_text",
+      "label": "Pack button text",
+      "default": "Checkout",
+      "info": "Adds the whole pack to the cart, then does what \"After adding a pack\" says."
+    },
+    {
+      "type": "text",
+      "id": "picker_added_text",
+      "label": "Picker button once added",
+      "default": "Added",
+      "info": "Followed by how many are in the pack, e.g. \"Added ×2\"."
+    },
+    {
+      "type": "text",
+      "id": "quick_view_add_text",
+      "label": "Quick view button text",
+      "default": "Add to my pack"
+    },
+    {
+      "type": "text",
+      "id": "quick_view_unlock_text",
+      "label": "Quick view reward line",
+      "default": "Adding this unlocks [reward] on your pack",
+      "info": "Shown when one more pair reaches the next reward."
+    },
+    {
+      "type": "text",
+      "id": "unlocked_toast_text",
+      "label": "Reward unlocked message",
+      "default": "[reward] unlocked!",
+      "info": "Pops up briefly as each reward is reached."
     }
   ]
 },

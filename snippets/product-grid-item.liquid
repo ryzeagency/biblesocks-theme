@@ -4,6 +4,7 @@ Arguments
 - [per_row]: number of items per row
 - [quick_shop_enable]: boolean
 - [collection]: collection object
+- [show_add_below]: boolean, a size dropdown and add to cart under the card (collection pages)
 {% endcomment %}
 
 {%- liquid
@@ -26,6 +27,12 @@ Arguments
   assign on_sale = false
   if product.compare_at_price > product.price
     assign on_sale = true
+  endif
+
+  # The size dropdown under the card carries each size's price.
+  assign show_card_price = true
+  if show_add_below and product.has_only_default_variant == false
+    assign show_card_price = false
   endif
 
   assign product_tags = product.tags | join: ','
@@ -188,12 +195,13 @@ Arguments
 
       <a href="{{ product.url | within: collection }}" class="grid-product__link">
         <div class="grid-product__meta">
-          <div class="grid-product__title grid-product__title--{{ settings.type_product_style }}">{{ product.title }}</div>
+          <div class="grid-product__title grid-product__title--{{ settings.type_product_style }}" title="{{ product.title | escape }}">{{ product.title }}</div>
           {%- if settings.vendor_enable -%}
             <div class="grid-product__vendor">{{ product.vendor }}</div>
           {%- endif -%}
           <div class="loox-rating" data-id="{{ product.id }}" data-rating="{{ product.metafields.loox.avg_rating }}" data-raters="{{ product.metafields.loox.num_reviews }}"></div>
 
+          {%- if show_card_price -%}
           <div class="grid-product__price">
             {%- if on_sale -%}
               <span class="visually-hidden">{{ 'products.general.regular_price' | t }}</span>
@@ -235,6 +243,7 @@ Arguments
               </div>
             {%- endif -%}
           </div>
+          {%- endif -%}
 
           {%- if settings.enable_swatches and type == 'horizontal' -%}
             {%- liquid
@@ -299,6 +308,10 @@ Arguments
         </div>
       </a>
     </div>
+
+    {%- if show_add_below and type == blank -%}
+      {%- render 'product-card-add', product: product -%}
+    {%- endif -%}
   </div>
   {%- if settings.enable_swatches and type == blank -%}
     {%- liquid

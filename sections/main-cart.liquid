@@ -8,7 +8,8 @@
       {%- if cart.item_count == 0 -%}
         <p>{{ 'cart.general.empty' | t }}</p>
       {%- endif -%}
-      <p>{{ 'cart.general.continue_browsing_html' | t: url: routes.all_products_collection_url }}</p>
+      {%- comment -%} Straight to the socks, rather than the catch-all products collection. {%- endcomment -%}
+      <p>{{ 'cart.general.continue_browsing_html' | t: url: '/collections/all-socks' }}</p>
     </div>
   </header>
 
@@ -37,18 +38,22 @@
           {% endif %}
 
           <div data-discounts>
-            {% if cart.cart_level_discount_applications != blank %}
-              <div class="cart__discounts cart__item-sub cart__item-row">
-                <div>{{ 'cart.general.discounts' | t }}</div>
-                <div class="text-right">
-                  {% for cart_discount in cart.cart_level_discount_applications %}
-                    <div class="cart__discount">
-                      {{ cart_discount.title }} (-{{ cart_discount.total_allocated_amount | money }})
-                    </div>
-                  {% endfor %}
+            {%- comment -%} Same shape as templates/cart.ajax.liquid, which replaces it after every change. {%- endcomment -%}
+            <div class="cart__discounts">
+              {%- render 'cart-pack-tier' -%}
+              {% if cart.cart_level_discount_applications != blank %}
+                <div class="cart__item-sub cart__item-row">
+                  <div>{{ 'cart.general.discounts' | t }}</div>
+                  <div class="text-right">
+                    {% for cart_discount in cart.cart_level_discount_applications %}
+                      <div class="cart__discount">
+                        {{ cart_discount.title }} (-{{ cart_discount.total_allocated_amount | money }})
+                      </div>
+                    {% endfor %}
+                  </div>
                 </div>
-              </div>
-            {% endif %}
+              {% endif %}
+            </div>
           </div>
 
           <div class="cart__item-sub cart__item-row">

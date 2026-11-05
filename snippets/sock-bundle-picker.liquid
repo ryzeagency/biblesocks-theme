@@ -30,13 +30,13 @@
 -%}
 
 <div
-  class="sock-bundle-picker{% if block.settings.single_uses_picker %} sock-bundle-picker--open-on-load{% endif %}"
+  class="sock-bundle-picker{% if block.settings.single_uses_picker %} sock-bundle-picker--open-on-load{% endif %}{% if block.settings.layout == 'teaser' %} sock-bundle-picker--teaser{% endif %}"
   id="SockBundlePicker-{{ section_id }}"
   data-sock-bundle-picker="{{ section_id }}"
 >
   <div class="sock-bundle-picker__head">
     <h3 class="sock-bundle-picker__title">
-      {%- if block.settings.show_step_number -%}
+      {%- if block.settings.show_step_number and block.settings.layout != 'teaser' -%}
         <span class="sock-bundle__step">{{ block.settings.picker_step_number | default: 2 }}</span>
       {%- endif -%}
       {{ block.settings.picker_heading | escape }}
@@ -152,7 +152,14 @@
     </div>
   {%- endif -%}
 
-  {%- if block.settings.picker_replaces_gallery -%}
+  {%- comment -%} Product first on a build-your-own product has no photos worth going back to. {%- endcomment -%}
+  {%- liquid
+    assign show_back = block.settings.picker_replaces_gallery
+    if block.settings.layout == 'teaser' and block.settings.single_uses_picker
+      assign show_back = false
+    endif
+  -%}
+  {%- if show_back -%}
     {%- assign back_text = block.settings.picker_back_text | default: 'Back to product photos' -%}
     <button
       type="button"

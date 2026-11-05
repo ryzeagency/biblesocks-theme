@@ -152,14 +152,7 @@
     </div>
   {%- endif -%}
 
-  {%- comment -%} Product first on a build-your-own product has no photos worth going back to. {%- endcomment -%}
-  {%- liquid
-    assign show_back = block.settings.picker_replaces_gallery
-    if block.settings.layout == 'teaser' and block.settings.single_uses_picker
-      assign show_back = false
-    endif
-  -%}
-  {%- if show_back -%}
+  {%- if block.settings.picker_replaces_gallery -%}
     {%- assign back_text = block.settings.picker_back_text | default: 'Back to product photos' -%}
     <button
       type="button"

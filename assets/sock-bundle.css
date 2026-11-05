@@ -1219,11 +1219,18 @@ sock-bundle {
 
 /* ==========================================================================
    Product first (Layout: "Product first, buy more save more")
-   Under the theme's buy box, the mix & match builder: a ladder of boxes that
-   becomes the pack. See sock-bundle-teaser.liquid.
+   The ladder of boxes under the price, this sock's own size, quantity and
+   add to cart, and the pack the ladder becomes. See sock-bundle-teaser.liquid.
    ========================================================================== */
 
-/* ---------- The builder below the buy box ---------- */
+/* The block brings its own size and add to cart, so Impulse's size picker,
+   quantity and buy buttons step aside. The price stays. */
+.product-single__meta--product-first .variant-wrapper,
+.product-single__meta--product-first .product__quantity,
+.product-single__meta--product-first .product-single__form,
+.product-single__meta--product-first [data-store-availability-holder] {
+  display: none !important;
+}
 
 .sock-bundle--teaser {
   --sb-accent: #f3c24a;
@@ -1245,18 +1252,8 @@ sock-bundle {
   background: var(--colorBody);
 }
 
-body.sock-bundle-packing .sock-bundle__teaser,
-.sock-bundle--build-own .sock-bundle__teaser {
+body.sock-bundle-packing .sock-bundle__teaser {
   border-style: solid;
-}
-
-/* ---------- Build your own pack ----------
-   A build-your-own product opens on the picker and the pack. Its own name is
-   no sock's, so it stays for screen readers only, and the picker shows from
-   the first paint at every width, not just on desktop. */
-
-.sock-bundle-picker--teaser.sock-bundle-picker--open-on-load {
-  display: block;
 }
 
 .sock-bundle__teaser-top {
@@ -1495,34 +1492,90 @@ button.sock-bundle__teaser-tile:hover {
   width: 100%;
 }
 
-/* Before a pack is started, the builder is just where it stands and its
-   button; the quantity options above already show the ladder. A
-   build-your-own product opens packing, so it always shows the pack. */
-body:not(.sock-bundle-packing) .sock-bundle--teaser:not(.sock-bundle--build-own, .has-pairs) :is(.sock-bundle__teaser-progress, .sock-bundle__teaser-slots) {
+/* ---------- This sock: size, quantity, add to cart ---------- */
+
+body.sock-bundle-packing .sock-bundle__buy {
   display: none;
 }
 
-/* The ladder's yellow, so it reads as the way into the savings. */
-.sock-bundle--teaser .sock-bundle__teaser-open {
-  width: 100%;
-  border-color: var(--sb-accent, #f3c24a);
-  background: var(--sb-accent, #f3c24a);
-  color: #111;
+.sock-bundle__buy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sock-bundle__buy-sizes-head {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sock-bundle__buy-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sock-bundle__buy-size {
+  min-width: 100px;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1.5px solid var(--colorTextBody);
+  border-radius: 999px;
+  background: var(--colorBody);
+  color: var(--colorTextBody);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sock-bundle__buy-size[aria-pressed='true'] {
+  background: var(--colorTextBody);
+  color: var(--colorBody);
   font-weight: 700;
 }
 
-.sock-bundle--teaser .sock-bundle__teaser-open:hover {
-  border-color: #111;
-  background: var(--sb-accent, #f3c24a);
-  color: #111;
-  box-shadow: 0 0 15px -8px rgba(0, 0, 0, 0.9);
+.sock-bundle__buy-size[disabled] {
+  opacity: 0.35;
+  text-decoration: line-through;
+  cursor: not-allowed;
 }
 
-/* Once there is a pack, its empty boxes open the picker instead. */
-body.sock-bundle-packing .sock-bundle__teaser-open,
-.sock-bundle--build-own .sock-bundle__teaser-open,
-.sock-bundle--teaser.has-pairs .sock-bundle__teaser-open {
-  display: none;
+.sock-bundle__buy-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.sock-bundle__buy-qty {
+  flex: none;
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--colorTextBody);
+  border-radius: 999px;
+}
+
+.sock-bundle__buy-qty button {
+  width: 44px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.sock-bundle__buy-qty span {
+  min-width: 24px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sock-bundle .btn.sock-bundle__buy-atc {
+  flex: 1;
+  min-width: 0;
 }
 
 /* ---------- Picker, product first ---------- */
@@ -2073,8 +2126,53 @@ html.sock-bundle-qv-open {
     display: none;
   }
 
+  /* This sock's size and add to cart come first on a phone, above the ladder. */
+  .sock-bundle--teaser .sock-bundle__buy {
+    order: -1;
+  }
+
+  /* Sized to their words, so "Women/Youth" fits; they still share one row. */
+  .sock-bundle__buy-size {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* A tighter buy block: the chosen size shows on its button, so no "Size:" line,
+     and shorter buttons closer together. */
   .sock-bundle--teaser {
     gap: 14px;
+  }
+
+  .sock-bundle__buy {
+    gap: 8px;
+  }
+
+  .sock-bundle__buy-sizes-head {
+    display: none;
+  }
+
+  .sock-bundle__buy-row {
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .sock-bundle__buy-qty button {
+    width: 40px;
+    height: 41px;
+  }
+
+  /* One line for "Add to cart · $18.47" beside the quantity. */
+  .sock-bundle .btn.sock-bundle__buy-atc {
+    min-height: 44px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
   }
 
   /* The pack keeps to the photos and totals on a phone: no savings pill. */
@@ -2116,7 +2214,8 @@ html.sock-bundle-qv-open {
 
 /* ---------- Impulse / Bible Socks ---------- */
 
-/* Phones: the photos step aside for the picker, which sits in their column. */
+/* Phones: once a pack is under way the photos step aside for the picker,
+   which sits in their column. */
 @media screen and (max-width: 768px) {
   .sock-bundle-gallery-hidden-mobile .sock-bundle-gallery {
     display: none;

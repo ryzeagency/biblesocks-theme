@@ -110,11 +110,11 @@ if (!customElements.get('sock-bundle')) {
         this.tierFreeShipping = false;
 
         // "Product first" (snippets/sock-bundle-teaser.liquid): the page opens on
-        // this sock and the theme's buy box; this block's button starts a mix &
-        // match pack, and a ladder of boxes fills up as pairs go in. The builder
-        // layout ignores all of this.
+        // this sock, its add to cart starts the pack, and a ladder of boxes
+        // fills up as pairs go in. The builder layout ignores all of this.
         this.teaser = this.dataset.layout === 'teaser';
         this.packing = false;
+        this.buyQty = 1;
         this.lastToastQty = 0;
         this.teaserDiscountText = this.dataset.teaserDiscountText || '[percent]% off';
         this.teaserShippingText = this.dataset.teaserShippingText || 'Free ship';
@@ -134,9 +134,6 @@ if (!customElements.get('sock-bundle')) {
         this.pickerReplacesGallery = this.dataset.pickerReplacesGallery === 'true';
         this.prefillCurrent = this.dataset.prefillCurrent === 'true';
         this.singleUsesPicker = this.dataset.singleUsesPicker === 'true';
-        // Product first on a build-your-own product: there is no sock of its
-        // own to show, so the page opens on the picker and the pack, and stays.
-        this.buildOwn = this.teaser && this.singleUsesPicker;
         this.hideDefaultAtc = this.dataset.hideDefaultAtc === 'true';
         this.afterAdd = this.dataset.afterAdd || 'cart';
         this.cartUrl = this.dataset.cartUrl || '/cart';
@@ -231,10 +228,13 @@ if (!customElements.get('sock-bundle')) {
         this.syncPickerPlacement();
         this.mobileQuery.addEventListener('change', this.syncPickerPlacement);
 
+        // A pack brought back from earlier in the visit opens without a toast.
+        this.quietUnlocks = true;
         this.restoreSlots();
 
         if (this.teaser) {
           this.setUpTeaser();
+          this.quietUnlocks = false;
         } else {
           // Liquid marks one tier checked; run it so the page opens in that state.
           // On a normal product that is Single, which is a no-op.
@@ -436,8 +436,10 @@ if (!customElements.get('sock-bundle')) {
           this.render();
         }
 
-        // The ladder's single pair quotes the size picked in the buy box.
-        if (this.teaser) this.render();
+        if (this.teaser) {
+          this.syncBuy();
+          this.render();
+        }
       }
 
       /* ------------------------------------------------------------------ */
@@ -1304,6 +1306,10 @@ if (!customElements.get('sock-bundle')) {
         this.teaserSlotsEl = this.querySelector('[data-sock-teaser-slots]');
         this.teaserNoteEl = this.querySelector('[data-sock-teaser-note]');
         this.teaserCountEl = this.querySelector('[data-sock-teaser-count]');
+        this.buyEl = this.querySelector('[data-sock-buy]');
+        this.buyAtc = this.querySelector('[data-sock-buy-atc]');
+        this.buyQtyEl = this.querySelector('[data-sock-buy-qty-value]');
+        this.buySizeEl = this.querySelector('[data-sock-buy-size]');
         this.teaserEl = this.querySelector('[data-sock-teaser]');
         this.teaserToggle = this.querySelector('[data-sock-teaser-toggle]');
         // The bar's end reads "Free shipping" only when the top pack ships free.
@@ -1314,7 +1320,7 @@ if (!customElements.get('sock-bundle')) {
           this.foldPack(this.teaserToggle.getAttribute('aria-expanded') === 'true')
         );
         this.teaserSlotsEl?.addEventListener('click', (event) => this.onTeaserSlotsClick(event));
-        this.querySelector('[data-sock-teaser-open]')?.addEventListener('click', () => this.enterPacking());
+        this.buyEl?.addEventListener('click', (event) => this.onBuyClick(event));
         this.picker?.addEventListener('keydown', (event) => {
           const quickView = event.target.closest('[data-picker-quick-view]');
           if (!quickView || (event.key !== 'Enter' && event.key !== ' ')) return;
@@ -1323,33 +1329,113 @@ if (!customElements.get('sock-bundle')) {
         });
 
         this.enhanceCards();
-
-        if (this.buildOwn) {
-          // The product itself costs nothing, so the ladder quotes a pair's price.
-          this.dataset.productPrice = String(this.firstSockPrice());
-          this.enterPacking(false);
-        } else {
-          this.render();
-        }
-      }
-
-      /** A pair's price, from the first sock in the picker that has one. */
-      firstSockPrice() {
-        const fields = this.picker?.querySelectorAll('[data-picker-variant]') || [];
-        for (const field of fields) {
-          const source = field.tagName === 'SELECT' ? field.options[field.selectedIndex] : field;
-          const price = parseInt(source?.dataset.variantPrice, 10);
-          if (price > 0) return price;
-        }
-        return 0;
+        this.syncBuy();
+        this.render();
       }
 
       currentVariant() {
         return this.variantData.find((item) => String(item.id) === String(this.dataset.variantId));
       }
 
+      onBuyClick(event) {
+        const size = event.target.closest('[data-sock-buy-variant]');
+        if (size) {
+          this.dataset.variantId = size.dataset.sockBuyVariant;
+          const variant = this.currentVariant();
+          if (variant) {
+            this.dataset.productPrice = String(variant.price);
+            if (variant.image) this.dataset.productImage = variant.image;
+          }
+          this.syncBuy();
+          this.render();
+          this.refreshPrice(variant);
+          return;
+        }
+
+        const step = event.target.closest('[data-sock-buy-qty]');
+        if (step) {
+          this.buyQty = Math.min(10, Math.max(1, this.buyQty + parseInt(step.dataset.sockBuyQty, 10)));
+          this.syncBuy();
+          return;
+        }
+
+        if (event.target.closest('[data-sock-buy-atc]')) this.addViewedSock();
+      }
+
+      /**
+       * The theme's own size picker is hidden on these pages, so nothing else
+       * moves the price under the title. Fetch the section for the new size and
+       * swap Impulse's price block in; the URL follows, so a shared link opens
+       * on the same size.
+       */
+      async refreshPrice(variant) {
+        const priceEl = this.infoContainer?.querySelector('.product-block--price');
+        if (!variant) return;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('variant', variant.id);
+        window.history.replaceState(window.history.state, '', url);
+        if (!priceEl) return;
+
+        const token = (this.priceToken = (this.priceToken || 0) + 1);
+        try {
+          const response = await fetch(
+            `${url.pathname}?variant=${encodeURIComponent(variant.id)}&section_id=${encodeURIComponent(this.sectionId)}`
+          );
+          if (!response.ok) throw new Error(`Status ${response.status}`);
+          const html = new DOMParser().parseFromString(await response.text(), 'text/html');
+          const fresh = html.querySelector('.product-single__meta .product-block--price');
+          // A later size click has taken over while this one loaded.
+          if (fresh && token === this.priceToken) priceEl.innerHTML = fresh.innerHTML;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      /** The size buttons, the quantity and the price on add to cart. */
+      syncBuy() {
+        const variant = this.currentVariant();
+        this.querySelectorAll('[data-sock-buy-variant]').forEach((button) => {
+          button.setAttribute(
+            'aria-pressed',
+            String(button.dataset.sockBuyVariant === String(this.dataset.variantId))
+          );
+        });
+        if (this.buySizeEl && variant) this.buySizeEl.textContent = variant.title;
+        if (this.buyQtyEl) this.buyQtyEl.textContent = String(this.buyQty);
+
+        if (!this.buyAtc) return;
+        const available = variant ? variant.available !== false : !this.buyAtc.disabled;
+        const price = variant ? variant.price : parseInt(this.dataset.productPrice, 10) || 0;
+        this.buyAtc.disabled = !available;
+        this.buyAtc.textContent = available
+          ? `${this.buyAtc.dataset.addText} · ${this.formatMoney(price * this.buyQty)}`
+          : this.buyAtc.dataset.soldOutText;
+      }
+
+      /** Add to cart puts this sock in the pack, as many times as the quantity says. */
+      addViewedSock() {
+        let added = 0;
+        for (let i = 0; i < this.buyQty; i += 1) {
+          const index = this.firstEmptySlot();
+          if (index === -1) break;
+          this.slots[index] = this.currentProductSlot();
+          added += 1;
+        }
+
+        if (!added) {
+          this.setError('Your pack is full. Remove a sock to swap it out.');
+          return;
+        }
+
+        this.buyQty = 1;
+        this.syncBuy();
+        this.setError('');
+        this.enterPacking();
+      }
+
       /** Swap the photos for the picker; the ladder becomes the pack. */
-      enterPacking(scroll = true) {
+      enterPacking() {
         const opening = !this.packing;
         this.packing = true;
         document.body.classList.add('sock-bundle-packing');
@@ -1361,7 +1447,7 @@ if (!customElements.get('sock-bundle')) {
         this.render();
         // On a phone the docked pack opens folded, leaving the picker the screen.
         if (opening && this.mobileQuery.matches) this.foldPack(true);
-        if (opening && scroll) this.scrollToTop(this.picker);
+        if (opening) this.scrollToTop(this.picker);
       }
 
       /** On a phone, folds the docked pack down to its bar, subtotal and checkout. */
@@ -1401,8 +1487,7 @@ if (!customElements.get('sock-bundle')) {
           const hadFocus = remove === document.activeElement;
           this.slots[parseInt(remove.dataset.teaserRemove, 10)] = null;
           this.setError('');
-          // A build-your-own pack has no product to go back to, so it stays open empty.
-          if (this.slots.some(Boolean) || this.buildOwn) {
+          if (this.slots.some(Boolean)) {
             this.render();
             if (hadFocus) this.teaserSlotsEl.querySelector('[data-teaser-remove]')?.focus();
           } else {
@@ -1424,9 +1509,7 @@ if (!customElements.get('sock-bundle')) {
        * the last reading "5+ pairs". A box's wording is what that pair earns.
        */
       teaserLadder() {
-        const price = this.buildOwn
-          ? parseInt(this.dataset.productPrice, 10) || 0
-          : this.currentVariant()?.price ?? (parseInt(this.dataset.productPrice, 10) || 0);
+        const price = this.currentVariant()?.price ?? (parseInt(this.dataset.productPrice, 10) || 0);
         let previous = 0;
         const rungs = this.tiers
           .filter((tier) => !this.maxSocks || tier.qty <= this.maxSocks)
@@ -1509,8 +1592,6 @@ if (!customElements.get('sock-bundle')) {
           boxes.push(i < filled ? filledMarkup(this.slots[i], i) : emptyMarkup(rung));
         }
         this.teaserSlotsEl.innerHTML = boxes.join('');
-        // A pack under way keeps its boxes in view, even back on the photos.
-        this.classList.toggle('has-pairs', filled > 0);
 
         if (this.teaserNoteEl) {
           this.teaserNoteEl.textContent = filled
@@ -1535,7 +1616,7 @@ if (!customElements.get('sock-bundle')) {
       /** A brief "15% off unlocked!" each time the pack climbs a rung. */
       announceUnlock() {
         const qty = this.earnedTier && this.earnedTier.qty > 1 ? this.earnedTier.qty : 0;
-        if (qty > this.lastToastQty) {
+        if (qty > this.lastToastQty && !this.quietUnlocks) {
           const reward = this.unlockedReward(this.earnedTier);
           if (reward) {
             const text = this.unlockedToastText.replace('[reward]', reward);

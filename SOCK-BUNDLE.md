@@ -78,47 +78,35 @@ the free-shipping bar, so keep it equal to the real discount.
   change to a discount code or wording has to be made in both.
 - Below 769px the picker moves inline under the chosen-sock slots.
 
-## Product first (BOM Socks' current layout)
+## Product first (BOM Socks' main theme layout)
 
-The block's **Layout** setting picks how a page opens. Both product templates now use
-**Product first, buy more save more**:
+Sock pages (`templates/product.json`) use the block's **Layout: Product first, buy more
+save more**, matching BOM Socks' live `main` branch. The block sits right under the price:
 
-- **Sock pages** (`product.json`): the sock with its photos and the theme's buy box
-  (price, size, quantity, a black Add to cart; no Shop Pay button). Under it, the
-  builder says where a pack stands ("Add 2 socks to save 10%") and a yellow **Mix &
-  match designs** button (**Highlight colour**) swaps the photos for the picker. The
-  ladder (1 sock → 2 socks 10% off → … → 5+ socks free shipping) becomes the pack as
-  socks go in; a short "15% off unlocked!" pops up at each rung. **Checkout** adds the
-  pack, alongside anything already in the cart, and goes to checkout.
-- **The builder product** (`product.bundle-builder.json`, Single lets the shopper choose
-  any sock on): opens straight on the picker and the empty pack, with no photos, add to
-  cart or "Back to product photos".
-- Picker cards: each size carries its price ("Men - $18.47"), the Add button counts
-  ("Added ×2"), the name opens a quick view (description, sizes, "Adding this unlocks 15%
-  off on your pack"), and the photo opens a lightbox with the sock's other photos.
-- Phones: the picker takes the photos' place at the top, without the collection tabs, and
-  the pack docks to the bottom of the screen, folded to its message, bar, subtotal and
-  checkout; its arrow opens it.
+- The buy-more ladder (1 sock → 2 socks 10% off → … → 5+ socks free shipping), led by
+  where the pack stands ("Add 2 socks to save 10%").
+- The sock's own sizes, quantity and **Add to cart · $18.47**. Impulse's size picker,
+  quantity and buy buttons are hidden on these pages; the price stays, and follows the
+  size picked here.
+- Add to cart puts the sock in the pack (as many as the quantity) and swaps the photos
+  for the picker. The ladder becomes the pack, a short "15% off unlocked!" pops up at
+  each rung, and **Checkout** empties the cart, adds the pack, applies the pack's code
+  and goes to checkout.
+- Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
+  name opens a quick view, and the photo opens a lightbox.
+- Phones: sizes and add to cart come first, above the ladder. Once a pack is started
+  the picker takes the photos' place and the pack docks to the bottom, folded to its
+  message, bar, subtotal and checkout.
 
-Wording for all of this is under **Product first** at the bottom of the block. The
-**Pack builder** layout described above still works if a template is switched back.
+The builder product (`product.bundle-builder.json`) keeps the **Pack builder** layout.
+Wording for Product first is under **Product first** at the bottom of the block.
 
-## Discounts are automatic
+## Discounts
 
-Like BOM, the pack discounts are now Shopify **automatic discounts** on the All Socks
-collection: 10% at 2+ socks, 15% at 3+, 20% at 4+, set not to combine with each other so
-Shopify applies the best one, and set to combine with the free shipping discount. So:
-
-- The tiers' **Discount code** fields and **Theme settings → Cart → Pack discount codes**
-  are empty. **Discount percent** must still match the automatic discounts, since the
-  pack's totals and ladder are worked out from it.
-- **Empty the cart before adding a pack** is off: the cart's total socks set the
-  discount, so a pack joins whatever is already there.
-- The cart says where it stands, in the drawer and on the cart page: "2 pairs: 10% off.
-  Add 1 more to save 15%." (**Theme settings → Cart → Pack savings line**; **Socks that
-  count** is All Socks). It lives in the `[data-discounts]` area, which Impulse redraws
-  from `templates/cart.ajax.liquid` after every change.
-- The popup before the pack goes in (**Cart popup**) is switched off, as on BOM.
+Packs use the discount codes `BIBLESOCKSMIXANDMATCH10/15/20`, set on each tier in both
+product templates and in **Theme settings → Cart → Pack discount codes**. Adding a pack
+empties the cart first, so the code always matches. The popup before the pack goes in
+(**Cart popup**) is on.
 
 ## Collection filter tabs
 

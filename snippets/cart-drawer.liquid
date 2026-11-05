@@ -214,13 +214,6 @@
             the top of the fixed footer so it is in view without scrolling past
             the items, and outside the regions Impulse redraws, so it stays put.
           {%- endcomment -%}
-          {%- if settings.cart_drawer_crosssell_text != blank -%}
-            <a class="cart-drawer-crosssell" href="{{ settings.cart_drawer_crosssell_link | default: routes.all_products_collection_url }}">
-              {{- settings.cart_drawer_crosssell_text | escape -}}
-              <span aria-hidden="true"> &rarr;</span>
-            </a>
-          {%- endif -%}
-
           {%- if settings.cart_drawer_recs_enable and settings.cart_drawer_recs_collections != blank -%}
             {{ 'sock-bundle.css' | asset_url | stylesheet_tag }}
             <script src="{{ 'cart-recommendations.js' | asset_url }}" defer="defer"></script>
@@ -243,22 +236,18 @@
           {%- endif -%}
 
           <div data-discounts>
-            {%- comment -%} Same shape as templates/cart.ajax.liquid, which replaces it after every change. {%- endcomment -%}
-            <div class="cart__discounts">
-              {%- render 'cart-pack-tier' -%}
-              {% if cart.cart_level_discount_applications != blank %}
-                <div class="cart__item-sub cart__item-row">
-                  <div>{{ 'cart.general.discounts' | t }}</div>
-                  <div class="text-right">
-                    {% for cart_discount in cart.cart_level_discount_applications %}
-                      <div class="cart__discount">
-                        {{ cart_discount.title }} (-{{ cart_discount.total_allocated_amount | money }})
-                      </div>
-                    {% endfor %}
-                  </div>
+            {% if cart.cart_level_discount_applications != blank %}
+              <div class="cart__discounts cart__item-sub cart__item-row">
+                <div>{{ 'cart.general.discounts' | t }}</div>
+                <div class="text-right">
+                  {% for cart_discount in cart.cart_level_discount_applications %}
+                    <div class="cart__discount">
+                      {{ cart_discount.title }} (-{{ cart_discount.total_allocated_amount | money }})
+                    </div>
+                  {% endfor %}
                 </div>
-              {% endif %}
-            </div>
+              </div>
+            {% endif %}
           </div>
 
           <div class="cart__item-sub cart__item-row">

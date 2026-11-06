@@ -1492,6 +1492,15 @@ button.sock-bundle__teaser-tile:hover {
   width: 100%;
 }
 
+/* A free pair (e.g. 9 socks on buy 6 get 3 free) is tagged on its photo,
+   clear of the size caption under it. */
+.sock-bundle__teaser-slot .sock-bundle__slot-free {
+  top: 4px;
+  bottom: auto;
+  left: 4px;
+  z-index: 1;
+}
+
 /* ---------- This sock: size, quantity, add to cart ---------- */
 
 body.sock-bundle-packing .sock-bundle__buy {

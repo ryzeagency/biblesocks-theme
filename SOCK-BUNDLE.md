@@ -108,6 +108,15 @@ product templates and in **Theme settings → Cart → Pack discount codes**. Ad
 empties the cart first, so the code always matches. The popup before the pack goes in
 (**Cart popup**) is on.
 
+## 9 socks: buy 6 get 3 free
+
+At 9 socks or more the pack uses `BUY6GET3FREE` instead of the 20% code (**Sock bundle →
+Bigger pack code**, in both product templates). It is not on the ladder: the pack just
+switches code once it gets there, tags its 3 cheapest socks Free, prices the pack to
+match, and pops up "3 socks free unlocked!". The cart moves onto it too when socks added
+from the cart page or drawer reach 9 (`9:BUY6GET3FREE` in **Theme settings → Cart →
+Pack discount codes**).
+
 ## Collection filter tabs
 
 Above "Pick your socks" sits a strip of collection tabs (**Sock bundle → Collection

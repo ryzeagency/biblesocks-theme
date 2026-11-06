@@ -577,6 +577,36 @@
       "info": "A Buy X get Y code, e.g. buy 3 get 3 free, on the sock picker collection."
     },
     {
+      "type": "header",
+      "content": "Bigger pack code"
+    },
+    {
+      "type": "paragraph",
+      "content": "A code for packs past the biggest one above, e.g. 9 socks for a buy 6 get 3 free code. It is not on the ladder: once the pack reaches it, this code replaces the pack's usual one, in the pack and in the cart."
+    },
+    {
+      "type": "number",
+      "id": "big_pack_qty",
+      "label": "Socks needed",
+      "default": 9
+    },
+    {
+      "type": "text",
+      "id": "big_pack_code",
+      "label": "Discount code",
+      "info": "Leave empty to switch this off."
+    },
+    {
+      "type": "range",
+      "id": "big_pack_free_socks",
+      "min": 0,
+      "max": 9,
+      "step": 1,
+      "label": "Socks free",
+      "default": 3,
+      "info": "How many socks the code makes free. The cheapest ones show as free in the pack, so match the code."
+    },
+    {
       "type": "text",
       "id": "reward_free_socks_text",
       "label": "Free socks reward wording",

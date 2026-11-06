@@ -140,7 +140,10 @@
               "mothers-day"
             ],
             "picker_filter_style": "pills",
-            "picker_filter_label": "Filter by"
+            "picker_filter_label": "Filter by",
+            "big_pack_qty": 9,
+            "big_pack_code": "BUY6GET3FREE",
+            "big_pack_free_socks": 3
           }
         },
         "buy_buttons": {

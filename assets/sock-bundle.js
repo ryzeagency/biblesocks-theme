@@ -41,6 +41,24 @@ if (!customElements.get('sock-bundle')) {
           }))
           .sort((a, b) => a.qty - b.qty);
 
+        // A bigger pack with its own code, e.g. 9 socks for BUY6GET3FREE. It is
+        // off the ladder: it only sets the code and the pack's price once reached.
+        const bigQty = parseInt(this.dataset.bigPackQty, 10) || 0;
+        const bigCode = (this.dataset.bigPackCode || '').trim();
+        const topTier = this.tiers[this.tiers.length - 1];
+        if (bigCode && bigQty > (topTier ? topTier.qty : 1)) {
+          this.tiers.push({
+            qty: bigQty,
+            code: bigCode,
+            percent: 0,
+            freeShipping: Boolean(topTier?.freeShipping),
+            freeSocks: parseInt(this.dataset.bigPackFreeSocks, 10) || 0,
+            offLadder: true,
+          });
+        }
+        // The tiers shown to shoppers: the ladder, the bar and the next goal.
+        this.ladderTiers = this.tiers.filter((tier) => !tier.offLadder);
+
         // Rewards past the biggest pack, so the bar never dead-ends. Each can
         // carry a product, which joins the cart once its rung is reached.
         try {
@@ -54,7 +72,7 @@ if (!customElements.get('sock-bundle')) {
           this.bonusRungs = [];
         }
 
-        this.rungs = [...this.tiers, ...this.bonusRungs].sort((a, b) => a.qty - b.qty);
+        this.rungs = [...this.ladderTiers, ...this.bonusRungs].sort((a, b) => a.qty - b.qty);
         this.slotsWrap = this.querySelector('[data-sock-bundle-slots-wrap]');
         this.slotsEl = this.querySelector('[data-sock-bundle-slots]');
         this.progressEl = this.querySelector('[data-sock-bundle-progress]');
@@ -1056,7 +1074,7 @@ if (!customElements.get('sock-bundle')) {
                 },
               ]
             : []),
-          ...this.tiers
+          ...this.ladderTiers
             .filter((tier) => tier.freeSocks > 0)
             .map((tier) => ({ qty: tier.qty, label: this.freeSocksText(tier), inSlots: true })),
           ...this.bonusRungs.map((rung) => ({
@@ -1511,7 +1529,7 @@ if (!customElements.get('sock-bundle')) {
       teaserLadder() {
         const price = this.currentVariant()?.price ?? (parseInt(this.dataset.productPrice, 10) || 0);
         let previous = 0;
-        const rungs = this.tiers
+        const rungs = this.ladderTiers
           .filter((tier) => !this.maxSocks || tier.qty <= this.maxSocks)
           .map((tier) => {
             let main;
@@ -1538,7 +1556,7 @@ if (!customElements.get('sock-bundle')) {
 
       /** The top of the ladder, which Product first's bar fills toward. */
       teaserGoal() {
-        const tiers = this.tiers.filter(
+        const tiers = this.ladderTiers.filter(
           (tier) => tier.qty > 1 && (!this.maxSocks || tier.qty <= this.maxSocks)
         );
         return tiers[tiers.length - 1] || null;

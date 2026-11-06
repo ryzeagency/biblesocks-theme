@@ -124,7 +124,7 @@
             "show_reward_checklist": true,
             "savings_text": "You save [amount]",
             "show_total": true,
-            "clear_cart_on_add": true,
+            "clear_cart_on_add": false,
             "hide_default_buy_buttons": true,
             "after_add_to_cart": "checkout",
             "picker_product_type": "Socks",
@@ -150,6 +150,7 @@
             "layout": "teaser",
             "teaser_heading": "Buy more, save more",
             "teaser_note": "Mix & match any designs",
+            "teaser_open_text": "Mix & match designs",
             "teaser_discount_text": "[percent]% off",
             "teaser_shipping_text": "Free ship",
             "teaser_accent": "#ffcf24",
@@ -284,18 +285,23 @@
             "borderRadius": "0px",
             "customCss": ""
           }
+        },
+        "quantity_selector": {
+          "type": "quantity_selector",
+          "settings": {}
         }
       },
       "block_order": [
         "text_8UAMXH",
         "loox_reviews_loox_rating_qk3UVC",
         "price",
-        "sock_bundle",
         "size_chart_fayn6V",
         "variant_picker",
         "inventory_status",
         "one_click_upsell_on_page_cYxHpY",
+        "quantity_selector",
         "buy_buttons",
+        "sock_bundle",
         "description",
         "image_tab_Ee6dEi",
         "sales_point_YTJxiN",

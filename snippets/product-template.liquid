@@ -71,16 +71,14 @@
   endif
 
   assign sock_bundle_opens_on_load = false
-  if sock_bundle_block and sock_bundle_block.settings.single_uses_picker
-    assign sock_bundle_opens_on_load = true
-  endif
-
-  # "Product first": the block brings its own size, quantity and add to cart,
-  # so the theme's size picker and buy buttons step aside from the first paint.
+  # "Product first": the buy box sells this sock and the block below it builds
+  # mix & match packs, swapping the photos for the picker when it is opened.
   assign sock_bundle_teaser = false
   if sock_bundle_block and sock_bundle_block.settings.layout == 'teaser'
     assign sock_bundle_teaser = true
-    assign sock_bundle_opens_on_load = false
+  endif
+  if sock_bundle_block and sock_bundle_block.settings.single_uses_picker
+    assign sock_bundle_opens_on_load = true
   endif
 -%}
 
@@ -111,7 +109,7 @@
 
       <div class="grid{% unless image_position == 'left' %} grid--product-images-right{% endunless %}{% if mobile_layout == 'partial' %} grid--product-images--partial{% endif %}">
         {%- if image_position == 'left' -%}
-          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %} sock-bundle-builder-media{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
+          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %}{% if sock_bundle_teaser %} sock-bundle-gallery-hidden-mobile{% else %} sock-bundle-builder-media{% endif %}{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
             {%- if sock_bundle_block -%}<div class="sock-bundle-gallery">{%- endif -%}
             {%- render 'product-images',
               section_id: section_id,
@@ -511,7 +509,7 @@
         </div>
 
         {%- unless image_position == 'left' -%}
-          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %} sock-bundle-builder-media{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
+          <div class="grid__item {{ product_image_width }} product-single__sticky{% if sock_bundle_opens_on_load and sock_bundle_block.settings.picker_replaces_gallery %} sock-bundle-gallery-hidden{% endif %}{% if sock_bundle_opens_on_load %}{% if sock_bundle_teaser %} sock-bundle-gallery-hidden-mobile{% else %} sock-bundle-builder-media{% endif %}{% endif %}"{% if sock_bundle_block %} data-sock-bundle-media="{{ section_id }}"{% endif %}>
             {%- if sock_bundle_block -%}<div class="sock-bundle-gallery">{%- endif -%}
             {%- render 'product-images',
               section_id: section_id,

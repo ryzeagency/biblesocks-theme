@@ -78,35 +78,37 @@ the free-shipping bar, so keep it equal to the real discount.
   change to a discount code or wording has to be made in both.
 - Below 769px the picker moves inline under the chosen-sock slots.
 
-## Product first (BOM Socks' main theme layout)
+## Product first (BOM Socks' dev theme layout)
 
 Sock pages (`templates/product.json`) use the block's **Layout: Product first, buy more
-save more**, matching BOM Socks' live `main` branch. The block sits right under the price:
+save more**, matching BOM Socks' `dev` branch:
 
-- The buy-more ladder (1 sock → 2 socks 10% off → … → 5+ socks free shipping), led by
-  where the pack stands ("Add 2 socks to save 10%").
-- The sock's own sizes, quantity and **Add to cart · $18.47**. Impulse's size picker,
-  quantity and buy buttons are hidden on these pages; the price stays, and follows the
-  size picked here.
-- Add to cart puts the sock in the pack (as many as the quantity) and swaps the photos
-  for the picker. The ladder becomes the pack, a short "15% off unlocked!" pops up at
-  each rung, and **Checkout** empties the cart, adds the pack, applies the pack's code
-  and goes to checkout.
+- The theme's own buy box sells this sock: sizes, quantity and a black **Add to cart**
+  that adds it to the cart like any product.
+- Under it, the bundle block: where a pack stands ("Add 2 socks to save 10%", "Mix &
+  match any designs") and a yellow **Mix & match designs** button (**Open the picker
+  button**). It swaps the photos for the picker; the ladder then shows and becomes the
+  pack, a short "15% off unlocked!" pops up at each rung, and **Checkout** adds the pack,
+  applies the pack's code and goes to checkout.
+- The cart is not emptied first (**Empty the cart before adding a pack** is off on sock
+  pages), so socks added with the normal Add to cart stay. The code tried first is the
+  one the whole cart earns, e.g. 1 sock already in the cart + a 2-sock pack gets the
+  15% code; it steps down to the pack's own code if Shopify will not take it.
+- Socks added only with the normal Add to cart get no code by themselves.
 - Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
   name opens a quick view, and the photo opens a lightbox.
-- Phones: sizes and add to cart come first, above the ladder. Once a pack is started
-  the picker takes the photos' place and the pack docks to the bottom, folded to its
-  message, bar, subtotal and checkout.
+- Phones: once a pack is started the picker takes the photos' place and the pack docks
+  to the bottom, folded to its message, bar, subtotal and checkout.
 
-The builder product (`product.bundle-builder.json`) keeps the **Pack builder** layout.
-Wording for Product first is under **Product first** at the bottom of the block.
+The builder product (`product.bundle-builder.json`) keeps the **Pack builder** layout,
+and still empties the cart before its pack goes in. Wording for Product first is under
+**Product first** at the bottom of the block.
 
 ## Discounts
 
 Packs use the discount codes `BIBLESOCKSMIXANDMATCH10/15/20`, set on each tier in both
-product templates and in **Theme settings → Cart → Pack discount codes**. Adding a pack
-empties the cart first, so the code always matches. The popup before the pack goes in
-(**Cart popup**) is on.
+product templates and in **Theme settings → Cart → Pack discount codes**. The popup
+before the pack goes in (**Cart popup**) is switched off for now.
 
 ## 9 socks: buy 6 get 3 free
 

@@ -16,10 +16,17 @@
   if block.settings.layout == 'teaser'
     assign teaser = true
   endif
+
+  # Product first on a build-your-own product: no sock of its own to show, so
+  # the page opens on the picker and the pack, and stays there.
+  assign build_own = false
+  if teaser and block.settings.single_uses_picker
+    assign build_own = true
+  endif
 -%}
 
 <sock-bundle
-  class="sock-bundle{% if teaser %} sock-bundle--teaser{% endif %}"
+  class="sock-bundle{% if teaser %} sock-bundle--teaser{% endif %}{% if build_own %} sock-bundle--build-own{% endif %}"
   data-layout="{% if teaser %}teaser{% else %}builder{% endif %}"
   id="SockBundle-{{ section_id }}"
   data-section-id="{{ section_id }}"
@@ -286,7 +293,7 @@
   </div>
 
   {%- if teaser -%}
-    {%- render 'sock-bundle-teaser', block: block, product: product, current_variant: current_variant -%}
+    {%- render 'sock-bundle-teaser', block: block -%}
   {%- else -%}
   <div class="sock-bundle__slots-wrap" data-sock-bundle-slots-wrap hidden>
     {%- if block.settings.show_reward_checklist -%}

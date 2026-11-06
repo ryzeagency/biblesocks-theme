@@ -1,16 +1,16 @@
 {% comment %}
-  The "Product first" layout of the sock bundle block: a buy-more-save-more
-  ladder that becomes the pack once a pair is added, and this sock's own size,
-  quantity and add to cart. Rendered inside <sock-bundle>, which paints the
-  ladder boxes and drives everything here.
+  The "Product first" layout of the sock bundle block: the mix & match builder
+  that sits below the buy box. Its button opens the picker in place of the
+  photos, and the buy-more-save-more ladder becomes the pack as pairs go in.
+  This sock's own size, quantity and add to cart are the theme's buy box.
+  Rendered inside <sock-bundle>, which paints the ladder boxes and drives
+  everything here.
 
   Accepts:
   - block: the `sock_bundle` block from sections/main-product.liquid
-  - product: the current product
-  - current_variant: the variant the page opened on
 
   Usage:
-  {% render 'sock-bundle-teaser', block: block, product: product, current_variant: current_variant %}
+  {% render 'sock-bundle-teaser', block: block %}
 {% endcomment %}
 
 <div class="sock-bundle__teaser" data-sock-teaser>
@@ -61,6 +61,15 @@
   {%- comment -%} sock-bundle.js lays the ladder out here, one box per pair. {%- endcomment -%}
   <ul class="sock-bundle__teaser-slots" role="list" data-sock-teaser-slots></ul>
 
+  {%- comment -%} Starts a pack; gone once one is under way. {%- endcomment -%}
+  <button
+    type="button"
+    class="btn sock-bundle__teaser-open"
+    data-sock-teaser-open
+  >
+    {{ block.settings.teaser_open_text | default: 'Mix & match designs' | escape }}
+  </button>
+
   <div class="sock-bundle__teaser-foot" data-sock-bundle-summary hidden>
     <div class="sock-bundle__teaser-subtotal">
       <span>
@@ -83,57 +92,4 @@
   </div>
 
   <div class="sock-bundle__error" data-sock-bundle-error role="alert"></div>
-</div>
-
-<div class="sock-bundle__buy" data-sock-buy>
-  {%- unless product.has_only_default_variant -%}
-    {%- liquid
-      assign size_label = 'Size'
-      if product.options.size == 1
-        assign size_label = product.options.first
-      endif
-    -%}
-    <div class="sock-bundle__buy-sizes-head">
-      {{ size_label | escape }}: <strong data-sock-buy-size>{{ current_variant.title | escape }}</strong>
-    </div>
-    <div class="sock-bundle__buy-sizes" role="group" aria-label="{{ size_label | escape }}">
-      {%- for variant in product.variants -%}
-        <button
-          type="button"
-          class="sock-bundle__buy-size"
-          data-sock-buy-variant="{{ variant.id }}"
-          aria-pressed="{% if variant.id == current_variant.id %}true{% else %}false{% endif %}"
-          {% unless variant.available %}
-            disabled
-          {% endunless %}
-        >
-          {{- variant.title | escape -}}
-        </button>
-      {%- endfor -%}
-    </div>
-  {%- endunless -%}
-
-  <div class="sock-bundle__buy-row">
-    <div class="sock-bundle__buy-qty" role="group" aria-label="{{ 'products.product.quantity' | t | escape }}">
-      <button type="button" data-sock-buy-qty="-1" aria-label="Decrease quantity">&minus;</button>
-      <span data-sock-buy-qty-value aria-live="polite">1</span>
-      <button type="button" data-sock-buy-qty="1" aria-label="Increase quantity">+</button>
-    </div>
-    <button
-      type="button"
-      class="btn btn--full sock-bundle__buy-atc"
-      data-sock-buy-atc
-      data-add-text="{{ 'products.product.add_to_cart' | t | escape }}"
-      data-sold-out-text="{{ 'products.product.sold_out' | t | escape }}"
-      {% unless current_variant.available %}
-        disabled
-      {% endunless %}
-    >
-      {%- if current_variant.available -%}
-        {{ 'products.product.add_to_cart' | t }} &middot; {{ current_variant.price | money }}
-      {%- else -%}
-        {{ 'products.product.sold_out' | t }}
-      {%- endif -%}
-    </button>
-  </div>
 </div>

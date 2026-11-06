@@ -120,7 +120,27 @@
             "show_total": true,
             "clear_cart_on_add": true,
             "hide_default_buy_buttons": true,
-            "after_add_to_cart": "cart"
+            "after_add_to_cart": "cart",
+            "picker_product_type": "Socks",
+            "picker_filter_collections": [
+              "all-socks",
+              "new-releases",
+              "men",
+              "youth",
+              "children",
+              "bible-stories-kids-love",
+              "hope",
+              "courage",
+              "daily-faith",
+              "patriotic",
+              "baptism",
+              "easter",
+              "christmas",
+              "fathers-day",
+              "mothers-day"
+            ],
+            "picker_filter_style": "pills",
+            "picker_filter_label": "Filter by"
           }
         },
         "buy_buttons": {

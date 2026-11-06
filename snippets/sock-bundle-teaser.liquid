@@ -1,0 +1,139 @@
+{% comment %}
+  The "Product first" layout of the sock bundle block: a buy-more-save-more
+  ladder that becomes the pack once a pair is added, and this sock's own size,
+  quantity and add to cart. Rendered inside <sock-bundle>, which paints the
+  ladder boxes and drives everything here.
+
+  Accepts:
+  - block: the `sock_bundle` block from sections/main-product.liquid
+  - product: the current product
+  - current_variant: the variant the page opened on
+
+  Usage:
+  {% render 'sock-bundle-teaser', block: block, product: product, current_variant: current_variant %}
+{% endcomment %}
+
+<div class="sock-bundle__teaser" data-sock-teaser>
+  <div class="sock-bundle__teaser-top">
+    {%- comment -%} Leads with where the pack stands: "Add 2 pairs to save 10%". {%- endcomment -%}
+    <div class="sock-bundle__teaser-msg" data-sock-bundle-shipnote aria-live="polite" hidden></div>
+    <span
+      class="sock-bundle__teaser-note"
+      data-sock-teaser-note
+      data-default-text="{{ block.settings.teaser_note | escape }}"
+    >
+      {{- block.settings.teaser_note | escape -}}
+    </span>
+    {%- comment -%} Folds the docked pack on a phone down to its bar, subtotal and checkout. {%- endcomment -%}
+    <button
+      type="button"
+      class="sock-bundle__teaser-toggle"
+      data-sock-teaser-toggle
+      aria-expanded="true"
+      aria-label="{{ block.settings.teaser_heading | default: 'Your pack' | escape }}"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  {%- comment -%}
+    The builder's progress bar, filling toward the top of the ladder; sock-bundle.js
+    hides the goal at its end when the top pack has no free shipping.
+  {%- endcomment -%}
+  {%- if block.settings.show_progress_bar -%}
+    <div class="sock-bundle__progress sock-bundle__teaser-progress" data-sock-bundle-progressbar>
+      <div class="sock-bundle__progress-track">
+        <div class="sock-bundle__progress-fill" data-sock-bundle-progressfill style="width: 0%"></div>
+        {%- if block.settings.free_shipping_enable -%}
+          <span class="sock-bundle__progress-marker" data-sock-bundle-shipmarker hidden>
+            <span class="sock-bundle__progress-marker-dot"></span>
+          </span>
+        {%- endif -%}
+      </div>
+      <span class="sock-bundle__teaser-goal" data-sock-teaser-goal>
+        {{- block.settings.tier_free_shipping_label | default: 'Free shipping' | escape -}}
+      </span>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} sock-bundle.js lays the ladder out here, one box per pair. {%- endcomment -%}
+  <ul class="sock-bundle__teaser-slots" role="list" data-sock-teaser-slots></ul>
+
+  <div class="sock-bundle__teaser-foot" data-sock-bundle-summary hidden>
+    <div class="sock-bundle__teaser-subtotal">
+      <span>
+        {{- 'cart.general.subtotal' | t }} (<span data-sock-teaser-count></span>)
+      </span>
+      <span>
+        <span class="sock-bundle__teaser-save" data-sock-bundle-save hidden></span>
+        <s class="sock-bundle__teaser-compare" data-sock-bundle-compare hidden></s>
+        <strong class="sock-bundle__teaser-total" data-sock-bundle-total></strong>
+      </span>
+    </div>
+    <button
+      type="button"
+      class="btn btn--full sock-bundle__atc"
+      data-sock-bundle-atc
+      disabled
+    >
+      {{ block.settings.checkout_text | default: 'Checkout' | escape }}
+    </button>
+  </div>
+
+  <div class="sock-bundle__error" data-sock-bundle-error role="alert"></div>
+</div>
+
+<div class="sock-bundle__buy" data-sock-buy>
+  {%- unless product.has_only_default_variant -%}
+    {%- liquid
+      assign size_label = 'Size'
+      if product.options.size == 1
+        assign size_label = product.options.first
+      endif
+    -%}
+    <div class="sock-bundle__buy-sizes-head">
+      {{ size_label | escape }}: <strong data-sock-buy-size>{{ current_variant.title | escape }}</strong>
+    </div>
+    <div class="sock-bundle__buy-sizes" role="group" aria-label="{{ size_label | escape }}">
+      {%- for variant in product.variants -%}
+        <button
+          type="button"
+          class="sock-bundle__buy-size"
+          data-sock-buy-variant="{{ variant.id }}"
+          aria-pressed="{% if variant.id == current_variant.id %}true{% else %}false{% endif %}"
+          {% unless variant.available %}
+            disabled
+          {% endunless %}
+        >
+          {{- variant.title | escape -}}
+        </button>
+      {%- endfor -%}
+    </div>
+  {%- endunless -%}
+
+  <div class="sock-bundle__buy-row">
+    <div class="sock-bundle__buy-qty" role="group" aria-label="{{ 'products.product.quantity' | t | escape }}">
+      <button type="button" data-sock-buy-qty="-1" aria-label="Decrease quantity">&minus;</button>
+      <span data-sock-buy-qty-value aria-live="polite">1</span>
+      <button type="button" data-sock-buy-qty="1" aria-label="Increase quantity">+</button>
+    </div>
+    <button
+      type="button"
+      class="btn btn--full sock-bundle__buy-atc"
+      data-sock-buy-atc
+      data-add-text="{{ 'products.product.add_to_cart' | t | escape }}"
+      data-sold-out-text="{{ 'products.product.sold_out' | t | escape }}"
+      {% unless current_variant.available %}
+        disabled
+      {% endunless %}
+    >
+      {%- if current_variant.available -%}
+        {{ 'products.product.add_to_cart' | t }} &middot; {{ current_variant.price | money }}
+      {%- else -%}
+        {{ 'products.product.sold_out' | t }}
+      {%- endif -%}
+    </button>
+  </div>
+</div>

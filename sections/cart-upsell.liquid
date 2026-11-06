@@ -1,0 +1,149 @@
+{% comment %}
+  The popup that comes up when Add bundle to cart is pressed, before anything
+  goes in the cart: a featured collection and a few things
+  from it to add with the pack. Rendered once in layout/theme.liquid;
+  assets/sock-bundle.js asks assets/cart-upsell.js to offer it.
+
+  Each block is a collection the popup can feature, with its own badge,
+  headline and text. Every time the popup opens it picks one at random, never
+  the one shown last, and fetches its products from sections/cart-upsell-grid.
+{% endcomment %}
+
+{%- if section.settings.enable and section.blocks.size > 0 -%}
+  {{ 'cart-upsell.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'cart-upsell.js' | asset_url }}" defer="defer"></script>
+
+  <cart-upsell
+    class="cart-upsell"
+    data-money-format="{{ shop.money_format | strip_html | escape }}"
+    data-cart-url="{{ routes.cart_url }}"
+    data-cart-add-url="{{ routes.cart_add_url }}"
+    data-add-text="{{ section.settings.add_text | escape }}"
+    data-empty-text="{{ section.settings.empty_add_text | escape }}"
+    {{ section.shopify_attributes }}
+  >
+    <script type="application/json" data-cart-upsell-collections>
+      [
+        {%- assign upsell_first = true -%}
+        {%- for block in section.blocks -%}
+          {%- if block.settings.collection != blank -%}
+            {%- unless upsell_first %},{% endunless -%}
+            {
+              "handle": {{ block.settings.collection.handle | json }},
+              "badge": {{ block.settings.badge | default: block.settings.collection.title | json }},
+              "headline": {{ block.settings.headline | json }},
+              "text": {{ block.settings.text | json }}
+            }
+            {%- assign upsell_first = false -%}
+          {%- endif -%}
+        {%- endfor -%}
+      ]
+    </script>
+
+    <div class="cart-upsell__overlay" data-cart-upsell-close hidden></div>
+    <div
+      class="cart-upsell__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="CartUpsellHeadline"
+      tabindex="-1"
+      hidden
+    >
+      <button type="button" class="cart-upsell__close" data-cart-upsell-close aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="cart-upsell__badge" data-cart-upsell-badge></div>
+      <h2 class="cart-upsell__headline" id="CartUpsellHeadline" data-cart-upsell-headline></h2>
+      <div class="cart-upsell__text" data-cart-upsell-text></div>
+      {%- if section.settings.pick_text != blank -%}
+        <div class="cart-upsell__pick">{{ section.settings.pick_text | escape }}</div>
+      {%- endif -%}
+
+      <div class="cart-upsell__body" data-cart-upsell-body></div>
+
+      <div class="cart-upsell__footer">
+        <button type="button" class="cart-upsell__add" data-cart-upsell-add disabled>
+          {{- section.settings.empty_add_text | escape -}}
+        </button>
+        <div class="cart-upsell__error" data-cart-upsell-error role="alert"></div>
+        <button type="button" class="cart-upsell__skip" data-cart-upsell-skip>
+          {{- section.settings.skip_text | escape -}}
+        </button>
+      </div>
+    </div>
+  </cart-upsell>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cart popup",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable",
+      "label": "Show when Add bundle to cart is pressed",
+      "default": true,
+      "info": "Opens before the pack goes in the cart, with one of the collections below picked at random. Picks are added with the pack and count toward its discount code. Closing it cancels the add."
+    },
+    {
+      "type": "text",
+      "id": "pick_text",
+      "label": "Line above the products",
+      "default": "Tap to pick your favorites"
+    },
+    {
+      "type": "text",
+      "id": "add_text",
+      "label": "Add button",
+      "default": "Add [count] to my order · [total]",
+      "info": "[count] and [total] are filled in as products are picked."
+    },
+    {
+      "type": "text",
+      "id": "empty_add_text",
+      "label": "Add button before anything is picked",
+      "default": "Pick your favorites above"
+    },
+    {
+      "type": "text",
+      "id": "skip_text",
+      "label": "Skip button",
+      "default": "No thanks, I'm happy with my socks",
+      "info": "Adds just the pack."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge",
+          "info": "Leave blank to use the collection's name."
+        },
+        {
+          "type": "text",
+          "id": "headline",
+          "label": "Headline",
+          "default": "Wait — have you seen these?"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

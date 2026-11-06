@@ -74,6 +74,14 @@
   if sock_bundle_block and sock_bundle_block.settings.single_uses_picker
     assign sock_bundle_opens_on_load = true
   endif
+
+  # "Product first": the block brings its own size, quantity and add to cart,
+  # so the theme's size picker and buy buttons step aside from the first paint.
+  assign sock_bundle_teaser = false
+  if sock_bundle_block and sock_bundle_block.settings.layout == 'teaser'
+    assign sock_bundle_teaser = true
+    assign sock_bundle_opens_on_load = false
+  endif
 -%}
 
 {%- if sock_bundle_block -%}
@@ -133,7 +141,7 @@
 
         <div class="grid__item {{ product_description_width }}">
 
-          <div class="product-single__meta{% if sock_bundle_opens_on_load and sock_bundle_block.settings.hide_default_buy_buttons %} sock-bundle-mode{% endif %}">
+          <div class="product-single__meta{% if sock_bundle_opens_on_load and sock_bundle_block.settings.hide_default_buy_buttons %} sock-bundle-mode{% endif %}{% if sock_bundle_teaser %} product-single__meta--product-first{% endif %}">
             {%- comment -%}
               On a build-your-own page the pack heading leads, so the breadcrumbs go
               and the product title stays only for search engines and screen readers.

@@ -51,7 +51,7 @@
             "products_limit": 48,
             "picker_replaces_gallery": true,
             "picker_back_text": "Back to product photos",
-            "single_uses_picker": true,
+            "single_uses_picker": false,
             "pin_current_product": true,
             "prefill_current_product": false,
             "slots_heading": "Your socks",
@@ -126,7 +126,38 @@
             "show_total": true,
             "clear_cart_on_add": true,
             "hide_default_buy_buttons": true,
-            "after_add_to_cart": "cart"
+            "after_add_to_cart": "checkout",
+            "picker_product_type": "Socks",
+            "picker_filter_collections": [
+              "all-socks",
+              "new-releases",
+              "men",
+              "youth",
+              "children",
+              "bible-stories-kids-love",
+              "hope",
+              "courage",
+              "daily-faith",
+              "patriotic",
+              "baptism",
+              "easter",
+              "christmas",
+              "fathers-day",
+              "mothers-day"
+            ],
+            "picker_filter_style": "pills",
+            "picker_filter_label": "Filter by",
+            "layout": "teaser",
+            "teaser_heading": "Buy more, save more",
+            "teaser_note": "Mix & match any designs",
+            "teaser_discount_text": "[percent]% off",
+            "teaser_shipping_text": "Free ship",
+            "teaser_accent": "#ffcf24",
+            "checkout_text": "Checkout",
+            "picker_added_text": "Added",
+            "quick_view_add_text": "Add to my pack",
+            "quick_view_unlock_text": "Adding this unlocks [reward] on your pack",
+            "unlocked_toast_text": "[reward] unlocked!"
           }
         },
         "price": {
@@ -164,7 +195,7 @@
         "buy_buttons": {
           "type": "buy_buttons",
           "settings": {
-            "show_dynamic_checkout": true,
+            "show_dynamic_checkout": false,
             "surface_pickup_enable": false,
             "show_gift_card_recipient": false
           }
@@ -255,8 +286,8 @@
       "block_order": [
         "text_8UAMXH",
         "loox_reviews_loox_rating_qk3UVC",
-        "sock_bundle",
         "price",
+        "sock_bundle",
         "size_chart_fayn6V",
         "variant_picker",
         "inventory_status",

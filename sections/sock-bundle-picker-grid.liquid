@@ -1,0 +1,38 @@
+{% comment %}
+  The sock picker's grid for one collection, fetched by sock-bundle.js through
+  the Section Rendering API (/collections/<handle>?section_id=sock-bundle-picker-grid)
+  when a collection filter tab is tapped. Not meant to be added to a page.
+{% endcomment %}
+
+<div class="sock-bundle-picker__grid" role="list" data-picker-grid>
+  {%- if collection -%}
+    {%- paginate collection.products by 250 -%}
+      {%- assign picker_type = section.settings.picker_product_type | strip -%}
+      {%- for sock in collection.products -%}
+        {%- if picker_type != blank and sock.type != picker_type -%}{%- continue -%}{%- endif -%}
+        {%- render 'sock-bundle-picker-card', sock: sock, block: section -%}
+      {%- endfor -%}
+    {%- endpaginate -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Sock picker grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "picker_add_text",
+      "label": "Add button text",
+      "default": "Add"
+    },
+    {
+      "type": "text",
+      "id": "picker_product_type",
+      "label": "Only show this product type",
+      "default": "Socks",
+      "info": "Matches the Sock bundle block's setting. Leave blank for every product."
+    }
+  ]
+}
+{% endschema %}

@@ -870,6 +870,40 @@
         "type": "url",
         "id": "cart_terms_conditions_page",
         "label": "t:settings_schema.cart.settings.cart_terms_conditions_page.label"
+      },
+      {
+        "type": "header",
+        "content": "Pack discount codes"
+      },
+      {
+        "type": "text",
+        "id": "cart_pack_codes",
+        "label": "Pack discount codes",
+        "default": "2:BIBLESOCKSMIXANDMATCH10, 3:BIBLESOCKSMIXANDMATCH15, 4:BIBLESOCKSMIXANDMATCH20",
+        "info": "Socks in the cart, then the code that many earns. When a sock is added from the cart page or drawer suggestions, the cart moves onto the right code. A code the shopper typed in themselves is never replaced."
+      },
+      {
+        "type": "header",
+        "content": "You might also like (cart drawer)"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_drawer_recs_enable",
+        "label": "Show product suggestions in the cart drawer",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "cart_drawer_recs_heading",
+        "label": "Heading",
+        "default": "You might also like"
+      },
+      {
+        "type": "collection_list",
+        "id": "cart_drawer_recs_collections",
+        "label": "Collections to suggest from",
+        "limit": 10,
+        "info": "Each page load picks one at random, never the same twice in a row, and shows up to 6 of its products that are not already in the cart."
       }
     ]
   },

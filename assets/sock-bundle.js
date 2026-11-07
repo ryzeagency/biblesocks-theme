@@ -554,10 +554,8 @@ if (!customElements.get('sock-bundle')) {
 
         if (!variantField || !variantField.value) return false;
 
-        if (this.cartMode) {
-          this.addCardToCart(card, option.value);
-          return true;
-        }
+        // Cart mode hands back the add itself, so callers can wait on it.
+        if (this.cartMode) return this.addCardToCart(card, option.value);
 
         this.slots[index] = this.slotFromCard(card, option);
 
@@ -967,7 +965,8 @@ if (!customElements.get('sock-bundle')) {
             // Sold-out socks stay unavailable, and everything greys out once
             // the pack holds as many socks as it may.
             const add = card.querySelector('[data-picker-add]');
-            if (add) add.disabled = add.dataset.soldout === 'true' || full;
+            // One still on its way to the cart stays locked until it lands.
+            if (add) add.disabled = add.dataset.soldout === 'true' || full || add.classList.contains('is-loading');
 
             // Product first: the button itself says how many are in the pack.
             if (add && this.teaser && add.dataset.soldout !== 'true') {
@@ -1486,9 +1485,11 @@ if (!customElements.get('sock-bundle')) {
         this.justAdded = true;
         try {
           await window.PackCart.add([{ id: Number(variantId), quantity: 1 }]);
+          return true;
         } catch (error) {
           this.justAdded = false;
           this.setError(error.message || 'Could not add to cart.');
+          return false;
         } finally {
           if (button) {
             button.classList.remove('is-loading');
@@ -2028,7 +2029,20 @@ if (!customElements.get('sock-bundle')) {
           select.value = this.quickViewSize;
           select.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        if (this.addCard(card)) this.closeQuickView();
+        const added = this.addCard(card);
+        if (!(added instanceof Promise)) {
+          if (added) this.closeQuickView();
+          return;
+        }
+        // Cart mode: the button spins until Shopify has the sock, then closes.
+        const button = this.quickView?.querySelector('[data-qv-add]');
+        button?.classList.add('is-loading');
+        if (button) button.disabled = true;
+        added.then((ok) => {
+          button?.classList.remove('is-loading');
+          if (button) button.disabled = false;
+          if (ok) this.closeQuickView();
+        });
       }
 
       closeQuickView() {

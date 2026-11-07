@@ -104,6 +104,15 @@ The builder product (`product.bundle-builder.json`) keeps the **Pack builder** l
 and still empties the cart before its pack goes in. Wording for Product first is under
 **Product first** at the bottom of the block.
 
+## Mix & match popup
+
+**Sock bundle → Open the picker as a full-screen popup** (on for sock pages): Mix & match
+covers the whole page with the picker and the pack instead of swapping out the photos.
+A bar across the top carries the title (the **Open the picker button** text) and a ×;
+Escape and a phone's back button close it too. On a computer the socks fill the left and
+the pack sits on the right; on a phone the socks scroll and the pack docks to the bottom,
+folded. Closing puts the picker and the pack back on the page, with the pack as it was.
+
 ## Discounts
 
 Packs use the discount codes `BIBLESOCKSMIXANDMATCH10/15/20`, set on each tier in both

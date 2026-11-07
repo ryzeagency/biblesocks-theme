@@ -155,6 +155,12 @@ if (!customElements.get('sock-bundle')) {
         // Product first on a build-your-own product: there is no sock of its
         // own to show, so the page opens on the picker and the pack, and stays.
         this.buildOwn = this.teaser && this.singleUsesPicker;
+        // Product first: Mix & match opens the picker and the pack as a
+        // full-screen popup over the page, instead of in the photos' place.
+        this.popup = this.teaser && !this.buildOwn && this.dataset.packPopup === 'true';
+        this.popupTitle = this.dataset.popupTitle || 'Mix & match designs';
+        this.onPopupKeydown = this.onPopupKeydown.bind(this);
+        this.onPopState = this.onPopState.bind(this);
         this.hideDefaultAtc = this.dataset.hideDefaultAtc === 'true';
         this.afterAdd = this.dataset.afterAdd || 'cart';
         this.cartUrl = this.dataset.cartUrl || '/cart';
@@ -192,6 +198,8 @@ if (!customElements.get('sock-bundle')) {
       }
 
       connectedCallback() {
+        // Moving into the popup and back is not a fresh start.
+        if (this.relocating) return;
         this.tierButtons.forEach((button) => button.addEventListener('click', this.onTierClick));
         this.slotsEl?.addEventListener('click', this.onSlotsClick);
         this.atcButton?.addEventListener('click', this.onAddToCart);
@@ -270,6 +278,8 @@ if (!customElements.get('sock-bundle')) {
       }
 
       disconnectedCallback() {
+        if (this.relocating) return;
+        this.closePopup({ restore: false });
         document.removeEventListener('variant:change', this.onVariantChange);
         this.picker?.removeEventListener('change', this.onPickerVariantChange);
         this.tiersEl?.removeEventListener('scroll', this.updateArrows);
@@ -1375,14 +1385,18 @@ if (!customElements.get('sock-bundle')) {
         this.packing = true;
         document.body.classList.add('sock-bundle-packing');
         this.picker?.classList.add('is-visible');
-        this.mediaContainer?.classList.add(
-          'sock-bundle-gallery-hidden',
-          'sock-bundle-gallery-hidden-mobile'
-        );
+        if (this.popup) {
+          if (opening) this.openPopup();
+        } else {
+          this.mediaContainer?.classList.add(
+            'sock-bundle-gallery-hidden',
+            'sock-bundle-gallery-hidden-mobile'
+          );
+        }
         this.render();
         // On a phone the docked pack opens folded, leaving the picker the screen.
         if (opening && this.mobileQuery.matches) this.foldPack(true);
-        if (opening && scroll) this.scrollToTop(this.picker);
+        if (opening && scroll && !this.popup) this.scrollToTop(this.picker);
       }
 
       /** On a phone, folds the docked pack down to its bar, subtotal and checkout. */
@@ -1392,7 +1406,8 @@ if (!customElements.get('sock-bundle')) {
         this.teaserToggle?.setAttribute('aria-expanded', String(!folded));
       }
 
-      exitPacking() {
+      exitPacking({ fromHistory = false } = {}) {
+        if (this.popup) this.closePopup({ fromHistory });
         this.packing = false;
         // Next time the pack docks, it opens in full.
         this.foldPack(false);
@@ -1403,6 +1418,117 @@ if (!customElements.get('sock-bundle')) {
           'sock-bundle-gallery-hidden-mobile'
         );
         this.render();
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Popup                                                               */
+      /* ------------------------------------------------------------------ */
+
+      /** The full-screen popup: a bar with the title and ×, the picker, the pack. */
+      buildPopup() {
+        if (this.popupEl) return this.popupEl;
+        const popup = document.createElement('div');
+        popup.className = `sock-bundle-popup ${this.schemeClass()}`.trim();
+        popup.setAttribute('role', 'dialog');
+        popup.setAttribute('aria-modal', 'true');
+        popup.setAttribute('aria-label', this.popupTitle);
+        popup.hidden = true;
+        popup.innerHTML = `
+          <div class="sock-bundle-popup__bar">
+            <span class="sock-bundle-popup__title">${this.escape(this.popupTitle)}</span>
+            <button type="button" class="sock-bundle-popup__close" data-popup-close aria-label="${this.escape(
+              this.closeText
+            )}">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="sock-bundle-popup__body">
+            <div class="sock-bundle-popup__picker" data-popup-picker></div>
+            <div class="sock-bundle-popup__pack" data-popup-pack></div>
+          </div>`;
+        popup.querySelector('[data-popup-close]').addEventListener('click', () => this.exitPacking());
+        document.body.appendChild(popup);
+        this.popupEl = popup;
+        return popup;
+      }
+
+      /** Move the picker and this pack into the popup, leaving markers to come back to. */
+      openPopup() {
+        const popup = this.buildPopup();
+        if (!popup.hidden) return;
+        this.popupOpener = document.activeElement;
+
+        if (this.picker) {
+          this.pickerHome = document.createComment('sock-bundle-picker');
+          this.picker.before(this.pickerHome);
+          popup.querySelector('[data-popup-picker]').appendChild(this.picker);
+        }
+        this.packHome = document.createComment('sock-bundle');
+        this.before(this.packHome);
+        this.relocating = true;
+        popup.querySelector('[data-popup-pack]').appendChild(this);
+        this.relocating = false;
+
+        popup.hidden = false;
+        popup.querySelector('[data-popup-picker]').scrollTop = 0;
+        document.documentElement.classList.add('sock-bundle-popup-open');
+        document.addEventListener('keydown', this.onPopupKeydown);
+
+        // The phone's back button closes the popup rather than leaving the page.
+        try {
+          window.history.pushState({ sockBundlePopup: true }, '');
+          this.popupState = true;
+          window.addEventListener('popstate', this.onPopState);
+        } catch (error) {
+          this.popupState = false;
+        }
+
+        popup.querySelector('[data-popup-close]').focus({ preventScroll: true });
+      }
+
+      /** Put everything back where it came from. */
+      closePopup({ fromHistory = false, restore = true } = {}) {
+        const popup = this.popupEl;
+        if (!popup || popup.hidden) return;
+        popup.hidden = true;
+        document.documentElement.classList.remove('sock-bundle-popup-open');
+        document.removeEventListener('keydown', this.onPopupKeydown);
+        window.removeEventListener('popstate', this.onPopState);
+
+        if (restore) {
+          if (this.picker && this.pickerHome?.parentNode) this.pickerHome.replaceWith(this.picker);
+          if (this.packHome?.parentNode) {
+            this.relocating = true;
+            this.packHome.replaceWith(this);
+            this.relocating = false;
+          }
+        }
+        this.pickerHome = null;
+        this.packHome = null;
+
+        if (this.popupState && !fromHistory) window.history.back();
+        this.popupState = false;
+
+        if (restore && this.popupOpener?.isConnected) this.popupOpener.focus({ preventScroll: true });
+      }
+
+      onPopState() {
+        if (this.popupEl && !this.popupEl.hidden) {
+          this.popupState = false;
+          this.exitPacking({ fromHistory: true });
+        }
+      }
+
+      onPopupKeydown(event) {
+        // The quick view and the photo lightbox sit above the popup and close first.
+        if (this.quickView && !this.quickView.hidden) return;
+        if (this.lightbox && !this.lightbox.hidden) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          this.exitPacking();
+        } else if (event.key === 'Tab') {
+          this.trapFocus(event, this.popupEl);
+        }
       }
 
       /** Bring an element's top into view, unless it already is. */
@@ -1423,7 +1549,7 @@ if (!customElements.get('sock-bundle')) {
           this.slots[parseInt(remove.dataset.teaserRemove, 10)] = null;
           this.setError('');
           // A build-your-own pack has no product to go back to, so it stays open empty.
-          if (this.slots.some(Boolean) || this.buildOwn) {
+          if (this.slots.some(Boolean) || this.buildOwn || this.popup) {
             this.render();
             if (hadFocus) this.teaserSlotsEl.querySelector('[data-teaser-remove]')?.focus();
           } else {

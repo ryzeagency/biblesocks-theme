@@ -1,1 +1,46 @@
-{"sections":{"main":{"type":"main-cart","settings":{"show_savings":true,"original_total_label":"Original total","saved_label":"Total saved","free_shipping_enable":true,"free_shipping_threshold":70,"free_shipping_away_text":"You're [amount] away from free shipping","free_shipping_unlocked_text":"You've unlocked free shipping!","upsell_enable":true,"upsell_heading":"You might also like","upsell_collection":"all-socks","upsell_limit":6,"upsell_add_text":"Add","free_shipping_basis":"amount","free_shipping_quantity":5,"free_shipping_count_text":"Add [count] more [socks] to unlock free shipping","sock_word_singular":"sock","sock_word_plural":"socks"}},"recently-viewed":{"type":"recently-viewed","disabled":true,"settings":{"recent_count":5}}},"order":["main","recently-viewed"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-cart",
+      "settings": {
+        "show_savings": true,
+        "original_total_label": "Original total",
+        "saved_label": "Total saved",
+        "free_shipping_enable": true,
+        "free_shipping_threshold": 70,
+        "free_shipping_away_text": "You're [amount] away from free shipping",
+        "free_shipping_unlocked_text": "You've unlocked free shipping!",
+        "upsell_enable": true,
+        "upsell_heading": "You might also like",
+        "upsell_collection": "all-socks",
+        "upsell_limit": 6,
+        "upsell_add_text": "Add",
+        "free_shipping_basis": "amount",
+        "free_shipping_quantity": 5,
+        "free_shipping_count_text": "Add [count] more [socks] to unlock free shipping",
+        "sock_word_singular": "sock",
+        "sock_word_plural": "socks"
+      }
+    },
+    "recently-viewed": {
+      "type": "recently-viewed",
+      "disabled": true,
+      "settings": {
+        "recent_count": 5
+      }
+    }
+  },
+  "order": [
+    "main",
+    "recently-viewed"
+  ]
+}

@@ -130,6 +130,12 @@ if (!customElements.get('cart-extras')) {
        * may come back not applicable; step down until one applies.
        */
       async syncPackCode() {
+        // assets/pack-cart.js keeps the code for every part of the store; use it
+        // when it is loaded, so the cart page, drawer and sock pack all agree.
+        if (window.PackCart) {
+          await window.PackCart.sync();
+          return;
+        }
         if (!this.packCodes.length) return;
         const json = { 'Content-Type': 'application/json', Accept: 'application/json' };
 

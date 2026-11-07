@@ -162,6 +162,22 @@ if (!customElements.get('sock-bundle')) {
         this.clearCartOnAdd = this.dataset.clearCart === 'true';
         this.moneyFormat = this.dataset.moneyFormat || '${{amount}}';
 
+        // Product first on a sock page: the pack is the socks in the Shopify
+        // cart (assets/pack-cart.js). The buy box's Add to cart, the picker's
+        // Add and the pack's × all change the real cart, and the pack is drawn
+        // from /cart.js, so the builder and the cart page cannot disagree.
+        this.cartMode =
+          this.teaser && !this.buildOwn && this.dataset.cartMode === 'true' && Boolean(window.PackCart);
+        // After the buy box's Add to cart: stay and show the pack ("next_step"),
+        // or let the theme open its cart drawer ("drawer").
+        this.afterAtc = this.dataset.afterAtc || 'next_step';
+        this.addedText = this.dataset.addedText || 'Added — add [more] and save [reward]';
+        this.cart = null;
+        this.justAdded = false;
+        this.showAdded = false;
+        this.onPackCartChange = this.onPackCartChange.bind(this);
+        this.onThemeAdded = this.onThemeAdded.bind(this);
+
         try {
           this.variantData = JSON.parse(
             this.querySelector('[data-sock-bundle-variants]')?.textContent || '[]'
@@ -251,7 +267,7 @@ if (!customElements.get('sock-bundle')) {
 
         // A pack brought back from earlier in the visit opens without a toast.
         this.quietUnlocks = true;
-        this.restoreSlots();
+        if (!this.cartMode) this.restoreSlots();
 
         if (this.teaser) {
           this.setUpTeaser();
@@ -267,10 +283,21 @@ if (!customElements.get('sock-bundle')) {
 
         // The server-side open state has done its job; let JS own it from here.
         this.picker?.classList.remove('sock-bundle-picker--open-on-load');
+
+        if (this.cartMode) {
+          this.classList.add('sock-bundle--cart-mode');
+          document.addEventListener('pack-cart:change', this.onPackCartChange);
+          // The buy box's own Add to cart (Impulse) posts its form and announces
+          // it with a bubbling `ajaxProduct:added`; it passes through here.
+          this.infoContainer?.addEventListener('ajaxProduct:added', this.onThemeAdded);
+          this.loadCart();
+        }
       }
 
       disconnectedCallback() {
         document.removeEventListener('variant:change', this.onVariantChange);
+        document.removeEventListener('pack-cart:change', this.onPackCartChange);
+        this.infoContainer?.removeEventListener('ajaxProduct:added', this.onThemeAdded);
         this.picker?.removeEventListener('change', this.onPickerVariantChange);
         this.tiersEl?.removeEventListener('scroll', this.updateArrows);
         window.removeEventListener('resize', this.updateArrows);
@@ -526,6 +553,11 @@ if (!customElements.get('sock-bundle')) {
             : variantField;
 
         if (!variantField || !variantField.value) return false;
+
+        if (this.cartMode) {
+          this.addCardToCart(card, option.value);
+          return true;
+        }
 
         this.slots[index] = this.slotFromCard(card, option);
 
@@ -845,7 +877,7 @@ if (!customElements.get('sock-bundle')) {
 
       render() {
         this.growSlots();
-        this.saveSlots();
+        if (!this.cartMode) this.saveSlots();
         const filled = this.slots.filter(Boolean).length;
 
         // What the pack has actually earned, and what one more sock would earn.
@@ -946,7 +978,7 @@ if (!customElements.get('sock-bundle')) {
           });
         }
 
-        const subtotal = this.slots
+        let subtotal = this.slots
           .filter(Boolean)
           .reduce((sum, slot) => sum + (slot.price || 0), 0);
         const freeValue = Array.from(freeSlots).reduce(
@@ -954,7 +986,17 @@ if (!customElements.get('sock-bundle')) {
           0
         );
         const percent = this.earnedTier ? this.earnedTier.percent : 0;
-        const payable = Math.round((subtotal - freeValue) * (1 - percent / 100));
+        let payable = Math.round((subtotal - freeValue) * (1 - percent / 100));
+
+        // Cart mode quotes the cart itself: Shopify's totals, after the code it
+        // actually applied, exactly as the cart page shows them. Free shipping
+        // goes by that same total, never by a promise on the ladder.
+        if (this.cartMode && this.cart) {
+          subtotal = this.cart.original_total_price;
+          payable = this.cart.total_price;
+          this.tierFreeShipping =
+            this.freeShipping && this.shipThreshold > 0 && payable >= this.shipThreshold;
+        }
         // Free socks are expressed as the share of the pack they knock off, so
         // [percent] and the per-sock estimates still read sensibly.
         this.discountPercent = subtotal ? Math.round((1 - payable / subtotal) * 100) : percent;
@@ -980,7 +1022,7 @@ if (!customElements.get('sock-bundle')) {
         this.renderRewards(filled);
         this.renderProgress(filled, this.shipBasis === 'full' ? subtotal : payable);
 
-        this.atcButton.disabled = filled < 1;
+        this.atcButton.disabled = this.cartMode ? !this.cart?.item_count : filled < 1;
 
         if (this.teaser) {
           this.renderTeaser(filled, freeSlots);
@@ -1104,7 +1146,7 @@ if (!customElements.get('sock-bundle')) {
 
       selectedCountText(filled) {
         const word = filled === 1 ? this.sockWordSingular : this.sockWordPlural;
-        return `${filled} ${word} selected`;
+        return this.cartMode ? `${filled} ${word} in your cart` : `${filled} ${word} selected`;
       }
 
       /** The best tier this many socks qualifies for. */
@@ -1172,13 +1214,14 @@ if (!customElements.get('sock-bundle')) {
         if (this.nextRung) {
           // Point at the next rung: "Buy one more, save 15%" or "...get a gift box".
           const more = this.nextRung.qty - filled;
-          const reward = this.rewardFor(this.nextRung, this.tierFreeShipping);
+          // Cart mode only speaks of free shipping by the cart's total.
+          const reward = this.rewardFor(this.nextRung, this.cartMode || this.tierFreeShipping);
           let template;
           if (filled === 0) {
             template = this.progressStartText;
           } else if (this.nextRung.bonus || this.nextRung.freeSocks > 0) {
             template = this.bonusIncompleteText;
-          } else if (this.nextRung.freeShipping && !this.tierFreeShipping) {
+          } else if (this.nextRung.freeShipping && !this.tierFreeShipping && !this.cartMode) {
             // The next pack is the one that ships free: lead with that.
             template = this.progressShippingNextText;
           } else {
@@ -1188,14 +1231,21 @@ if (!customElements.get('sock-bundle')) {
             .replace('[count]', more)
             .replace('[socks]', more === 1 ? this.sockWordSingular : this.sockWordPlural)
             .replace('[reward]', reward);
-        } else if (this.earnedTier?.freeShipping && this.earnedTier.percent > 0) {
+        } else if (
+          this.cartMode
+            ? this.tierFreeShipping && this.earnedTier
+            : this.earnedTier?.freeShipping && this.earnedTier.percent > 0
+        ) {
           shippingUnlocked = true;
+          const unlocked = this.cartMode
+            ? [this.rewardFor(this.earnedTier, true), this.rewardShippingText].filter(Boolean).join(' + ')
+            : this.rewardFor(this.earnedTier);
           message = this.progressShippingUnlockedText
             .replace('[percent]', this.earnedTier.percent)
-            .replace('[reward]', this.rewardFor(this.earnedTier));
+            .replace('[reward]', unlocked);
         } else {
           // Top of the ladder: say what the pack has earned.
-          const reward = this.rewardFor(this.earnedTier);
+          const reward = this.rewardFor(this.earnedTier, this.cartMode);
           message = reward ? this.progressCompleteText.replace('[reward]', reward) : '';
         }
 
@@ -1211,6 +1261,20 @@ if (!customElements.get('sock-bundle')) {
             this.formatMoney(this.shipThreshold - towardsShipping)
           );
           message = message ? `${message} — ${gap}` : gap;
+        }
+
+        // Right after a sock goes in the cart, the pack says so and points at the
+        // next saving: "Added — add one more and save 10%".
+        if (this.cartMode && this.showAdded && filled > 0) {
+          if (this.nextRung) {
+            const more = this.nextRung.qty - filled;
+            message = this.addedText
+              .replace('[more]', more === 1 ? 'one more' : `${more} more`)
+              .replace('[count]', more)
+              .replace('[reward]', this.rewardFor(this.nextRung, true));
+          } else if (message) {
+            message = `${this.pickerAddedText} — ${message}`;
+          }
         }
 
         if (this.teaser) this.shipNote.hidden = !message;
@@ -1354,6 +1418,124 @@ if (!customElements.get('sock-bundle')) {
         }
       }
 
+      /* ------------------------------------------------------------------ */
+      /* Cart mode: the pack is the cart                                     */
+      /* ------------------------------------------------------------------ */
+
+      /** First paint from /cart.js; a pack brought back opens without a toast. */
+      async loadCart() {
+        this.quietUnlocks = true;
+        try {
+          await window.PackCart.sync();
+        } catch (error) {
+          console.error(error);
+        }
+        this.quietUnlocks = false;
+      }
+
+      /** Anything changed the cart (here, the drawer, the cart page): repaint from it. */
+      onPackCartChange(event) {
+        const cart = event.detail?.cart;
+        if (cart) this.applyCart(cart);
+      }
+
+      /**
+       * The buy box's Add to cart went through. Shopify already has the sock;
+       * put the right code on the cart, redraw the header count and drawer, and
+       * show the pack as the next step instead of the drawer (unless set to it).
+       */
+      onThemeAdded(event) {
+        if (this.afterAtc !== 'drawer') event.stopPropagation();
+        this.justAdded = true;
+        window.PackCart.sync(undefined, { rebuild: true }).catch((error) => console.error(error));
+      }
+
+      /** One slot per pair in the cart, socks only, in cart order. */
+      applyCart(cart) {
+        this.cart = cart;
+        const slots = [];
+        (cart.items || [])
+          .filter((item) => window.PackCart.isSock(item))
+          .forEach((item) => {
+            const slot = {
+              key: item.key,
+              variantId: String(item.variant_id),
+              productId: String(item.product_id),
+              title: item.product_title,
+              variantTitle: item.product_has_only_default_variant ? '' : item.variant_title || '',
+              image: item.image ? this.sizedImage(item.image, 300) : '',
+              price: item.original_price,
+              variants: [],
+            };
+            for (let i = 0; i < item.quantity; i += 1) slots.push(slot);
+          });
+        this.slots = slots;
+        this.showAdded = this.justAdded;
+        this.justAdded = false;
+        this.render();
+      }
+
+      /** The picker's Add: straight into the Shopify cart. */
+      async addCardToCart(card, variantId) {
+        const button = card.querySelector('[data-picker-add]');
+        if (button) {
+          button.disabled = true;
+          button.classList.add('is-loading');
+        }
+        this.setError('');
+        this.justAdded = true;
+        try {
+          await window.PackCart.add([{ id: Number(variantId), quantity: 1 }]);
+        } catch (error) {
+          this.justAdded = false;
+          this.setError(error.message || 'Could not add to cart.');
+        } finally {
+          if (button) {
+            button.classList.remove('is-loading');
+            button.disabled = button.dataset.soldout === 'true';
+          }
+        }
+      }
+
+      /** The pack's ×: one pair of that line comes out of the cart. */
+      async removeFromCart(index) {
+        const slot = this.slots[index];
+        if (!slot?.key) return;
+        const left = this.slots.filter((item) => item && item.key === slot.key).length - 1;
+        this.setError('');
+        this.teaserSlotsEl?.classList.add('is-busy');
+        try {
+          await window.PackCart.change(slot.key, Math.max(0, left));
+        } catch (error) {
+          this.setError(error.message || 'Could not update your cart.');
+        } finally {
+          this.teaserSlotsEl?.classList.remove('is-busy');
+        }
+        if (!this.slots.some(Boolean) && this.packing) this.exitPacking();
+      }
+
+      /** Checkout: the cart already holds the pack; make sure its code is on, then go. */
+      async checkoutFromCart() {
+        this.atcButton.disabled = true;
+        this.atcButton.classList.add('btn--loading');
+        this.setError('');
+        try {
+          const { cart } = await window.PackCart.sync();
+          if (!cart.item_count) {
+            this.setError('Your cart is empty.');
+            return;
+          }
+          const root = (window.theme?.routes?.home || '/').replace(/\/?$/, '/');
+          window.location.href = `${root}checkout`;
+        } catch (error) {
+          console.error(error);
+          this.setError('Something went wrong. Please try again.');
+        } finally {
+          this.atcButton.classList.remove('btn--loading');
+          this.atcButton.disabled = false;
+        }
+      }
+
       /** A pair's price, from the first sock in the picker that has one. */
       firstSockPrice() {
         const fields = this.picker?.querySelectorAll('[data-picker-variant]') || [];
@@ -1418,6 +1600,10 @@ if (!customElements.get('sock-bundle')) {
 
       onTeaserSlotsClick(event) {
         const remove = event.target.closest('[data-teaser-remove]');
+        if (remove && this.cartMode) {
+          this.removeFromCart(parseInt(remove.dataset.teaserRemove, 10));
+          return;
+        }
         if (remove) {
           const hadFocus = remove === document.activeElement;
           this.slots[parseInt(remove.dataset.teaserRemove, 10)] = null;
@@ -1538,7 +1724,12 @@ if (!customElements.get('sock-bundle')) {
             ? this.selectedCountText(filled)
             : this.teaserNoteEl.dataset.defaultText || '';
         }
-        if (this.teaserCountEl) this.teaserCountEl.textContent = this.pairsText(filled);
+        if (this.teaserCountEl) {
+          // The subtotal is the whole cart's, so it counts everything in it.
+          const others = this.cartMode && this.cart ? this.cart.item_count - filled : 0;
+          this.teaserCountEl.textContent =
+            others > 0 ? `${this.cart.item_count} items` : this.pairsText(filled);
+        }
       }
 
       /** "10% off", "free shipping": what reaching this pack adds to the last one. */
@@ -1967,6 +2158,10 @@ if (!customElements.get('sock-bundle')) {
       /* ------------------------------------------------------------------ */
 
       async onAddToCart() {
+        if (this.cartMode) {
+          this.checkoutFromCart();
+          return;
+        }
         const filled = this.slots.filter(Boolean).length;
         const items = this.slots
           .filter(Boolean)

@@ -1534,6 +1534,27 @@ body.sock-bundle-packing .sock-bundle__teaser-open,
   display: none;
 }
 
+/* ---------- The pack is the cart ---------- */
+
+/* The Mix & match button stays as the next step after a sock goes in the
+   cart; only the open picker replaces it. */
+body:not(.sock-bundle-packing) .sock-bundle--cart-mode.has-pairs .sock-bundle__teaser-open {
+  display: block;
+  margin-top: 12px;
+}
+
+/* While the cart is being changed, the pack waits. */
+.sock-bundle__teaser-slots.is-busy {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.sock-bundle-picker [data-picker-add].is-loading {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 /* ---------- Picker, product first ---------- */
 
 .sock-bundle-picker--teaser {

@@ -642,7 +642,7 @@
       "id": "free_shipping_threshold",
       "label": "Free shipping threshold",
       "default": 75,
-      "info": "In your store currency, without the symbol. Must match your shipping rate."
+      "info": "In your store currency, without the symbol. Must match your shipping rate. When the pack is the cart, keep it equal to the cart page's free shipping threshold."
     },
     {
       "type": "select",
@@ -961,6 +961,31 @@
       "id": "teaser_open_text",
       "label": "Open the picker button",
       "default": "Mix & match designs"
+    },
+    {
+      "type": "checkbox",
+      "id": "teaser_cart_mode",
+      "label": "The pack is the cart",
+      "default": false,
+      "info": "The buy box's Add to cart and the picker's Add put socks straight in the Shopify cart, and the pack shows the socks in the cart, with the cart's own totals. Codes come from Theme settings > Cart > Pack discount codes. Checkout goes straight to checkout."
+    },
+    {
+      "type": "select",
+      "id": "teaser_after_atc",
+      "label": "After the buy box's Add to cart",
+      "default": "next_step",
+      "options": [
+        { "value": "next_step", "label": "Show the pack on the page (next step)" },
+        { "value": "drawer", "label": "Open the cart drawer" }
+      ],
+      "info": "Only when the pack is the cart."
+    },
+    {
+      "type": "text",
+      "id": "teaser_added_text",
+      "label": "Message right after adding",
+      "default": "Added — add [more] and save [reward]",
+      "info": "[more] reads \"one more\" or \"2 more\"; [reward] is what the next pack saves."
     },
     {
       "type": "text",

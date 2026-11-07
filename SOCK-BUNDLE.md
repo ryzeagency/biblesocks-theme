@@ -104,6 +104,34 @@ The builder product (`product.bundle-builder.json`) keeps the **Pack builder** l
 and still empties the cart before its pack goes in. Wording for Product first is under
 **Product first** at the bottom of the block.
 
+## The pack is the cart (`experimental` branch)
+
+Sock pages turn on **Sock bundle → The pack is the cart**. The Shopify cart is then the
+only record of the pack, so the builder, the drawer and the cart page cannot disagree:
+
+- **Add to cart** is the theme's own: it posts the chosen size and quantity to the cart.
+  The page stays put (**After the buy box's Add to cart → Show the pack on the page**),
+  the header count updates, and the bundle block shows the next step: "Added — add one
+  more and save 10%" (**Message right after adding**) above the ladder and the yellow
+  Mix & match button. Choose **Open the cart drawer** instead to keep Impulse's drawer.
+- The pack's boxes are the socks in the cart (from `/cart.js`, product type **Socks**),
+  one per pair. The picker's **Add** puts a sock straight in the cart; a box's × takes one
+  pair of it out. Socks added on any page, or changed in the drawer or on the cart page,
+  show up in the pack too.
+- The subtotal is the cart's own `original_total_price` → `total_price`, after the code
+  Shopify actually applied, so it is the number the cart page shows. Free shipping
+  messages go by that total against the block's **Free shipping threshold** ($70, keep it
+  equal to the cart page's bar) rather than by the ladder's "5+ socks".
+- **Checkout** makes sure the right code is on and goes to checkout; it never empties or
+  re-adds anything.
+- `assets/pack-cart.js` (loaded in `layout/theme.liquid`) is the one place the code is
+  chosen: the socks in the cart against **Theme settings → Cart → Pack discount codes**,
+  stepping down until Shopify says one applies, and taken off below the smallest pack.
+  A code the shopper typed in is left alone. The cart page and drawer suggestions use
+  it too, and it re-checks after every quantity change in the drawer or cart page.
+- The builder product (`product.bundle-builder.json`) is unchanged: its pack is still
+  built first and added at checkout.
+
 ## Discounts
 
 Packs use the discount codes `BIBLESOCKSMIXANDMATCH10/15/20`, set on each tier in both

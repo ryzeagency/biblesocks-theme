@@ -880,7 +880,14 @@
         "id": "cart_pack_codes",
         "label": "Pack discount codes",
         "default": "2:BIBLESOCKSMIXANDMATCH10, 3:BIBLESOCKSMIXANDMATCH15, 4:BIBLESOCKSMIXANDMATCH20",
-        "info": "Socks in the cart, then the code that many earns. When a sock is added from the cart page or drawer suggestions, the cart moves onto the right code. A code the shopper typed in themselves is never replaced."
+        "info": "Socks in the cart, then the code that many earns. Whenever the cart changes (product page, sock picker, cart page or drawer), the cart moves onto the code its socks earn, and loses it below the smallest pack. A code the shopper typed in themselves is never replaced."
+      },
+      {
+        "type": "text",
+        "id": "cart_pack_product_type",
+        "label": "Product type that counts toward a pack",
+        "default": "Socks",
+        "info": "Only cart items of this product type count as socks. Leave blank to count everything."
       },
       {
         "type": "header",

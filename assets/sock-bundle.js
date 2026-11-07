@@ -1520,13 +1520,18 @@ if (!customElements.get('sock-bundle')) {
         this.atcButton.classList.add('btn--loading');
         this.setError('');
         try {
-          const { cart } = await window.PackCart.sync();
+          const { cart, wanted, failed } = await window.PackCart.sync();
           if (!cart.item_count) {
             this.setError('Your cart is empty.');
             return;
           }
           const root = (window.theme?.routes?.home || '/').replace(/\/?$/, '/');
-          window.location.href = `${root}checkout`;
+          // Shopify would not take the code over Ajax just now: hand it to
+          // checkout through /discount/CODE, which always works.
+          window.location.href =
+            failed && wanted
+              ? `${root}discount/${encodeURIComponent(wanted)}?redirect=${encodeURIComponent('/checkout')}`
+              : `${root}checkout`;
         } catch (error) {
           console.error(error);
           this.setError('Something went wrong. Please try again.');

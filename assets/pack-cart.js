@@ -42,22 +42,62 @@
     return run;
   };
 
-  const post = async (path, body) => {
-    const response = await fetch(`${root}${path}`, {
-      method: 'POST',
-      headers: json,
-      body: JSON.stringify(body),
-    });
-    const result = await response.json();
-    if (!response.ok || result.status) {
-      const error = new Error(result.description || result.message || 'Could not update your cart.');
-      error.result = result;
-      throw error;
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  /**
+   * POST to the Ajax cart. Shopify sometimes answers a cart write with a 500
+   * "Internal Server Error" page instead of JSON, typically when another
+   * script (Redo, Impulse) writes to the cart at the same moment. Those are
+   * retried after a short pause; a real refusal (422, e.g. sold out) is not.
+   */
+  const post = async (path, body, attempts = 3) => {
+    let lastError;
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      if (attempt) await wait(attempt * 400);
+      let response;
+      let result;
+      try {
+        response = await fetch(`${root}${path}`, {
+          method: 'POST',
+          headers: json,
+          body: JSON.stringify(body),
+        });
+        result = JSON.parse(await response.text());
+      } catch (error) {
+        lastError = new Error('Could not update your cart.');
+        console.warn(`[PackCart] ${path} gave no JSON (status ${response?.status}); retrying`, error);
+        continue;
+      }
+      if (response.status >= 500) {
+        lastError = new Error('Could not update your cart.');
+        console.warn(`[PackCart] ${path} ${response.status}; retrying`);
+        continue;
+      }
+      if (!response.ok || result.status) {
+        const error = new Error(result.description || result.message || 'Could not update your cart.');
+        error.result = result;
+        throw error;
+      }
+      return result;
     }
-    return result;
+    throw lastError;
   };
 
   const getCart = () => fetch(`${root}cart.js`, { headers: json }).then((r) => r.json());
+
+  /**
+   * syncNow, but never fails the caller: if the code cannot be set now, the
+   * fresh cart is still returned (and checkout applies the code on the way out).
+   */
+  const syncSafely = async (given) => {
+    try {
+      return await syncNow(given);
+    } catch (error) {
+      console.warn('[PackCart] could not set the pack code', error);
+      const cart = await getCart();
+      return { cart, changed: true, wanted: codesFor(sockCount(cart))[0] || null, applied: null, failed: true };
+    }
+  };
 
   const isSock = (item) => !sockType || String(item.product_type || '').toLowerCase() === sockType;
 
@@ -144,7 +184,7 @@
     /** Read the cart and put the right code on it. */
     sync(given, options = {}) {
       return enqueue(async () => {
-        const outcome = await syncNow(given);
+        const outcome = await syncSafely(given);
         if (options.announce !== false) announce(outcome.cart, { rebuild: outcome.changed || options.rebuild });
         return outcome;
       });
@@ -154,7 +194,7 @@
     add(items) {
       return enqueue(async () => {
         await post('cart/add.js', { items });
-        const outcome = await syncNow();
+        const outcome = await syncSafely();
         announce(outcome.cart);
         return outcome;
       });
@@ -164,7 +204,7 @@
     change(key, quantity) {
       return enqueue(async () => {
         const cart = await post('cart/change.js', { id: key, quantity });
-        const outcome = await syncNow(cart);
+        const outcome = await syncSafely(cart);
         announce(outcome.cart);
         return outcome;
       });

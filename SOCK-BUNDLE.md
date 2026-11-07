@@ -87,9 +87,10 @@ save more**, matching BOM Socks' `dev` branch:
   that adds it to the cart like any product.
 - Under it, the bundle block: where a pack stands ("Add 2 socks to save 10%", "Mix &
   match any designs") and a yellow **Mix & match designs** button (**Open the picker
-  button**). It swaps the photos for the picker; the ladder then shows and becomes the
-  pack, a short "15% off unlocked!" pops up at each rung, and **Checkout** adds the pack,
-  applies the pack's code and goes to checkout.
+  button**). It opens the picker and the pack (see Mix & match popup); a short "15% off
+  unlocked!" pops up at each rung, and **Add bundle to cart** (**Pack button text**) adds
+  the pack, applies the pack's code, closes the popup, empties the pack and opens the cart
+  drawer (**After adding a pack → Open the cart drawer**).
 - The cart is not emptied first (**Empty the cart before adding a pack** is off on sock
   pages), so socks added with the normal Add to cart stay. The code tried first is the
   one the whole cart earns, e.g. 1 sock already in the cart + a 2-sock pack gets the

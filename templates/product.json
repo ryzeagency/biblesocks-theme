@@ -126,7 +126,7 @@
             "show_total": true,
             "clear_cart_on_add": false,
             "hide_default_buy_buttons": true,
-            "after_add_to_cart": "checkout",
+            "after_add_to_cart": "stay",
             "picker_product_type": "Socks",
             "picker_filter_collections": [
               "all-socks",
@@ -155,7 +155,7 @@
             "teaser_discount_text": "[percent]% off",
             "teaser_shipping_text": "Free ship",
             "teaser_accent": "#ffcf24",
-            "checkout_text": "Checkout",
+            "checkout_text": "Add bundle to cart",
             "picker_added_text": "Added",
             "quick_view_add_text": "Add to my pack",
             "quick_view_unlock_text": "Adding this unlocks [reward] on your pack",

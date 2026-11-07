@@ -2201,10 +2201,15 @@ if (!customElements.get('sock-bundle')) {
           }
         }
         let applied = false;
-        for (const code of codes) {
-          if (await this.applyDiscountCode(code)) {
-            applied = true;
-            break;
+        // Staying on the page gets a second try: Shopify can refuse a cart write
+        // that lands at the same moment as another script's.
+        for (let round = 0; round < (drawer ? 2 : 1) && !applied; round += 1) {
+          if (round) await new Promise((resolve) => setTimeout(resolve, 600));
+          for (const code of codes) {
+            if (await this.applyDiscountCode(code)) {
+              applied = true;
+              break;
+            }
           }
         }
 
@@ -2217,8 +2222,12 @@ if (!customElements.get('sock-bundle')) {
           return;
         }
 
-        // Stay on the page: Impulse rebuilds its cart drawer and opens it.
+        // Stay on the page: the pack is in the cart now, so it empties, the
+        // popup (or picker) closes, and Impulse rebuilds its drawer and opens it.
         if (drawer) {
+          this.slots = [];
+          if (this.packing) this.exitPacking();
+          this.render();
           document.dispatchEvent(new CustomEvent('cart:build'));
           document.dispatchEvent(new CustomEvent('cart:open'));
           return;

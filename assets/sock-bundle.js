@@ -2213,9 +2213,24 @@ if (!customElements.get('sock-bundle')) {
           }
         }
 
-        // The Ajax cart would not take any of them: redirecting through
-        // /discount/CODE is the old reliable way, with the safest code.
-        if (codes.length && !applied) {
+        // The Ajax cart would not take any of them. Staying on the page: visit
+        // /discount/CODE in the background (it sets the code for checkout
+        // without leaving), with the safest code, then open the drawer.
+        if (codes.length && !applied && drawer) {
+          try {
+            await fetch(
+              `${root}discount/${encodeURIComponent(codes[codes.length - 1])}?redirect=${encodeURIComponent(
+                `${root}cart.js`
+              )}`,
+              { credentials: 'same-origin', headers: { Accept: 'application/json' } }
+            );
+          } catch (error) {
+            console.error(error);
+          }
+        }
+
+        // Otherwise redirecting through /discount/CODE is the old reliable way.
+        if (codes.length && !applied && !drawer) {
           window.location.href = `${root}discount/${encodeURIComponent(
             codes[codes.length - 1]
           )}?redirect=${encodeURIComponent(target)}`;

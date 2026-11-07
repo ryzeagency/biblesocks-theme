@@ -2243,3 +2243,136 @@ html.sock-bundle-qv-open {
   letter-spacing: normal;
   text-transform: none;
 }
+
+/* ---------- Mix & match popup ----------
+   Product first with "Open the picker as a full-screen popup": the picker and
+   the pack are moved into this fixed layer over the whole page, and back again
+   when it closes. Below the quick view, lightbox and toast (10000+). */
+
+html.sock-bundle-popup-open,
+html.sock-bundle-popup-open body {
+  overflow: hidden;
+}
+
+.sock-bundle-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  display: flex;
+  flex-direction: column;
+  background: var(--colorBody);
+  color: var(--colorTextBody);
+}
+
+.sock-bundle-popup[hidden] {
+  display: none;
+}
+
+.sock-bundle-popup__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 12px 24px;
+  border-bottom: 1px solid color-mix(in srgb, var(--colorTextBody) 14%, transparent);
+}
+
+.sock-bundle-popup__title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.sock-bundle-popup__close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-right: -8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--colorTextBody) 6%, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.sock-bundle-popup__close:hover {
+  background: color-mix(in srgb, var(--colorTextBody) 12%, transparent);
+}
+
+.sock-bundle-popup__close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sock-bundle-popup__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sock-bundle-popup__picker,
+.sock-bundle-popup__pack {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+}
+
+.sock-bundle-popup__pack {
+  border-left: 1px solid color-mix(in srgb, var(--colorTextBody) 14%, transparent);
+}
+
+/* In the popup the picker is the page: no card frame, no inner scroll box. */
+.sock-bundle-popup .sock-bundle-picker {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.sock-bundle-popup .sock-bundle-picker.sock-bundle-picker--teaser .sock-bundle-picker__grid {
+  max-height: none;
+  overflow: visible;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+}
+
+/* The × closes it; no need for the "back to photos" link. */
+.sock-bundle-popup .sock-bundle-picker.sock-bundle-picker--teaser .sock-bundle-picker__back {
+  display: none;
+}
+
+@media screen and (max-width: 768px) {
+  .sock-bundle-popup__bar {
+    padding: 8px 16px;
+  }
+
+  /* One scrolling column of socks; the pack docks to the bottom over it. */
+  .sock-bundle-popup__body {
+    display: block;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .sock-bundle-popup__picker {
+    overflow: visible;
+    padding: 12px 12px 300px;
+  }
+
+  body.sock-bundle-pack-folded .sock-bundle-popup__picker {
+    padding-bottom: 220px;
+  }
+
+  .sock-bundle-popup__pack {
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  .sock-bundle-popup .sock-bundle-picker.sock-bundle-picker--teaser .sock-bundle-picker__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

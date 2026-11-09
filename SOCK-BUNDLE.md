@@ -128,7 +128,10 @@ before the pack goes in (**Cart popup**) is switched off for now.
 
 The free socks come from a Shopify **automatic** discount (buy 6, get 3 free), not a code.
 In both product templates **Sock bundle → Bigger pack** has 9 socks, 3 free and an empty
-**Discount code**. At 9 socks or more the pack tags its 3 cheapest socks Free, prices
+**Discount code**. It is the top of the ladder, as on BOM Socks: boxes 1 to 9, where 6 to 8
+read "20% off / Free ship" (what the pack has by then) and the last "9+ socks / 3 socks
+free"; the bar fills toward 9, with a dot and a small truck at 5, where free shipping
+starts (dark once reached). At 9 socks or more the pack tags its 3 cheapest socks Free, prices
 itself to match, pops up "3 socks free unlocked!", and adds itself without a code: if a
 10/15/20% pack code is on the cart it comes off, so it does not stand in the automatic
 discount's way. A code the shopper typed in is left alone. The cart page and drawer do

@@ -1424,6 +1424,34 @@ button.sock-bundle__teaser-tile:hover {
   margin-top: 0;
 }
 
+/* A tiny truck over the free shipping dot, grey until the pack ships free.
+   The bar drops a little to make room for it under the message row. */
+.sock-bundle__teaser-progress:has(.sock-bundle__progress-marker:not([hidden])) {
+  margin-top: 6px;
+}
+
+.sock-bundle__progress-marker-icon {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  width: 15px;
+  height: 10px;
+  transform: translateX(-50%);
+  color: color-mix(in srgb, var(--colorTextBody) 40%, transparent);
+  transition: color 0.3s ease;
+  pointer-events: none;
+}
+
+.sock-bundle__progress-marker--reached .sock-bundle__progress-marker-icon {
+  color: var(--colorTextBody);
+}
+
+/* Keeps the wheels apart from the body at this size. */
+.sock-bundle__progress-marker-icon circle {
+  stroke: var(--colorBody);
+  stroke-width: 1.4;
+}
+
 /* What waits at the end of the bar: free shipping. */
 .sock-bundle__teaser-goal {
   display: block;

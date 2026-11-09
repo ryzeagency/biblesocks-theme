@@ -41,8 +41,9 @@ if (!customElements.get('sock-bundle')) {
           }))
           .sort((a, b) => a.qty - b.qty);
 
-        // A bigger pack, e.g. 9 socks with 3 free. It is off the ladder: once
-        // reached it sets the pack's price and its discount. With a code, that
+        // A bigger pack, e.g. 9 socks with 3 free: the top of the ladder ("9+
+        // socks / 3 socks free"), which the bar fills toward. Once reached it
+        // sets the pack's price and its discount. With a code, that
         // code replaces the pack's usual one; with no code, the free socks come
         // from a Shopify automatic discount, so the pack takes its code off and
         // lets the automatic discount apply on its own.
@@ -58,7 +59,6 @@ if (!customElements.get('sock-bundle')) {
             percent: 0,
             freeShipping: Boolean(topTier?.freeShipping),
             freeSocks: bigFreeSocks,
-            offLadder: true,
           });
         }
         // The tiers shown to shoppers: the ladder, the bar and the next goal.
@@ -1253,6 +1253,19 @@ if (!customElements.get('sock-bundle')) {
       renderShipMarker(filled, towardsShipping, perSock, packWillShip) {
         if (!this.shipMarker) return;
 
+        // Product first: the dot marks the first pack that ships free (5 of 9
+        // socks), grey until the pack gets there. Below the top of the ladder
+        // only: when only the top pack ships free, the bar's end says so instead.
+        if (this.teaser) {
+          const shipRung = this.teaserShipRung();
+          const goal = this.teaserGoal();
+          this.shipMarker.hidden = !shipRung;
+          if (!shipRung) return;
+          this.shipMarker.style.left = `${(shipRung.qty / goal.qty) * 100}%`;
+          this.shipMarker.classList.toggle('sock-bundle__progress-marker--reached', filled >= shipRung.qty);
+          return;
+        }
+
         this.shipMarker.hidden = !packWillShip;
         if (!packWillShip) return;
 
@@ -1344,7 +1357,8 @@ if (!customElements.get('sock-bundle')) {
         this.teaserToggle = this.querySelector('[data-sock-teaser-toggle]');
         // The bar's end reads "Free shipping" only when the top pack ships free.
         const goalEl = this.querySelector('[data-sock-teaser-goal]');
-        if (goalEl) goalEl.hidden = !this.teaserGoal()?.freeShipping;
+        // With a truck dot partway along, the bar's end needs no label.
+        if (goalEl) goalEl.hidden = !this.teaserGoal()?.freeShipping || Boolean(this.teaserShipRung());
 
         this.teaserToggle?.addEventListener('click', () =>
           this.foldPack(this.teaserToggle.getAttribute('aria-expanded') === 'true')
@@ -1579,22 +1593,23 @@ if (!customElements.get('sock-bundle')) {
         const price = this.buildOwn
           ? parseInt(this.dataset.productPrice, 10) || 0
           : this.currentVariant()?.price ?? (parseInt(this.dataset.productPrice, 10) || 0);
-        let previous = 0;
         const rungs = this.ladderTiers
           .filter((tier) => !this.maxSocks || tier.qty <= this.maxSocks)
           .map((tier) => {
             let main;
+            let extra = '';
             if (tier.qty <= 1) {
               main = this.formatMoney(price);
             } else if (tier.freeSocks > 0) {
               main = this.freeSocksText(tier);
-            } else if (tier.percent > previous || !tier.freeShipping) {
+            } else if (tier.percent > 0) {
               main = this.teaserDiscountText.replace('[percent]', tier.percent);
+              // "20% off" over "Free ship" on the pack that first ships free.
+              if (tier.freeShipping) extra = this.teaserShippingText;
             } else {
-              main = this.teaserShippingText;
+              main = tier.freeShipping ? this.teaserShippingText : '';
             }
-            previous = Math.max(previous, tier.percent);
-            return { qty: tier.qty, top: this.pairsText(tier.qty), main, best: false };
+            return { qty: tier.qty, top: this.pairsText(tier.qty), main, extra, best: false };
           });
 
         const last = rungs[rungs.length - 1];
@@ -1603,6 +1618,16 @@ if (!customElements.get('sock-bundle')) {
           last.best = true;
         }
         return rungs;
+      }
+
+      /** The first pack below the top of the ladder that ships free, if any. */
+      teaserShipRung() {
+        const goal = this.teaserGoal();
+        return (
+          this.ladderTiers.find(
+            (tier) => tier.qty > 1 && tier.freeShipping && goal && tier.qty < goal.qty
+          ) || null
+        );
       }
 
       /** The top of the ladder, which Product first's bar fills toward. */
@@ -1622,19 +1647,25 @@ if (!customElements.get('sock-bundle')) {
 
         const ladder = this.teaserLadder();
         const top = ladder[ladder.length - 1] || { qty: 1, top: this.pairsText(1), main: '' };
-        // A pair with no pack of its own (a tier switched off) reads as just a pair.
-        const rungAt = (count) =>
-          ladder.find((rung) => rung.qty === count) ||
-          (count > top.qty ? top : { qty: count, top: this.pairsText(count), main: '' });
+        // A pair with no pack of its own (6 to 8 below a 9 pair pack, or a tier
+        // switched off) reads as what the pack already has by then.
+        const rungAt = (count) => {
+          const own = ladder.find((rung) => rung.qty === count);
+          if (own) return own;
+          if (count > top.qty) return top;
+          const held = ladder.filter((rung) => rung.qty > 1 && rung.qty < count).pop();
+          return { qty: count, top: this.pairsText(count), main: held?.main || '', extra: held?.extra || '' };
+        };
 
         const emptyMarkup = (rung) => {
           const classes = `sock-bundle__teaser-slot${rung.best ? ' is-best' : ''}`;
-          const lines = `<span>${this.escape(rung.top)}</span><strong>${this.escape(rung.main)}</strong>`;
+          const extra = rung.extra ? `<strong>${this.escape(rung.extra)}</strong>` : '';
+          const lines = `<span>${this.escape(rung.top)}</span><strong>${this.escape(rung.main)}</strong>${extra}`;
           // Once there is a pack, every empty box is a way back to the picker.
           if (!filled) return `<li class="${classes}"><span class="sock-bundle__teaser-tile">${lines}</span></li>`;
           return `<li class="${classes}"><button type="button" class="sock-bundle__teaser-tile" data-teaser-open><span>${this.escape(
             rung.top
-          )}</span><strong>+ ${this.escape(rung.main || this.sockWordSingular)}</strong></button></li>`;
+          )}</span><strong>+ ${this.escape(rung.main || this.sockWordSingular)}</strong>${extra}</button></li>`;
         };
 
         const filledMarkup = (slot, index) => {

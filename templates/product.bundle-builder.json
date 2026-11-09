@@ -91,7 +91,7 @@
             "progress_start_text": "Add [count] [socks] to save [reward]",
             "progress_shipping_next_text": "Buy one more, save [reward]",
             "progress_shipping_unlocked_text": "[reward] unlocked",
-            "bonus_incomplete_text": "Buy one more and get [reward]",
+            "bonus_incomplete_text": "Add [count] more and get [reward]",
             "bonus1_enable": false,
             "bonus1_pairs": 6,
             "bonus1_label": "A Mystery Pair",

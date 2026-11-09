@@ -47,7 +47,18 @@
       <div class="sock-bundle__progress-track">
         <div class="sock-bundle__progress-fill" data-sock-bundle-progressfill style="width: 0%"></div>
         {%- if block.settings.free_shipping_enable -%}
-          <span class="sock-bundle__progress-marker" data-sock-bundle-shipmarker hidden>
+          {%- comment -%} The dot marks the first pack that ships free; a tiny truck sits on it. {%- endcomment -%}
+          <span
+            class="sock-bundle__progress-marker"
+            data-sock-bundle-shipmarker
+            title="{{ block.settings.tier_free_shipping_label | default: 'Free shipping' | escape }}"
+            hidden
+          >
+            <svg class="sock-bundle__progress-marker-icon" viewBox="0 0 24 16" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M1 1.5h12.5v10H1zM14.5 4.5h4.2l3.8 3.9v3.1h-8z"/>
+              <circle fill="currentColor" cx="5.5" cy="13" r="2.3"/>
+              <circle fill="currentColor" cx="18" cy="13" r="2.3"/>
+            </svg>
             <span class="sock-bundle__progress-marker-dot"></span>
           </span>
         {%- endif -%}

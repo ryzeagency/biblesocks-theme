@@ -880,7 +880,7 @@
         "id": "cart_pack_codes",
         "label": "Pack discount codes",
         "default": "2:BIBLESOCKSMIXANDMATCH10, 3:BIBLESOCKSMIXANDMATCH15, 4:BIBLESOCKSMIXANDMATCH20",
-        "info": "Socks in the cart, then the code that many earns. When a sock is added from the cart page or drawer suggestions, the cart moves onto the right code. A code the shopper typed in themselves is never replaced."
+        "info": "Socks in the cart, then the code that many earns. Write \"automatic\" instead of a code (e.g. 9:automatic) where a Shopify automatic discount takes over: from that many socks the pack code comes off. When a sock is added from the cart page or drawer suggestions, the cart moves onto the right code. A code the shopper typed in themselves is never replaced."
       },
       {
         "type": "header",

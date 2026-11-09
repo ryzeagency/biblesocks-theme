@@ -41,18 +41,23 @@ if (!customElements.get('sock-bundle')) {
           }))
           .sort((a, b) => a.qty - b.qty);
 
-        // A bigger pack with its own code, e.g. 9 socks for BUY6GET3FREE. It is
-        // off the ladder: it only sets the code and the pack's price once reached.
+        // A bigger pack, e.g. 9 socks with 3 free. It is off the ladder: once
+        // reached it sets the pack's price and its discount. With a code, that
+        // code replaces the pack's usual one; with no code, the free socks come
+        // from a Shopify automatic discount, so the pack takes its code off and
+        // lets the automatic discount apply on its own.
         const bigQty = parseInt(this.dataset.bigPackQty, 10) || 0;
         const bigCode = (this.dataset.bigPackCode || '').trim();
+        const bigFreeSocks = parseInt(this.dataset.bigPackFreeSocks, 10) || 0;
         const topTier = this.tiers[this.tiers.length - 1];
-        if (bigCode && bigQty > (topTier ? topTier.qty : 1)) {
+        if ((bigCode || bigFreeSocks > 0) && bigQty > (topTier ? topTier.qty : 1)) {
           this.tiers.push({
             qty: bigQty,
             code: bigCode,
+            automatic: !bigCode,
             percent: 0,
             freeShipping: Boolean(topTier?.freeShipping),
-            freeSocks: parseInt(this.dataset.bigPackFreeSocks, 10) || 0,
+            freeSocks: bigFreeSocks,
             offLadder: true,
           });
         }
@@ -2185,13 +2190,14 @@ if (!customElements.get('sock-bundle')) {
 
         // Attach the code through the Ajax cart, trying the best one first and
         // stepping down until Shopify actually applies one.
-        const codes = this.codesForCart();
+        let codes = this.codesForCart();
+        let cart = null;
         // Socks added to the cart before the pack (the page's own Add to cart)
         // count too, when the cart is not emptied first: try the code the
         // whole cart earns ahead of the pack's own.
         if (!this.clearCartOnAdd) {
           try {
-            const cart = await fetch(`${root}cart.js`, {
+            cart = await fetch(`${root}cart.js`, {
               headers: { Accept: 'application/json' },
             }).then((r) => r.json());
             const whole = (this.tierFor(cart.item_count)?.code || '').trim();
@@ -2199,6 +2205,16 @@ if (!customElements.get('sock-bundle')) {
           } catch (error) {
             console.error(error);
           }
+        }
+
+        // Reached a pack whose discount is automatic (e.g. 9 socks, 3 free):
+        // no code to apply, and a pack code left on the cart comes off so it
+        // does not stand in the automatic discount's way.
+        const filled = this.slots.filter(Boolean).length;
+        const reached = this.tierFor(Math.max(filled + (this.extraCounts?.all || 0), cart?.item_count || 0));
+        if (reached?.automatic) {
+          codes = [];
+          await this.removePackCodes(cart);
         }
         let applied = false;
         // Staying on the page gets a second try: Shopify can refuse a cart write
@@ -2241,7 +2257,8 @@ if (!customElements.get('sock-bundle')) {
         // popup (or picker) closes, and Impulse rebuilds its drawer and opens it.
         if (drawer) {
           this.slots = [];
-          if (this.packing) this.exitPacking();
+          // A build-your-own page is the picker; it stays open, just emptied.
+          if (this.packing && !this.buildOwn) this.exitPacking();
           this.render();
           document.dispatchEvent(new CustomEvent('cart:build'));
           document.dispatchEvent(new CustomEvent('cart:open'));
@@ -2267,6 +2284,25 @@ if (!customElements.get('sock-bundle')) {
           this.tierFor(filled),
         ].map((tier) => (tier?.code || '').trim());
         return [...new Set(candidates.filter(Boolean))];
+      }
+
+      /** Takes the pack's own codes off the cart; a code the shopper typed stays. */
+      async removePackCodes(given) {
+        try {
+          const root = (window.theme?.routes?.home || '/').replace(/\/?$/, '/');
+          const cart =
+            given || (await fetch(`${root}cart.js`, { headers: { Accept: 'application/json' } }).then((r) => r.json()));
+          const packCodes = this.tiers.map((tier) => (tier.code || '').toLowerCase()).filter(Boolean);
+          const current = (cart.discount_codes || []).map((entry) => String(entry.code).toLowerCase());
+          if (!current.length || current.some((code) => !packCodes.includes(code))) return;
+          await fetch(`${root}cart/update.js`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ discount: '' }),
+          });
+        } catch (error) {
+          console.error(error);
+        }
       }
 
       /**

@@ -578,11 +578,11 @@
     },
     {
       "type": "header",
-      "content": "Bigger pack code"
+      "content": "Bigger pack (e.g. 9 socks, 3 free)"
     },
     {
       "type": "paragraph",
-      "content": "A code for packs past the biggest one above, e.g. 9 socks for a buy 6 get 3 free code. It is not on the ladder: once the pack reaches it, this code replaces the pack's usual one, in the pack and in the cart."
+      "content": "A deal for packs past the biggest one above, e.g. 9 socks with 3 free. It is not on the ladder: once the pack reaches it, its cheapest socks show as free. Leave the code empty when a Shopify automatic discount gives the free socks: the pack then takes its own code off so the automatic discount applies. With a code, that code replaces the pack's usual one."
     },
     {
       "type": "number",
@@ -594,7 +594,7 @@
       "type": "text",
       "id": "big_pack_code",
       "label": "Discount code",
-      "info": "Leave empty to switch this off."
+      "info": "Empty: an automatic discount gives the free socks. To switch the bigger pack off, set Socks free to 0 and leave this empty."
     },
     {
       "type": "range",
@@ -604,7 +604,7 @@
       "step": 1,
       "label": "Socks free",
       "default": 3,
-      "info": "How many socks the code makes free. The cheapest ones show as free in the pack, so match the code."
+      "info": "How many socks the discount makes free. The cheapest ones show as free in the pack, so match the discount."
     },
     {
       "type": "text",

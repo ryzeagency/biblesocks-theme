@@ -24,7 +24,12 @@ if (!customElements.get('cart-recommendations')) {
           .split(',')
           .map((pair) => pair.split(':').map((part) => part.trim()))
           .filter(([qty, code]) => parseInt(qty, 10) > 0 && code)
-          .map(([qty, code]) => ({ qty: parseInt(qty, 10), code }))
+          .map(([qty, code]) => ({
+            qty: parseInt(qty, 10),
+            code,
+            // "9:automatic": from 9 socks a Shopify automatic discount takes over.
+            automatic: code.toLowerCase() === 'automatic',
+          }))
           .sort((a, b) => a.qty - b.qty);
 
         this.addEventListener('change', this.onVariantChange.bind(this));
@@ -186,14 +191,31 @@ if (!customElements.get('cart-recommendations')) {
           (response) => response.json()
         );
 
-        const packCodes = this.packCodes.map((pack) => pack.code.toLowerCase());
+        const packCodes = this.packCodes
+          .filter((pack) => !pack.automatic)
+          .map((pack) => pack.code.toLowerCase());
         const current = (cart.discount_codes || []).map((entry) => String(entry.code).toLowerCase());
         if (current.some((code) => !packCodes.includes(code))) return;
+
+        // At an automatic pack (e.g. 9 socks, 3 free) no code applies: take the
+        // pack code off so it does not stand in the automatic discount's way.
+        const reached = this.packCodes.filter((pack) => pack.qty <= cart.item_count).pop();
+        if (reached?.automatic) {
+          if (current.length) {
+            await fetch(`${window.Shopify?.routes?.root || '/'}cart/update.js`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify({ discount: '' }),
+            });
+          }
+          return;
+        }
 
         // Best first. item_count also counts things the codes do not cover (a
         // tie, a bow), so a code may come back not applicable; step down until
         // one applies.
         const candidates = this.packCodes
+            .filter((pack) => !pack.automatic)
           .filter((pack) => pack.qty <= cart.item_count)
           .map((pack) => pack.code)
           .reverse();

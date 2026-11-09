@@ -70,7 +70,7 @@
     "cart_additional_buttons": true,
     "cart_notes_enable": false,
     "cart_terms_conditions_enable": false,
-    "cart_pack_codes": "2:BIBLESOCKSMIXANDMATCH10, 3:BIBLESOCKSMIXANDMATCH15, 4:BIBLESOCKSMIXANDMATCH20, 9:BUY6GET3FREE",
+    "cart_pack_codes": "2:BIBLESOCKSMIXANDMATCH10, 3:BIBLESOCKSMIXANDMATCH15, 4:BIBLESOCKSMIXANDMATCH20, 9:automatic",
     "cart_drawer_recs_enable": true,
     "cart_drawer_recs_heading": "You might also like",
     "cart_drawer_recs_collections": [

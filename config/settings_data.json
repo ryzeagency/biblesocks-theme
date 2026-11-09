@@ -183,18 +183,6 @@
         "type": "shopify://apps/klaviyo-email-marketing-sms/blocks/klaviyo-onsite-embed/2632fe16-c075-4321-a88b-50b567f42507",
         "disabled": false,
         "settings": {}
-      },
-      "7280966411886983154": {
-        "type": "shopify://apps/monk/blocks/app-embed/e949adb6-87ca-4b97-8f31-0e51bf507f2d",
-        "disabled": false,
-        "settings": {}
-      },
-      "11102003041163541349": {
-        "type": "shopify://apps/invints-bar-and-upsell/blocks/invints_announcebar/fb69316c-951c-42e2-b6a8-b45616e85204",
-        "disabled": false,
-        "settings": {
-          "custom_css": ""
-        }
       }
     }
   },

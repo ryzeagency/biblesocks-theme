@@ -181,17 +181,17 @@
       {%- if message != blank or ship_msg != blank -%}
         <div class="cart-pack-progress__text">
           {%- if message != blank -%}
-            <p class="cart-pack-progress__msg">{{ message | escape }}</p>
+            <div class="cart-pack-progress__msg">{{ message | escape }}</div>
           {%- endif -%}
           {%- if ship_msg != blank -%}
-            <p class="cart-pack-progress__ship-msg{% if ship_done %} is-reached{% endif %}">
+            <div class="cart-pack-progress__ship-msg{% if ship_done %} is-reached{% endif %}">
               <svg viewBox="0 0 24 16" aria-hidden="true" focusable="false">
                 <path fill="currentColor" d="M1 1.5h12.5v10H1zM14.5 4.5h4.2l3.8 3.9v3.1h-8z"/>
                 <circle fill="currentColor" cx="5.5" cy="13" r="2.3"/>
                 <circle fill="currentColor" cx="18" cy="13" r="2.3"/>
               </svg>
               {{- ship_msg | escape -}}
-            </p>
+            </div>
           {%- endif -%}
         </div>
       {%- endif -%}

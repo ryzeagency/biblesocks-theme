@@ -7,6 +7,12 @@
   border-bottom: 1px solid var(--colorDrawerBorder);
 }
 
+/* Impulse lets the drawer's header shrink; with the bar in it, it must not, or
+   the items list slides up over the bar. */
+#CartDrawer .drawer__fixed-header:has(.cart-pack-progress) {
+  flex-shrink: 0;
+}
+
 .cart-drawer-progress:not(:has(.cart-pack-progress)),
 .drawer.is-empty .cart-drawer-progress {
   display: none;

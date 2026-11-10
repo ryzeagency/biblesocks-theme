@@ -142,17 +142,15 @@
   </div>
 
   {% if thumbnail_height == 'fixed' %}
+    {%- comment -%}
+      Tall enough for exactly 5 whole thumbnails beside the photo: 5 x 80px
+      thumbnails + 4 x 15px gaps = 460px (Impulse's 400px cut the 5th in half).
+      Below 769px the thumbnails are hidden, so one height covers it.
+    {%- endcomment -%}
     {% style %}
       .product__photos-{{ section_id }} .product__thumbs:not(.product__thumbs--below) {
-        min-height: 400px;
-        max-height: 400px;
-      }
-
-      @media screen and (max-width: 798px) {
-        .product__photos-{{ section_id }} .product__thumbs:not(.product__thumbs--below) {
-          min-height: 300px;
-          max-height: 300px;
-        }
+        min-height: 460px;
+        max-height: 460px;
       }
     {% endstyle %}
   {% endif %}

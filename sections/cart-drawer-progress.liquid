@@ -1,0 +1,12 @@
+{%- comment -%}
+  The cart drawer's pack bar, fetched with ?section_id=cart-drawer-progress and
+  swapped in after every cart change (the script in snippets/cart-drawer.liquid).
+{%- endcomment -%}
+{%- render 'cart-pack-progress' -%}
+
+{% schema %}
+{
+  "name": "Cart drawer pack bar",
+  "settings": []
+}
+{% endschema %}

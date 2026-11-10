@@ -193,6 +193,18 @@
             </button>
           </div>
         </div>
+
+        {%- comment -%}
+          The pack bar (socks toward 9, free shipping truck) at the top of the
+          drawer, outside the part that scrolls. Redrawn below after every cart
+          change from sections/cart-drawer-progress.liquid.
+        {%- endcomment -%}
+        {%- if settings.cart_tiers != blank -%}
+          {{ 'cart-pack-progress.css' | asset_url | stylesheet_tag }}
+          <div class="cart-drawer-progress" data-cart-drawer-progress>
+            {%- render 'cart-pack-progress' -%}
+          </div>
+        {%- endif -%}
       </div>
 
       <div class="drawer__inner">
@@ -495,6 +507,43 @@
         });
 
         refresh();
+      })();
+    </script>
+  {%- endif -%}
+
+  {%- if settings.cart_tiers != blank -%}
+    <script>
+      // Redraws the drawer's pack bar whenever Impulse rebuilds the drawer's items
+      // (every add, remove and quantity change), from the cart-drawer-progress section.
+      (function () {
+        var box = document.querySelector('#CartDrawer [data-cart-drawer-progress]');
+        var items = document.querySelector('#CartDrawer [data-products]');
+        if (!box || !items) return;
+        var url = {{ routes.cart_url | json }} + '?section_id=cart-drawer-progress';
+        var timer;
+        var latest = 0;
+
+        function refresh() {
+          var ticket = ++latest;
+          fetch(url + '&t=' + Date.now(), { credentials: 'same-origin' })
+            .then(function (response) { return response.ok ? response.text() : null; })
+            .then(function (text) {
+              if (text === null || ticket !== latest) return;
+              var html = document.createElement('div');
+              html.innerHTML = text;
+              var section = html.querySelector('.shopify-section') || html;
+              box.innerHTML = section.innerHTML;
+            })
+            .catch(function (error) { console.error(error); });
+        }
+
+        function schedule() {
+          clearTimeout(timer);
+          timer = setTimeout(refresh, 60);
+        }
+
+        new MutationObserver(schedule).observe(items, { childList: true });
+        document.addEventListener('cart:updated', schedule);
       })();
     </script>
   {%- endif -%}

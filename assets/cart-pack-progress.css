@@ -1,0 +1,116 @@
+/* The cart drawer's pack bar (snippets/cart-pack-progress.liquid), drawn like
+   the pack's own bar on the product page: the next step centred above a bar
+   that fills toward the biggest step, with a dot and a tiny truck where free
+   shipping is. It sits under the drawer's title, outside the part that scrolls. */
+.cart-drawer-progress {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--colorDrawerBorder);
+}
+
+.cart-drawer-progress:not(:has(.cart-pack-progress)),
+.drawer.is-empty .cart-drawer-progress {
+  display: none;
+}
+
+.cart-pack-progress {
+  text-align: center;
+  color: var(--colorDrawerText);
+}
+
+.cart-pack-progress__text {
+  margin-bottom: 16px;
+}
+
+.cart-pack-progress__msg {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+/* The free shipping line under it, with the bar's tiny truck in front. */
+.cart-pack-progress__ship-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--colorDrawerText) 75%, transparent);
+}
+
+.cart-pack-progress__ship-msg svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 11px;
+}
+
+.cart-pack-progress__ship-msg.is-reached {
+  color: var(--colorDrawerText);
+  font-weight: 700;
+}
+
+.cart-pack-progress__track {
+  position: relative;
+  height: 8px;
+  margin: 0 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--colorDrawerText) 10%, transparent);
+}
+
+.cart-pack-progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--colorDrawerText);
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cart-pack-progress__ship {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  transform: translate(-50%, -50%);
+}
+
+.cart-pack-progress__dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--colorDrawers);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--colorDrawerText) 35%, transparent);
+}
+
+.cart-pack-progress__truck {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  width: 15px;
+  height: 10px;
+  transform: translateX(-50%);
+  color: color-mix(in srgb, var(--colorDrawerText) 40%, transparent);
+  pointer-events: none;
+}
+
+/* Keeps the wheels apart from the body at this size. */
+.cart-pack-progress__truck circle,
+.cart-pack-progress__ship-msg svg circle {
+  stroke: var(--colorDrawers);
+  stroke-width: 1.4;
+}
+
+.cart-pack-progress__ship.is-reached .cart-pack-progress__dot {
+  background: var(--colorDrawerText);
+}
+
+.cart-pack-progress__ship.is-reached .cart-pack-progress__truck {
+  color: var(--colorDrawerText);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-pack-progress__fill {
+    transition: none;
+  }
+}

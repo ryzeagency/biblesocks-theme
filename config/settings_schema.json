@@ -884,6 +884,71 @@
       },
       {
         "type": "header",
+        "content": "Pack progress bar (cart drawer)"
+      },
+      {
+        "type": "text",
+        "id": "cart_tiers",
+        "label": "Socks and what they earn",
+        "default": "2:10, 3:15, 4:20, 9:3 free",
+        "info": "Shown as a bar at the top of the cart drawer. Socks in the cart, then what that many earns, smallest first: a percent (4:20) or free socks (9:3 free). This only describes the discounts; the codes above and your automatic discount give them. Leave empty to hide the bar."
+      },
+      {
+        "type": "collection",
+        "id": "cart_tiers_collection",
+        "label": "Socks that count",
+        "info": "Leave empty to count everything in the cart except gift cards and package protection."
+      },
+      {
+        "type": "text",
+        "id": "cart_tiers_next_text",
+        "label": "Next discount",
+        "default": "Add [more] more to save [percent]%.",
+        "info": "[more] is how many socks are still needed, [percent] what the next step earns."
+      },
+      {
+        "type": "text",
+        "id": "cart_tiers_free_next_text",
+        "label": "Next: free socks",
+        "default": "Add [more] more to get [free] socks free.",
+        "info": "[more] is how many socks are still needed, [free] how many the step makes free."
+      },
+      {
+        "type": "text",
+        "id": "cart_tiers_top_text",
+        "label": "Biggest pack reached",
+        "default": "[count] socks: [free] socks free!",
+        "info": "[count] is the socks in the cart, [free] how many the biggest step makes free ([percent] for a percent step)."
+      },
+      {
+        "type": "number",
+        "id": "cart_tiers_ship_threshold",
+        "label": "Free shipping from",
+        "default": 70,
+        "info": "Order total for free shipping. A dot and a tiny truck on the bar mark where the socks reach it. 0 hides them."
+      },
+      {
+        "type": "text",
+        "id": "cart_tiers_ship_text",
+        "label": "Free shipping hover text",
+        "default": "Free shipping from [amount]",
+        "info": "[amount] is the order total above."
+      },
+      {
+        "type": "text",
+        "id": "cart_tiers_ship_gap_text",
+        "label": "Free shipping, still to go",
+        "default": "[amount] away from free shipping",
+        "info": "Under the bar's message. [amount] is what the cart still needs."
+      },
+      {
+        "type": "text",
+        "id": "cart_tiers_ship_done_text",
+        "label": "Free shipping reached",
+        "default": "Free shipping unlocked!"
+      },
+      {
+        "type": "header",
         "content": "You might also like (cart drawer)"
       },
       {

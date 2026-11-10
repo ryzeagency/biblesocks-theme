@@ -184,7 +184,9 @@
         "disabled": false,
         "settings": {}
       }
-    }
+    },
+    "cart_tiers": "2:10, 3:15, 4:20, 9:3 free",
+    "cart_tiers_ship_threshold": 70
   },
   "presets": {
     "Modern": {

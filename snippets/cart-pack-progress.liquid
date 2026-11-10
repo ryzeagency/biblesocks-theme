@@ -1,0 +1,224 @@
+{% comment %}
+  The cart drawer's pack bar, ported from BOM Socks: the next step's message
+  centred above a bar that fills toward the biggest step (9 socks), with a dot
+  and a tiny truck where the cart reaches free shipping, black once it has. A
+  second line says it in words: "$15.76 away from free shipping", then "Free
+  shipping unlocked!".
+
+  The steps come from Theme settings → Cart → Pack progress bar ("2:10, 3:15,
+  4:20, 9:3 free"); the discounts themselves are the pack codes and the
+  automatic 9 sock discount, this only describes them. Socks are counted from
+  "Socks that count", or, when that is empty, everything in the cart except
+  gift cards and Redo's protection line. A discount code the shopper typed
+  (anything that is not a pack code) takes over, so the bar steps aside.
+
+  Rendered at the top of the drawer by snippets/cart-drawer.liquid and redrawn
+  after every cart change through sections/cart-drawer-progress.liquid.
+
+  Usage:
+  {% render 'cart-pack-progress' %}
+{% endcomment %}
+
+{%- liquid
+  assign pack_codes = settings.cart_pack_codes | downcase
+  assign own_code = false
+  for application in cart.discount_applications
+    if application.type == 'discount_code'
+      assign code_lower = application.title | downcase
+      unless pack_codes contains code_lower
+        assign own_code = true
+      endunless
+    endif
+  endfor
+-%}
+{%- if settings.cart_tiers != blank and cart.item_count > 0 and own_code == false -%}
+  {%- liquid
+    assign tier_collection = settings.cart_tiers_collection
+    assign pairs = 0
+    assign pairs_full_price = 0
+    for item in cart.items
+      assign counts = true
+      if tier_collection != blank
+        assign counts = false
+        for item_collection in item.product.collections
+          if item_collection.id == tier_collection.id
+            assign counts = true
+            break
+          endif
+        endfor
+      else
+        assign item_vendor = item.vendor | downcase
+        assign item_title = item.product.title | downcase
+        if item.gift_card or item_vendor contains 'redo' or item_title contains 'protection'
+          assign counts = false
+        endif
+      endif
+      if counts
+        assign pairs = pairs | plus: item.quantity
+        assign pairs_full_price = pairs_full_price | plus: item.original_line_price
+      endif
+    endfor
+
+    # The first step the cart has not reached, and the biggest step. A step is
+    # a percent ("4:20") or free socks ("9:3 free").
+    assign next_qty = 0
+    assign next_pct = 0
+    assign next_free = 0
+    assign top_qty = 0
+    assign top_free = 0
+    assign top_pct = 0
+    assign tiers = settings.cart_tiers | split: ','
+    for tier in tiers
+      assign parts = tier | split: ':'
+      assign tier_qty = parts[0] | strip | plus: 0
+      assign reward = parts[1] | downcase
+      assign tier_pct = 0
+      assign tier_free = 0
+      if reward contains 'free'
+        assign tier_free = reward | remove: 'free' | strip | plus: 0
+      else
+        assign tier_pct = reward | strip | plus: 0
+      endif
+      if tier_qty > top_qty
+        assign top_qty = tier_qty
+        assign top_free = tier_free
+        assign top_pct = tier_pct
+      endif
+      if tier_qty > 0 and pairs < tier_qty and next_qty == 0
+        assign next_qty = tier_qty
+        assign next_pct = tier_pct
+        assign next_free = tier_free
+      endif
+    endfor
+
+    # Only what comes next, or what the top step has earned.
+    assign message = ''
+    if next_qty > 0
+      assign more_text = next_qty | minus: pairs | append: ''
+      if next_free > 0
+        assign free_text = next_free | append: ''
+        assign message = settings.cart_tiers_free_next_text | default: 'Add [more] more to get [free] socks free.' | replace: '[more]', more_text | replace: '[free]', free_text
+      else
+        assign pct_text = next_pct | append: ''
+        assign message = settings.cart_tiers_next_text | default: 'Add [more] more to save [percent]%.' | replace: '[more]', more_text | replace: '[percent]', pct_text
+      endif
+    elsif top_qty > 0
+      assign pairs_text = pairs | append: ''
+      assign free_text = top_free | append: ''
+      assign pct_text = top_pct | append: ''
+      assign message = settings.cart_tiers_top_text | default: '[count] socks: [free] socks free!' | replace: '[count]', pairs_text | replace: '[free]', free_text | replace: '[percent]', pct_text
+    endif
+
+    if top_qty > 0
+      assign fill = pairs | times: 100 | divided_by: top_qty | at_most: 100
+    else
+      assign fill = 0
+    endif
+
+    # Where the cart reaches free shipping, in socks: the first count whose
+    # price, at the socks' full price less what that count earns, reaches the
+    # threshold. Black once the cart total has got there.
+    assign ship_threshold = settings.cart_tiers_ship_threshold | times: 100
+    assign ship_qty = 0
+    assign ship_done = false
+    assign ship_msg = ''
+    if ship_threshold > 0
+      if cart.total_price >= ship_threshold
+        assign ship_done = true
+        assign ship_msg = settings.cart_tiers_ship_done_text | default: 'Free shipping unlocked!'
+      else
+        assign ship_gap = ship_threshold | minus: cart.total_price | money
+        assign ship_msg = settings.cart_tiers_ship_gap_text | default: '[amount] away from free shipping' | replace: '[amount]', ship_gap
+      endif
+    endif
+    if ship_threshold > 0 and pairs > 0 and top_qty > 0
+      assign pair_price = pairs_full_price | divided_by: pairs
+      for n in (1..top_qty)
+        assign n_pct = 0
+        assign n_free = 0
+        for tier in tiers
+          assign parts = tier | split: ':'
+          assign tier_qty = parts[0] | strip | plus: 0
+          assign reward = parts[1] | downcase
+          if tier_qty > 0 and n >= tier_qty
+            if reward contains 'free'
+              assign n_free = reward | remove: 'free' | strip | plus: 0
+            else
+              assign n_pct = reward | strip | plus: 0
+            endif
+          endif
+        endfor
+        assign n_cost = 100 | minus: n_pct | times: pair_price | times: n | divided_by: 100
+        if n_free > 0
+          assign free_cost = n | minus: n_free | times: pair_price
+          if free_cost < n_cost
+            assign n_cost = free_cost
+          endif
+        endif
+        if n_cost >= ship_threshold
+          assign ship_qty = n
+          break
+        endif
+      endfor
+      # Already there on fewer socks (pricier socks, or other items): mark it where the pack stands.
+      if ship_done and ship_qty > pairs
+        assign ship_qty = pairs
+      endif
+      if ship_done and ship_qty == 0
+        assign ship_qty = pairs | at_most: top_qty
+      endif
+    endif
+    if top_qty > 0
+      assign ship_left = ship_qty | times: 100.0 | divided_by: top_qty | round: 2
+    else
+      assign ship_left = 0
+    endif
+    assign ship_amount = ship_threshold | money_without_trailing_zeros
+    assign ship_label = settings.cart_tiers_ship_text | default: 'Free shipping from [amount]' | replace: '[amount]', ship_amount
+  -%}
+  {%- if top_qty > 0 -%}
+    <div class="cart-pack-progress{% if next_qty == 0 %} cart-pack-progress--top{% endif %}">
+      {%- if message != blank or ship_msg != blank -%}
+        <div class="cart-pack-progress__text">
+          {%- if message != blank -%}
+            <p class="cart-pack-progress__msg">{{ message | escape }}</p>
+          {%- endif -%}
+          {%- if ship_msg != blank -%}
+            <p class="cart-pack-progress__ship-msg{% if ship_done %} is-reached{% endif %}">
+              <svg viewBox="0 0 24 16" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M1 1.5h12.5v10H1zM14.5 4.5h4.2l3.8 3.9v3.1h-8z"/>
+                <circle fill="currentColor" cx="5.5" cy="13" r="2.3"/>
+                <circle fill="currentColor" cx="18" cy="13" r="2.3"/>
+              </svg>
+              {{- ship_msg | escape -}}
+            </p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+      <div
+        class="cart-pack-progress__track"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="{{ top_qty }}"
+        aria-valuenow="{{ pairs | at_most: top_qty }}"
+        aria-label="{{ message | escape }}"
+      >
+        <span class="cart-pack-progress__fill" style="width: {{ fill }}%"></span>
+        {%- if ship_qty > 0 -%}
+          <span
+            class="cart-pack-progress__ship{% if ship_done %} is-reached{% endif %}"
+            style="left: {{ ship_left }}%"
+            title="{{ ship_label | escape }}"
+          >
+            <svg class="cart-pack-progress__truck" viewBox="0 0 24 16" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M1 1.5h12.5v10H1zM14.5 4.5h4.2l3.8 3.9v3.1h-8z"/>
+              <circle fill="currentColor" cx="5.5" cy="13" r="2.3"/>
+              <circle fill="currentColor" cx="18" cy="13" r="2.3"/>
+            </svg>
+            <span class="cart-pack-progress__dot"></span>
+          </span>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+{%- endif -%}

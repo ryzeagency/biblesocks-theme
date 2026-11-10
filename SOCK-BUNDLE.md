@@ -178,6 +178,21 @@ already in the cart, from a collection picked at random on each page load
 (**Theme settings → Cart → You might also like (cart drawer)**). Adding one removes it
 from the row and has Impulse rebuild the drawer.
 
+## Pack progress bar (cart drawer)
+
+Ported from BOM Socks: under the cart drawer's title, above the items and outside the
+part that scrolls, the next step ("Add 1 more to save 15%.") sits centred above a bar
+that fills toward 9 socks, with a dot and a tiny truck where the cart reaches free
+shipping, and a second line saying "$15.76 away from free shipping" or "Free shipping
+unlocked!". Settings: **Theme settings → Cart → Pack progress bar (cart drawer)** (steps
+`2:10, 3:15, 4:20, 9:3 free`, free shipping from $70; empty steps hide the bar). It only
+describes the discounts; the pack codes and the automatic 9 sock discount give them. Socks
+are counted from "Socks that count", or everything but gift cards and package protection.
+A code the shopper typed (not a pack code) hides the bar. Files:
+`snippets/cart-pack-progress.liquid`, `sections/cart-drawer-progress.liquid` (redrawn
+after every cart change by the script at the end of `snippets/cart-drawer.liquid`),
+`assets/cart-pack-progress.css`.
+
 ## Pack codes in the cart
 
 **Theme settings → Cart → Pack discount codes** (`2:CODE, 3:CODE, 4:CODE`). When a sock

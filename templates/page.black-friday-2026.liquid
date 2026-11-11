@@ -1,0 +1,446 @@
+{%- comment -%}
+  Black Friday / Cyber Monday 2026 landing page, from the "BibleSocks - BFCM"
+  design export. Assign it to a page under Online Store → Pages → Theme
+  template "black-friday-2026".
+
+  It keeps the theme layout (cart drawer, apps, tracking) but hides the
+  theme's header and footer so the page runs edge to edge with its own top
+  bar and fine print, like page.monthly-lander.
+
+  Images: assets/black-friday-2026-socks.jpg (six socks side by side, one
+  per product card), black-friday-2026-lifestyle.jpg, black-friday-2026-logo.png.
+  Prices on the product cards come from the products themselves; the
+  per-pair prices in the offer cards are written out below.
+{%- endcomment -%}
+
+{%- liquid
+  assign socks_image = 'black-friday-2026-socks.jpg' | asset_url
+  assign fallback_price = '$18.47'
+
+  # handle | name | line | position in the socks image (0-5)
+  capture product_rows
+    echo 'the-armor-of-god|The Armor of God|Be strong in the Lord. Ephesians 6 for every day you step out the door.|0;'
+    echo "the-shepherds-psalm-psalm-23-bible-verse-crew-socks|The Shepherd's Psalm (Psalm 23)|Bold red socks carrying one of the most loved passages in Scripture.|1;"
+    echo "gods-plan-jeremiah-29-11-bible-verse-crew-socks|God's Plan (Jeremiah 29:11)|A reminder of hope and a future every time you put them on.|2;"
+    echo 'the-nativity|The Nativity|A reverent Christmas design with subtle style.|3;'
+    echo 'do-not-fear-rebrand-for-dad-to-edit|Do Not Fear (Isaiah 41:10)|A bold new design for the stormy seasons.|4;'
+    echo 'new-a-lamp-unto-my-feet-psalm-119-105|Lamp Unto My Feet (Psalm 119:105)|Our most-requested verse, because the best light comes from the Word.|5'
+  endcapture
+  assign products_list = product_rows | split: ';'
+
+  # badge | heading | line | per-pair price
+  capture tier_rows
+    echo '2 pairs|10% off|Start a bundle with any two pairs.|$16.62 a pair;'
+    echo '3 pairs|15% off|Add a third pair for a bigger break.|$15.70 a pair;'
+    echo '4 pairs|20% off|Four pairs gets you our top bundle rate.|$14.78 a pair;'
+    echo '5 pairs|20% off + free shipping|Five pairs or more ships free.|$14.78 a pair;'
+    echo 'Buy 6|Get 3 free|Buy six pairs and take home nine.|$12.31 a pair'
+  endcapture
+  assign tiers_list = tier_rows | split: ';'
+
+  # question | answer
+  capture faq_rows
+    echo 'When does the sale run?|November 12 through November 30. VIP members get early access starting November 9.;'
+    echo 'How do bundle discounts work?|Buy more, save more. Mix and match any designs and save up to 20% off.;'
+    echo 'How does buy 6, get 3 free work?|Buy six pairs and get three more free, nine pairs in all.;'
+    echo 'When is shipping free?|Free shipping on orders over $75.'
+  endcapture
+  assign faqs_list = faq_rows | split: ';'
+-%}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* Edge to edge: the page brings its own top bar and fine print. */
+  .shopify-section-group-header-group,
+  .shopify-section-group-footer-group { display: none; }
+
+  .bf26 {
+    --bf-yellow: #FFD602;
+    --bf-black: #000000;
+    --bf-white: #FFFFFF;
+    --bf-gold: #C9A24B;
+    --bf-anton: 'Anton', Impact, 'Arial Narrow', sans-serif;
+    --bf-poppins: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--bf-poppins);
+    color: var(--bf-black);
+    background: var(--bf-white);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .bf26 *, .bf26 *::before, .bf26 *::after { box-sizing: border-box; }
+  /* The site paints every <p> white for its dark homepage; text here takes its section's colour. */
+  .bf26 p { color: inherit !important; font-family: inherit; }
+  .bf26 h1, .bf26 h2, .bf26 h3 { color: inherit; text-transform: none; }
+  .bf26 a { color: var(--bf-gold); }
+  .bf26 a:hover { opacity: .9; }
+  .bf26 button:focus-visible, .bf26 a:focus-visible { outline: 2px solid var(--bf-gold); outline-offset: 4px; }
+
+  .bf26__wrap { max-width: 1160px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+  .bf26__display {
+    font-family: var(--bf-anton) !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.01em;
+    margin: 0 !important;
+  }
+  .bf26__h2 { font-size: clamp(2rem, 3.6vw, 2.8rem); line-height: 1.08; max-width: 16em; }
+
+  .bf26__btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 52px; padding: 0 30px; border-radius: 8px;
+    font-weight: 700; font-size: 16px; text-decoration: none;
+    border: 2px solid transparent;
+  }
+  .bf26 .bf26__btn--solid { background: var(--bf-yellow); color: var(--bf-black); }
+  .bf26 .bf26__btn--ghost { background: transparent; border-color: var(--bf-yellow); color: var(--bf-yellow); padding: 0 28px; }
+  .bf26 .bf26__btn--dark { background: transparent; border-color: var(--bf-black); color: var(--bf-black); }
+
+  /* Sock photos: one image of six socks side by side, each card shows its slice. */
+  .bf26__sock {
+    width: 100%; aspect-ratio: 1 / 1;
+    background-image: url('{{ socks_image }}');
+    background-size: 600% 100%;
+    background-repeat: no-repeat;
+  }
+  .bf26__sock--0 { background-position: 0% 0; }
+  .bf26__sock--1 { background-position: 20% 0; }
+  .bf26__sock--2 { background-position: 40% 0; }
+  .bf26__sock--3 { background-position: 60% 0; }
+  .bf26__sock--4 { background-position: 80% 0; }
+  .bf26__sock--5 { background-position: 100% 0; }
+
+  /* Announcement */
+  .bf26__announce { background: var(--bf-yellow); color: var(--bf-black); font-size: 14px; }
+  .bf26__announce .bf26__wrap {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px;
+    padding-top: 11px; padding-bottom: 11px; text-align: center;
+  }
+
+  /* Top bar */
+  .bf26__bar { background: var(--bf-black); border-bottom: 1px solid #2A2A2A; }
+  .bf26__bar .bf26__wrap {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding-top: 16px; padding-bottom: 16px;
+  }
+  .bf26__logo { display: block; }
+  .bf26__logo img { height: 46px; width: auto; display: block; }
+  .bf26 .bf26__bar-link {
+    color: var(--bf-white); font-weight: 700; font-size: 15px; text-decoration: none;
+    min-height: 44px; display: inline-flex; align-items: center;
+  }
+
+  /* Hero */
+  .bf26__hero { background: var(--bf-black); color: var(--bf-white); }
+  .bf26__hero .bf26__wrap {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 48px; align-items: center; padding-top: 64px; padding-bottom: 72px;
+  }
+  .bf26__hero-copy { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; }
+  .bf26__pill { border: 1.5px solid currentColor; border-radius: 999px; padding: 6px 16px; font-size: 14px; font-weight: 600; white-space: pre-wrap; }
+  .bf26__h1 { font-size: clamp(2.6rem, 5.4vw, 4.4rem); line-height: 1.04; }
+  .bf26__lead { margin: 0; font-size: 19px; line-height: 1.55; max-width: 34em; opacity: 0.9; }
+  .bf26__buttons { display: flex; flex-wrap: wrap; gap: 12px; }
+  .bf26__note { margin: 0; font-size: 14px; opacity: 0.8; }
+  .bf26__hero-media { position: relative; border-radius: 14px; overflow: hidden; background: var(--bf-white); }
+  .bf26__hero-tag {
+    position: absolute; left: 20px; bottom: 20px;
+    background: var(--bf-yellow); color: var(--bf-black);
+    border-radius: 14px; padding: 14px 18px; max-width: 240px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .bf26__hero-tag-big { font-family: var(--bf-anton); font-size: 32px; line-height: 1; letter-spacing: 0.01em; }
+  .bf26__hero-tag-small { font-size: 14px; font-weight: 600; line-height: 1.3; }
+
+  /* Offer tiers */
+  .bf26__offer { padding: 80px 0; background: var(--bf-yellow); }
+  .bf26__offer-head {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
+    gap: 16px 32px; margin-bottom: 36px;
+  }
+  .bf26__offer-note { margin: 0; max-width: 28em; opacity: 0.85; font-weight: 700; font-size: 15px; }
+  .bf26__tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 16px; }
+  .bf26__tier {
+    display: flex; flex-direction: column; gap: 10px;
+    background: rgba(255, 255, 255, 0.88); border: 1.5px solid rgba(255, 255, 255, 0.9);
+    border-radius: 22px; padding: 24px;
+    -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    text-transform: uppercase;
+  }
+  .bf26__tier-badge {
+    width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--bf-yellow);
+    background: var(--bf-white); color: var(--bf-black);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--bf-anton); font-size: 16px; letter-spacing: 0.02em; text-align: center; line-height: 1.1;
+  }
+  .bf26__tier--best .bf26__tier-badge { background: var(--bf-yellow); }
+  .bf26 .bf26__tier-title { font-size: 22px; line-height: 1.15; text-transform: uppercase; }
+  .bf26__tier-text { margin: 0; font-size: 15px; line-height: 1.5; opacity: 0.85; }
+  .bf26__tier-price {
+    display: inline-block; margin-top: 4px; align-self: flex-start;
+    font-size: 13px; font-weight: 700; background: var(--bf-white); color: var(--bf-black);
+    border-radius: 999px; padding: 4px 12px;
+  }
+
+  /* Shop */
+  .bf26__shop { padding: 88px 0; background: var(--bf-black); color: var(--bf-white); }
+  .bf26__shop-head { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 36px; text-align: center; }
+  .bf26__shop-head .bf26__h2 { text-align: center; }
+  .bf26__shop-head p { margin: 0; max-width: 28em; opacity: 0.85; }
+  .bf26__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 22px; }
+  .bf26__card {
+    display: flex; flex-direction: column;
+    border: 1.5px solid #EAE3C8; border-radius: 14px; overflow: hidden;
+    background: var(--bf-white); color: var(--bf-black);
+  }
+  .bf26__card-body { display: flex; flex-direction: column; gap: 8px; padding: 20px; flex-grow: 1; }
+  .bf26__card-title {
+    margin: 0 !important; font-family: var(--bf-poppins) !important;
+    font-size: 18px; font-weight: 600; line-height: 1.3; letter-spacing: 0;
+  }
+  .bf26__card-text { margin: 0; font-size: 15px; line-height: 1.5; opacity: 0.8; flex-grow: 1; }
+  .bf26__card-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  .bf26__card-price { font-weight: 700; font-size: 18px; }
+  .bf26 .bf26__card-link {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px;
+    border-radius: 8px; background: transparent; border: 2px solid var(--bf-yellow);
+    color: var(--bf-black); font-weight: 700; font-size: 14px; text-decoration: none;
+  }
+  .bf26__shop-all { display: flex; justify-content: center; margin-top: 44px; }
+
+  /* Why */
+  .bf26__why { background: var(--bf-yellow); color: var(--bf-black); }
+  .bf26__why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: stretch; }
+  .bf26__why-media { position: relative; min-height: 380px; overflow: hidden; }
+  .bf26__why-media img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+  .bf26__why-copy {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 80px clamp(24px, 5vw, 72px); max-width: 640px;
+  }
+  .bf26__why-copy .bf26__h2 { font-size: clamp(1.9rem, 3.2vw, 2.5rem); line-height: 1.1; margin-bottom: 36px !important; max-width: 18em; }
+  .bf26__points { display: flex; flex-direction: column; gap: 28px; }
+  .bf26__point { display: flex; flex-direction: column; gap: 8px; }
+  .bf26__point h3 { font-size: 22px; }
+  .bf26__point p { margin: 0; line-height: 1.55; opacity: 0.85; }
+
+  /* Offer details */
+  .bf26__faq { padding: 88px 0; background: var(--bf-black); color: var(--bf-white); }
+  .bf26__faq .bf26__wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px 56px; align-items: flex-start; }
+  .bf26__faq .bf26__h2 { flex: 0 0 auto; font-size: clamp(1.9rem, 3.2vw, 2.5rem); line-height: 1.1; text-align: end; }
+  .bf26__faq-list { flex: 1 1 300px; max-width: 520px; min-width: 0; border-bottom: 1.5px solid rgba(255, 255, 255, 0.25); }
+  .bf26__faq-item { border-top: 1.5px solid rgba(255, 255, 255, 0.25); }
+  .bf26__faq-q { margin: 0 !important; font-family: var(--bf-poppins) !important; font-size: 17px; font-weight: 600; letter-spacing: 0; }
+  .bf26__faq-q button {
+    width: 100%; min-height: 44px; display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 20px 0; margin: 0; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer;
+  }
+  .bf26__faq-icon {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--bf-yellow);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .bf26__faq-a { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 0.35s ease, opacity 0.35s ease; }
+  .bf26__faq-a > div { overflow: hidden; min-height: 0; }
+  .bf26__faq-a p { margin: 0; padding-bottom: 20px; line-height: 1.55; opacity: 0.85; }
+  .bf26__faq-item.is-open .bf26__faq-a { grid-template-rows: 1fr; opacity: 1; }
+  .bf26__faq-item.is-open .bf26__faq-icon { transform: rotate(180deg); }
+
+  /* Closing */
+  .bf26__end { background: var(--bf-yellow); color: var(--bf-black); padding: 80px 0; text-align: center; }
+  .bf26__end .bf26__wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .bf26__end .bf26__display { font-size: clamp(2.2rem, 4.4vw, 3.4rem); line-height: 1.05; }
+  .bf26__end p { margin: 0; opacity: 0.88; max-width: 36em; }
+
+  /* Fine print */
+  .bf26__fine {
+    background: var(--bf-black); color: var(--bf-white);
+    border-top: 1px solid rgba(127, 127, 127, 0.3);
+    padding: 28px 0 36px; text-align: center; font-size: 13px; line-height: 1.5;
+  }
+  .bf26__fine .bf26__wrap { opacity: 0.75; }
+  .bf26__fine p { margin: 0 auto 6px; max-width: 760px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bf26__faq-a, .bf26__faq-icon { transition: none; }
+  }
+</style>
+
+<div class="bf26">
+
+  <div class="bf26__announce">
+    <div class="bf26__wrap">
+      <strong>Black Friday / Cyber Monday</strong><span>Up to 20% off bundles, plus buy 6, get 3 free. Nov 12-30.</span>
+    </div>
+  </div>
+
+  <div class="bf26__bar">
+    <div class="bf26__wrap">
+      <a class="bf26__logo" href="{{ routes.root_url }}">
+        <img src="{{ 'black-friday-2026-logo.png' | asset_url }}" alt="BibleSocks" width="246" height="46">
+      </a>
+      <a class="bf26__bar-link" href="#shop">Shop the sale</a>
+    </div>
+  </div>
+
+  <section class="bf26__hero">
+    <div class="bf26__wrap">
+      <div class="bf26__hero-copy">
+        <span class="bf26__pill">Nov 12-30  |  VIP early access Nov 9</span>
+        <h1 class="bf26__display bf26__h1">Wear the Word. Buy 6, get 3 free.</h1>
+        <p class="bf26__lead">Our biggest sale of the year on Bible verse and hymn socks. Bundle up to save up to 20%, and orders of 5+ pairs ship free.</p>
+        <div class="bf26__buttons">
+          <a class="bf26__btn bf26__btn--solid" href="#shop">Shop the sale</a>
+          <a class="bf26__btn bf26__btn--ghost" href="#offer">See the offer</a>
+        </div>
+        <p class="bf26__note">VIP members shop early, starting November 9.</p>
+      </div>
+      <div class="bf26__hero-media">
+        <div class="bf26__sock bf26__sock--0" role="img" aria-label="The Armor of God Bible verse socks"></div>
+        <div class="bf26__hero-tag">
+          <span class="bf26__hero-tag-big">9 pairs</span>
+          <span class="bf26__hero-tag-small">for the price of 6</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bf26__offer" id="offer">
+    <div class="bf26__wrap">
+      <div class="bf26__offer-head">
+        <h2 class="bf26__display bf26__h2">THE MORE PAIRS, THE MORE YOU SAVE.</h2>
+        <p class="bf26__offer-note">Per-pair prices shown on our $18.47 crew socks.</p>
+      </div>
+      <div class="bf26__tiers">
+        {%- for row in tiers_list -%}
+          {%- assign t = row | strip | split: '|' -%}
+          <div class="bf26__tier{% if forloop.last %} bf26__tier--best{% endif %}">
+            <div class="bf26__tier-badge">{{ t[0] }}</div>
+            <h3 class="bf26__display bf26__tier-title">{{ t[1] }}</h3>
+            <p class="bf26__tier-text">{{ t[2] }}</p>
+            <span class="bf26__tier-price">{{ t[3] }}</span>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+
+  <section class="bf26__shop" id="shop">
+    <div class="bf26__wrap">
+      <div class="bf26__shop-head">
+        <h2 class="bf26__display bf26__h2">VERSES WORTH WALKING IN</h2>
+        <p>MIX AND MATCH ANY DESIGNS. EVERY PAIR COUNTS TOWARD YOUR BUNDLE.</p>
+      </div>
+      <div class="bf26__grid">
+        {%- for row in products_list -%}
+          {%- liquid
+            assign p = row | strip | split: '|'
+            assign handle = p[0]
+            assign sock_product = all_products[handle]
+            assign price = fallback_price
+            assign url = '/products/' | append: handle
+            if sock_product != blank and sock_product.id
+              assign price = sock_product.price | money
+              assign url = sock_product.url
+            endif
+          -%}
+          <article class="bf26__card">
+            <div class="bf26__sock bf26__sock--{{ p[3] }}" role="img" aria-label="{{ p[1] | escape }}"></div>
+            <div class="bf26__card-body">
+              <h3 class="bf26__card-title">{{ p[1] }}</h3>
+              <p class="bf26__card-text">{{ p[2] }}</p>
+              <div class="bf26__card-foot">
+                <span class="bf26__card-price">{{ price }}</span>
+                <a class="bf26__card-link" href="{{ url }}">Shop now</a>
+              </div>
+            </div>
+          </article>
+        {%- endfor -%}
+      </div>
+      <div class="bf26__shop-all">
+        <a class="bf26__btn bf26__btn--ghost" href="{{ routes.all_products_collection_url }}">Shop all socks</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="bf26__why">
+    <div class="bf26__why-grid">
+      <div class="bf26__why-media">
+        <img
+          src="{{ 'black-friday-2026-lifestyle.jpg' | asset_url }}"
+          alt="Man pulling on David and Goliath Bible story socks beside a wooden bench and leather boots"
+          width="1536" height="1024" loading="lazy">
+      </div>
+      <div class="bf26__why-copy">
+        <h2 class="bf26__display bf26__h2">FAITH YOU CAN WEAR, AND SHARE.</h2>
+        <div class="bf26__points">
+          <div class="bf26__point">
+            <h3 class="bf26__display">SCRIPTURE IN EVERY STEP</h3>
+            <p>Every pair carries a verse or hymn to carry with you through the day.</p>
+          </div>
+          <div class="bf26__point">
+            <h3 class="bf26__display">A GIFT WITH MEANING</h3>
+            <p>Easy encouragement for friends, family, pastors and small groups.</p>
+          </div>
+          <div class="bf26__point">
+            <h3 class="bf26__display">MADE FOR EVERYDAY WEAR</h3>
+            <p>Comfortable crew socks for Sunday and every day after.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bf26__faq">
+    <div class="bf26__wrap">
+      <h2 class="bf26__display bf26__h2">OFFER DETAILS</h2>
+      <div class="bf26__faq-list" data-bf26-faq>
+        {%- for row in faqs_list -%}
+          {%- assign f = row | strip | split: '|' -%}
+          <div class="bf26__faq-item is-open">
+            <h3 class="bf26__faq-q">
+              <button type="button" aria-expanded="true" aria-controls="bf26-faq-{{ forloop.index }}">
+                <span>{{ f[0] }}</span>
+                <span class="bf26__faq-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </button>
+            </h3>
+            <div class="bf26__faq-a" id="bf26-faq-{{ forloop.index }}">
+              <div><p>{{ f[1] }}</p></div>
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+
+  <section class="bf26__end">
+    <div class="bf26__wrap">
+      <h2 class="bf26__display">SALE ENDS NOVEMBER 30.</h2>
+      <p>Stock up on the verses you love, and the ones you want to share.</p>
+      <a class="bf26__btn bf26__btn--dark" href="#shop">Shop the sale</a>
+    </div>
+  </section>
+
+  <footer class="bf26__fine">
+    <div class="bf26__wrap">
+      <p>Offer valid November 12-30, 2026. VIP early access begins November 9.</p>
+      <p>BibleSocks. Wear your faith. Share His Word.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    document.querySelectorAll('[data-bf26-faq] .bf26__faq-item').forEach(function (item) {
+      var button = item.querySelector('button');
+      button.addEventListener('click', function () {
+        var open = item.classList.toggle('is-open');
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+  })();
+</script>

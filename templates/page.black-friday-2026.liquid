@@ -40,10 +40,10 @@
 
   # question | answer
   capture faq_rows
-    echo 'When does the sale run?|November 12 through November 30. VIP members get early access starting November 9.;'
+    echo 'When does the sale run?|November 12 through November 30.;'
     echo 'How do bundle discounts work?|Buy more, save more. Mix and match any designs and save up to 20% off.;'
     echo 'How does buy 6, get 3 free work?|Buy six pairs and get three more free, nine pairs in all.;'
-    echo 'When is shipping free?|Free shipping on orders over $75.'
+    echo 'When is shipping free?|Orders of 5 or more pairs ship free.'
   endcapture
   assign faqs_list = faq_rows | split: ';'
 -%}
@@ -142,7 +142,6 @@
   .bf26__h1 { font-size: clamp(2.6rem, 5.4vw, 4.4rem); line-height: 1.04; }
   .bf26__lead { margin: 0; font-size: 19px; line-height: 1.55; max-width: 34em; opacity: 0.9; }
   .bf26__buttons { display: flex; flex-wrap: wrap; gap: 12px; }
-  .bf26__note { margin: 0; font-size: 14px; opacity: 0.8; }
   .bf26__hero-media { position: relative; border-radius: 14px; overflow: hidden; background: var(--bf-white); }
   .bf26__hero-tag {
     position: absolute; left: 20px; bottom: 20px;
@@ -287,14 +286,13 @@
   <section class="bf26__hero">
     <div class="bf26__wrap">
       <div class="bf26__hero-copy">
-        <span class="bf26__pill">Nov 12-30  |  VIP early access Nov 9</span>
+        <span class="bf26__pill">Nov 12-30</span>
         <h1 class="bf26__display bf26__h1">Wear the Word. Buy 6, get 3 free.</h1>
         <p class="bf26__lead">Our biggest sale of the year on Bible verse and hymn socks. Bundle up to save up to 20%, and orders of 5+ pairs ship free.</p>
         <div class="bf26__buttons">
           <a class="bf26__btn bf26__btn--solid" href="#shop">Shop the sale</a>
           <a class="bf26__btn bf26__btn--ghost" href="#offer">See the offer</a>
         </div>
-        <p class="bf26__note">VIP members shop early, starting November 9.</p>
       </div>
       <div class="bf26__hero-media">
         <div class="bf26__sock bf26__sock--0" role="img" aria-label="The Armor of God Bible verse socks"></div>
@@ -426,7 +424,7 @@
 
   <footer class="bf26__fine">
     <div class="bf26__wrap">
-      <p>Offer valid November 12-30, 2026. VIP early access begins November 9.</p>
+      <p>Offer valid November 12-30, 2026.</p>
       <p>BibleSocks. Wear your faith. Share His Word.</p>
     </div>
   </footer>

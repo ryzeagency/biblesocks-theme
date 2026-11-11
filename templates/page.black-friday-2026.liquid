@@ -180,9 +180,19 @@
   .bf26 .bf26__tier-title { font-size: 22px; line-height: 1.15; text-transform: uppercase; }
   .bf26__tier-text { margin: 0; font-size: 15px; line-height: 1.5; opacity: 0.85; }
   .bf26__tier-price {
-    display: inline-block; margin-top: 4px; align-self: flex-start;
+    display: inline-block; margin-top: auto; align-self: flex-start;
     font-size: 13px; font-weight: 700; background: var(--bf-white); color: var(--bf-black);
     border-radius: 999px; padding: 4px 12px;
+  }
+  /* Line the cards up row by row (circle, heading, text, price), so a heading or
+     text that wraps onto an extra line ("20% off + free shipping") doesn't push
+     its card out of step. Older browsers just keep the prices on one line. */
+  @supports (grid-template-rows: subgrid) {
+    .bf26__tier {
+      display: grid; grid-row: span 4; grid-template-rows: subgrid;
+      row-gap: 10px; align-items: start; justify-items: start;
+    }
+    .bf26__tier-price { margin-top: 4px; }
   }
 
   /* Shop */

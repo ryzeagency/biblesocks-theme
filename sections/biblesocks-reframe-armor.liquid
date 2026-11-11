@@ -20,7 +20,7 @@
           rgba(18, 17, 16, 0) 30%,
           rgba(18, 17, 16, 0.9) 100%
         ),
-        url('{{ section.settings.image | image_url: width: 1400 }}');
+        var(--bs-lazy-bg, none);
     {% else %}
       background-image:
         linear-gradient(
@@ -143,7 +143,7 @@
   style="border-bottom: 1px solid var(--bs-hairline);"
 >
   <div class="bs-reframe-{{ section.id }}">
-    <div class="visual">
+    <div class="visual"{% if section.settings.image != blank %} data-bs-bg="{{ section.settings.image | image_url: width: 1400 }}" data-bs-bg-var{% endif %}>
       {%- if section.settings.image == blank -%}
         <div class="imglabel bs-mono">
           IMG PLACEHOLDER — upload in section settings

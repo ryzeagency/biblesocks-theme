@@ -1,7 +1,47 @@
 <script>
 (function(){
-var script = document.createElement('script');
-script.onload = function() {
+// Inflektion (Everflow) tracking. everflow.js is heavy on phones, so it loads straight
+// away only when the visit comes from an affiliate link (its click needs recording);
+// otherwise once the page has loaded, or as soon as the shopper scrolls, taps or types.
+// Email sign-ups made before it is ready are queued and sent when it is.
+var loaded = false;
+var ready = false;
+var queuedEmails = [];
+
+var sendEmailLead = function(email) {
+  if (!ready) {
+    queuedEmails.push(email);
+    load();
+    return;
+  }
+  EF.conversion({
+    offer_id: 151,
+    event_id: 630,
+    email: email,
+    verification_token: 'emj8w8Te62xseWASUy0zrpMKt87QE2',
+  });
+};
+
+window.addEventListener("klaviyoForms", function(e) {
+  if (e.detail.type === 'submit') {
+    sendEmailLead(e.detail.metaData.$email);
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+  const contactForm = document.getElementById('newsletter-footer');
+  if (contactForm) {
+    contactForm.addEventListener("submit", (event) => {
+      const email = document.querySelector('#Email-footer2').value ?? '';
+      if (email !== '') {
+        sendEmailLead(email);
+      }
+    });
+  }
+});
+
+function onLoad() {
+  ready = true;
   var txnId = EF.urlParameter('infclid') || EF.urlParameter('transaction_id') || EF.urlParameter('_ef_transaction_id');
   EF.click({
       offer_id: EF.urlParameter('oid'),
@@ -31,33 +71,26 @@ script.onload = function() {
       })();
     }
   });
+  queuedEmails.splice(0).forEach(sendEmailLead);
+}
 
-  var sendEmailLead = function(email) {
-    EF.conversion({
-      offer_id: 151,
-      event_id: 630,
-      email: email,
-      verification_token: 'emj8w8Te62xseWASUy0zrpMKt87QE2',
-    });
-  };
+var triggers = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+function load() {
+  if (loaded) return;
+  loaded = true;
+  triggers.forEach(function(name) { window.removeEventListener(name, load, true); });
+  var script = document.createElement('script');
+  script.onload = onLoad;
+  script.src = "https://www.inflektiondirect.com/scripts/sdk/everflow.js";
+  document.head.appendChild(script);
+}
 
-  window.addEventListener("klaviyoForms", function(e) {
-    if (e.detail.type === 'submit') {
-      sendEmailLead(e.detail.metaData.$email);
-    }
-  });
-
-  const contactForm = document.getElementById('newsletter-footer');
-  if (contactForm) {
-    contactForm.addEventListener("submit", (event) => {
-      const email = document.querySelector('#Email-footer2').value ?? '';
-      if (email !== '') {
-        sendEmailLead(email);
-      }
-    });
-  }
-};
-script.src = "https://www.inflektiondirect.com/scripts/sdk/everflow.js";
-document.head.appendChild(script);
-})(document);
+if (/[?&](infclid|transaction_id|_ef_transaction_id|oid|sub[1-5]|uid|source_id|creative_id)=/.test(location.search)) {
+  load();
+} else {
+  triggers.forEach(function(name) { window.addEventListener(name, load, { capture: true, passive: true, once: true }); });
+  var later = function() { setTimeout(function() { ('requestIdleCallback' in window) ? requestIdleCallback(load, { timeout: 2000 }) : load(); }, 2500); };
+  if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
+}
+})();
 </script>

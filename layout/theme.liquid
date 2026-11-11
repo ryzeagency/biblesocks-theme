@@ -149,6 +149,44 @@
         {{ content_for_layout }}
       </main>
 
+      <script>
+        // Background photos in the BibleSocks sections (data-bs-bg) load only as they
+        // come near the screen, at the width the box needs on this device instead of
+        // the full desktop size. data-bs-bg-var sets --bs-lazy-bg for a section whose
+        // CSS layers the photo under a gradient.
+        (function () {
+          function show(box) {
+            var url = box.getAttribute('data-bs-bg');
+            var max = parseInt((url.match(/[?&]width=(\d+)/) || [])[1], 10);
+            var rect = box.getBoundingClientRect();
+            var need = Math.max(rect.width, rect.height) * Math.min(window.devicePixelRatio || 1, 2);
+            if (max && need > 0) {
+              var width = Math.min(max, Math.max(300, Math.ceil(need / 100) * 100));
+              url = url.replace(/([?&]width=)\d+/, '$1' + width);
+            }
+            var value = 'url("' + url + '")';
+            if (box.hasAttribute('data-bs-bg-var')) box.style.setProperty('--bs-lazy-bg', value);
+            else box.style.backgroundImage = value;
+            box.removeAttribute('data-bs-bg');
+          }
+          var watcher = 'IntersectionObserver' in window && new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) return;
+              watcher.unobserve(entry.target);
+              show(entry.target);
+            });
+          }, { rootMargin: '600px 0px' });
+          function watch(root) {
+            root.querySelectorAll('[data-bs-bg]').forEach(function (box) {
+              watcher ? watcher.observe(box) : show(box);
+            });
+          }
+          watch(document);
+          // The theme editor redraws a section when its settings change.
+          document.addEventListener('shopify:section:load', function (event) { watch(event.target); });
+        })();
+      </script>
+
     {%- sections 'footer-group' -%}
 
     {%- comment -%} The popup offered when Add bundle to cart is pressed. {%- endcomment -%}
@@ -217,6 +255,12 @@
     </div>
   </template>
 
+  {%- comment -%}
+    Klaviyo's back in stock button ("Notify Me When Available") only shows on product
+    pages, so its script (which holds up the page while it loads) is only added there.
+    The rest of Klaviyo (popups, tracking) comes from its app embed on every page.
+  {%- endcomment -%}
+  {%- if request.page_type == 'product' -%}
   <script src="https://a.klaviyo.com/media/js/onsite/onsite.js"></script>
   <script>
       var klaviyo = klaviyo || [];
@@ -253,7 +297,11 @@
       }
     });
   </script>
-  <script async src="https://chat-widget.getredo.com/widget.js?widgetId=e5kjyu64bejp7yc"></script>
+  {%- endif -%}
+  {%- comment -%}
+    The Redo chat widget is added by the Redo app itself (widget.js?...&shop=...); a
+    second copy here loaded the same 1 MB script twice on every page, so it is gone.
+  {%- endcomment -%}
 {%- render 'page-footer.zipifypages', renderctx: 'thm', ocuapp: oneclickupsellapp -%}<script>
 (function () {
   var targetPath = '/products/easter-stock-up-event-1';

@@ -32,7 +32,7 @@
       {%- if coll != blank -%}
         {%- for product in coll.products limit: section.settings.product_limit -%}
           <a href="{{ product.url }}" class="card">
-            <div class="ph" {% if product.featured_image %}style="background-image:url('{{ product.featured_image | image_url: width: 600 }}')"{% endif %}></div>
+            <div class="ph" {% if product.featured_image %}data-bs-bg="{{ product.featured_image | image_url: width: 600 }}"{% endif %}></div>
             <div class="info">
               <div class="story bs-mono">{{ product.type }}</div>
               <h3 class="bs-display">{{ product.title }}</h3>

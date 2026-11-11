@@ -22,7 +22,7 @@
           {%- endfor -%}
         </div>
       </div>
-      <div class="visual" {% if section.settings.image != blank %}style="background-image:url('{{ section.settings.image | image_url: width: 1000 }}')"{% endif %}>
+      <div class="visual" {% if section.settings.image != blank %}data-bs-bg="{{ section.settings.image | image_url: width: 1000 }}"{% endif %}>
         {%- if section.settings.image == blank -%}<div class="imglabel bs-mono">IMG PLACEHOLDER — product detail</div>{%- endif -%}
       </div>
     </div>

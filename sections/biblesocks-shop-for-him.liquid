@@ -166,7 +166,7 @@
           <div
             class="ph"
             {% if block.settings.image != blank %}
-              style="background-image: url('{{ block.settings.image | image_url: width: 1000 }}');"
+              data-bs-bg="{{ block.settings.image | image_url: width: 1000 }}"
             {% endif %}
           ></div>
 

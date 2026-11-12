@@ -109,6 +109,34 @@ page and the pack docks to the bottom. **Add bundle to cart** adds the pack and 
 drawer, and the picker stays open with the pack emptied. Wording for Product first is
 under **Product first** at the bottom of the block.
 
+## Add to cart opens the picker, and the pack is the cart (dev)
+
+Ported from BOM Socks' `main` (2026-11-12). Sock pages (`templates/product.json`) use
+**Sock bundle → Picker opens: From Add to cart, with this sock** and **After adding a
+pack: Keep the pack in the cart**:
+
+- The page first looks like a plain sock page: photos, title, price, size, quantity and
+  Add to cart, with no pack and no Mix & match button.
+- Add to cart puts that many of the sock, in the size picked, into the pack and the cart,
+  and the picker takes the photos' place (no popup). While it shows, everything above the
+  pack in the buy column steps aside; "Back to product photos" brings the page back, with
+  the pack still showing under Add to cart. Pressing Add to cart again adds more.
+- The pack is the cart: it starts from the cart's pairs (counted like the drawer's pack
+  bar), each pick or × goes into or out of the cart straight away, and the drawer's + and
+  − or Remove show in the pack a moment later. The drawer redraws without opening; the
+  pack's button (**Pack button text**: "View cart") opens it. Emptying the pack goes back
+  to the plain page.
+- After every change the cart moves onto the pack code its pairs earn (2 pairs
+  BIBLESOCKSMIXANDMATCH10, 3 the 15, 4 and up the 20), the code comes off at 1 pair and at
+  9 (the automatic buy 6 get 3 free takes over), and a code the shopper typed is left
+  alone.
+- Files: `sections/sock-bundle-cart.liquid` and `snippets/sock-bundle-cart-lines.liquid`
+  (the cart's pairs as JSON), and the "pack is the cart" part of `assets/sock-bundle.js`.
+
+The build-your-own page (`product.bundle-builder.json`) keeps the pack in the cart too.
+With **Picker opens: From its button** and **Open the cart drawer**, a page works as
+before (Mix & match button, Add bundle to cart).
+
 ## Mix & match popup
 
 **Sock bundle → Open the picker as a full-screen popup** (on for sock pages): Mix & match

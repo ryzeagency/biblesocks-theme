@@ -23,10 +23,17 @@
   if teaser and block.settings.single_uses_picker
     assign build_own = true
   endif
+  # With "Picker opens: From Add to cart", a sock page has no Mix & match
+  # button: the pack stays out of sight until Add to cart fills it.
+  assign stays_open = build_own
+  assign opens_on_atc = false
+  if teaser and build_own == false and block.settings.teaser_opens == 'add_to_cart'
+    assign opens_on_atc = true
+  endif
 -%}
 
 <sock-bundle
-  class="sock-bundle{% if teaser %} sock-bundle--teaser{% endif %}{% if build_own %} sock-bundle--build-own{% endif %}"
+  class="sock-bundle{% if teaser %} sock-bundle--teaser{% endif %}{% if build_own %} sock-bundle--build-own{% endif %}{% if stays_open %} sock-bundle--stays-open{% endif %}{% if opens_on_atc %} sock-bundle--opens-on-atc{% endif %}"
   data-layout="{% if teaser %}teaser{% else %}builder{% endif %}"
   id="SockBundle-{{ section_id }}"
   data-section-id="{{ section_id }}"
@@ -38,6 +45,8 @@
   data-picker-replaces-gallery="{{ block.settings.picker_replaces_gallery }}"
   data-prefill-current="{{ block.settings.prefill_current_product }}"
   data-single-uses-picker="{{ block.settings.single_uses_picker }}"
+  data-picker-on-load="{{ stays_open }}"
+  data-opens-on-atc="{{ opens_on_atc }}"
   data-hide-default-atc="{{ block.settings.hide_default_buy_buttons }}"
   data-after-add="{{ block.settings.after_add_to_cart }}"
   data-cart-url="{{ routes.cart_url }}"
@@ -352,5 +361,9 @@
 
     <p class="sock-bundle__error" data-sock-bundle-error role="alert"></p>
   </div>
+  {%- endif -%}
+  {%- comment -%} After adding a pack: Keep the pack in the cart. The pack starts from the cart's pairs. {%- endcomment -%}
+  {%- if teaser and block.settings.after_add_to_cart == 'live' -%}
+    {%- render 'sock-bundle-cart-lines' -%}
   {%- endif -%}
 </sock-bundle>

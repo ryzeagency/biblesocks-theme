@@ -160,15 +160,33 @@ if (!customElements.get('sock-bundle')) {
         // Product first on a build-your-own product: there is no sock of its
         // own to show, so the page opens on the picker and the pack, and stays.
         this.buildOwn = this.teaser && this.singleUsesPicker;
+        // That, or "Picker opens: On page load" on a sock: the picker takes the
+        // photos' place from the start and the pack stays open, no button.
+        this.staysOpen = this.buildOwn || (this.teaser && this.dataset.pickerOnLoad === 'true');
+        // "Picker opens: From Add to cart": the page opens as a plain sock page;
+        // its Add to cart puts that many of this sock in the pack and opens the
+        // picker in the photos' place.
+        this.opensOnAtc = this.teaser && !this.staysOpen && this.dataset.opensOnAtc === 'true';
+        this.onProductSubmit = this.onProductSubmit.bind(this);
         // Product first: Mix & match opens the picker and the pack as a
         // full-screen popup over the page, instead of in the photos' place.
-        this.popup = this.teaser && !this.buildOwn && this.dataset.packPopup === 'true';
+        this.popup =
+          this.teaser && !this.staysOpen && !this.opensOnAtc && this.dataset.packPopup === 'true';
         this.popupTitle = this.dataset.popupTitle || 'Mix & match designs';
         this.onPopupKeydown = this.onPopupKeydown.bind(this);
         this.onPopState = this.onPopState.bind(this);
         this.hideDefaultAtc = this.dataset.hideDefaultAtc === 'true';
         this.afterAdd = this.dataset.afterAdd || 'cart';
         this.cartUrl = this.dataset.cartUrl || '/cart';
+        // "After adding a pack: Keep the pack in the cart": the pack is the cart.
+        // It starts from the cart's pairs, every pair picked or removed goes in
+        // or out of the cart straight away (with the pack code the cart then
+        // earns), and any other cart change (the drawer) shows in the pack. Its
+        // button opens the drawer.
+        this.liveCart = this.teaser && this.afterAdd === 'live';
+        this.cartQueue = Promise.resolve();
+        this.cartWrites = 0;
+        this.onCartWrite = this.onCartWrite.bind(this);
         this.cartClearUrl = this.dataset.cartClearUrl || '/cart/clear.js';
         this.clearCartOnAdd = this.dataset.clearCart === 'true';
         this.moneyFormat = this.dataset.moneyFormat || '${{amount}}';
@@ -280,11 +298,21 @@ if (!customElements.get('sock-bundle')) {
 
         // The server-side open state has done its job; let JS own it from here.
         this.picker?.classList.remove('sock-bundle-picker--open-on-load');
+
+        // Caught before Impulse's product form sees it (capture, on document).
+        if (this.opensOnAtc) document.addEventListener('submit', this.onProductSubmit, true);
+
+        if (this.liveCart) {
+          SockBundle.watchCartWrites();
+          document.addEventListener('sock-bundle:cart-write', this.onCartWrite);
+        }
       }
 
       disconnectedCallback() {
         if (this.relocating) return;
         this.closePopup({ restore: false });
+        document.removeEventListener('submit', this.onProductSubmit, true);
+        document.removeEventListener('sock-bundle:cart-write', this.onCartWrite);
         document.removeEventListener('variant:change', this.onVariantChange);
         this.picker?.removeEventListener('change', this.onPickerVariantChange);
         this.tiersEl?.removeEventListener('scroll', this.updateArrows);
@@ -546,6 +574,9 @@ if (!customElements.get('sock-bundle')) {
 
         this.setError('');
         this.render();
+        if (this.liveCart) {
+          this.cartWrite('add', { items: [{ id: Number(variantField.value), quantity: 1 }] });
+        }
         return true;
       }
 
@@ -1374,9 +1405,22 @@ if (!customElements.get('sock-bundle')) {
 
         this.enhanceCards();
 
+        // The pack is the cart: start from its pairs, without "unlocked" toasts.
+        if (this.liveCart) {
+          this.slots = this.slotsFromCart(this.readCartLines(this));
+          this.teaserCounts = {};
+          this.slots.forEach((slot) => {
+            this.teaserCounts[slot.variantId] = (this.teaserCounts[slot.variantId] || 0) + 1;
+          });
+          const earned = this.tierFor(this.slots.length);
+          this.lastToastQty = earned && earned.qty > 1 ? earned.qty : 0;
+        }
+
         if (this.buildOwn) {
           // The product itself costs nothing, so the ladder quotes a pair's price.
           this.dataset.productPrice = String(this.firstSockPrice());
+          this.enterPacking(false);
+        } else if (this.staysOpen) {
           this.enterPacking(false);
         } else {
           this.render();
@@ -1416,6 +1460,48 @@ if (!customElements.get('sock-bundle')) {
         // On a phone the docked pack opens folded, leaving the picker the screen.
         if (opening && this.mobileQuery.matches) this.foldPack(true);
         if (opening && scroll && !this.popup) this.scrollToTop(this.picker);
+      }
+
+      /**
+       * "Picker opens: From Add to cart": the buy box's Add to cart puts its
+       * quantity of this sock, in the size picked, into the pack (and, with the
+       * pack in the cart, into the cart) and opens the picker. Again later, it
+       * adds more.
+       */
+      onProductSubmit(event) {
+        const form = event.target;
+        // Impulse's product form; getAttribute, since its "id" input shadows form.id.
+        if (
+          !(form instanceof HTMLFormElement) ||
+          form.getAttribute('id') !== `AddToCartForm-${this.sectionId}-${this.dataset.productId}`
+        ) {
+          return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const variantId = form.elements.id?.value;
+        if (variantId) this.dataset.variantId = variantId;
+        const quantity = Math.max(1, parseInt(form.elements.quantity?.value, 10) || 1);
+
+        let added = 0;
+        for (let i = 0; i < quantity; i += 1) {
+          const index = this.firstEmptySlot();
+          if (index === -1) break;
+          this.slots[index] = this.currentProductSlot();
+          added += 1;
+        }
+        this.setError(added < quantity ? 'Your pack is full. Remove a sock to swap it out.' : '');
+        if (!added) return;
+        if (this.liveCart) {
+          this.cartWrite('add', { items: [{ id: Number(this.dataset.variantId), quantity: added }] });
+        }
+
+        if (this.packing) {
+          this.render();
+        } else {
+          this.enterPacking();
+        }
       }
 
       /** On a phone, folds the docked pack down to its bar, subtotal and checkout. */
@@ -1565,10 +1651,14 @@ if (!customElements.get('sock-bundle')) {
         const remove = event.target.closest('[data-teaser-remove]');
         if (remove) {
           const hadFocus = remove === document.activeElement;
-          this.slots[parseInt(remove.dataset.teaserRemove, 10)] = null;
+          const removeIndex = parseInt(remove.dataset.teaserRemove, 10);
+          const removed = this.slots[removeIndex];
+          this.slots[removeIndex] = null;
           this.setError('');
-          // A build-your-own pack has no product to go back to, so it stays open empty.
-          if (this.slots.some(Boolean) || this.buildOwn || this.popup) {
+          if (this.liveCart && removed) this.removeFromCart(removed);
+          // A pack that stays open, or the popup until its × closes it, stays
+          // open empty.
+          if (this.slots.some(Boolean) || this.staysOpen || this.popup) {
             this.render();
             if (hadFocus) this.teaserSlotsEl.querySelector('[data-teaser-remove]')?.focus();
           } else {
@@ -1668,15 +1758,21 @@ if (!customElements.get('sock-bundle')) {
           )}</span><strong>+ ${this.escape(rung.main || this.sockWordSingular)}</strong>${extra}</button></li>`;
         };
 
+        // Only pairs that were not in the pack last time pop in; redrawing the
+        // rest (after a remove, or when the cart answers) must not replay it.
+        const before = this.teaserCounts || {};
+        const now = {};
         const filledMarkup = (slot, index) => {
           // Each pair names its size, so a mixed pack reads at a glance; a
           // one-size sock has none to name.
           const caption = slot.variantTitle === 'Default Title' ? '' : slot.variantTitle;
           const label = caption ? `${slot.title}, ${caption}` : slot.title;
           const free = freeSlots.has(index);
+          now[slot.variantId] = (now[slot.variantId] || 0) + 1;
+          const fresh = now[slot.variantId] > (before[slot.variantId] || 0);
           return `
-            <li class="sock-bundle__teaser-slot is-filled" title="${this.escape(label)}">
-              ${slot.image ? `<img src="${slot.image}" alt="${this.escape(label)}" width="200" height="200" loading="lazy">` : ''}
+            <li class="sock-bundle__teaser-slot is-filled${fresh ? ' is-new' : ''}" title="${this.escape(label)}">
+              ${slot.image ? `<img src="${slot.image}" alt="${this.escape(label)}" width="200" height="200">` : ''}
               ${free ? `<span class="sock-bundle__slot-free">${this.escape(this.freeSockTag)}</span>` : ''}
               ${caption ? `<span class="sock-bundle__teaser-cap">${this.escape(caption)}</span>` : ''}
               <button type="button" class="sock-bundle__teaser-remove" data-teaser-remove="${index}" aria-label="Remove ${this.escape(
@@ -1692,6 +1788,7 @@ if (!customElements.get('sock-bundle')) {
           boxes.push(i < filled ? filledMarkup(this.slots[i], i) : emptyMarkup(rung));
         }
         this.teaserSlotsEl.innerHTML = boxes.join('');
+        this.teaserCounts = now;
         // A pack under way keeps its boxes in view, even back on the photos.
         this.classList.toggle('has-pairs', filled > 0);
 
@@ -2129,6 +2226,10 @@ if (!customElements.get('sock-bundle')) {
       /* ------------------------------------------------------------------ */
 
       async onAddToCart() {
+        if (this.liveCart) {
+          await this.openLiveCart();
+          return;
+        }
         const filled = this.slots.filter(Boolean).length;
         const items = this.slots
           .filter(Boolean)
@@ -2289,7 +2390,7 @@ if (!customElements.get('sock-bundle')) {
         if (drawer) {
           this.slots = [];
           // A build-your-own page is the picker; it stays open, just emptied.
-          if (this.packing && !this.buildOwn) this.exitPacking();
+          if (this.packing && !this.staysOpen) this.exitPacking();
           this.render();
           document.dispatchEvent(new CustomEvent('cart:build'));
           document.dispatchEvent(new CustomEvent('cart:open'));
@@ -2358,6 +2459,252 @@ if (!customElements.get('sock-bundle')) {
         } catch (error) {
           console.error(error);
           return false;
+        }
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* The pack is the cart ("Keep the pack in the cart")                 */
+      /* ------------------------------------------------------------------ */
+
+      /**
+       * Once per page: after any Ajax cart write, from any script (Impulse's
+       * drawer + and − included), tell the packs so they can re-read the cart.
+       */
+      static watchCartWrites() {
+        if (window.sockBundleWatchingCart) return;
+        window.sockBundleWatchingCart = true;
+        const nativeFetch = window.fetch.bind(window);
+        const cartWrite = /\/cart\/(add|change|update|clear)(\.js)?(\?|$)/;
+        window.fetch = function (input, init) {
+          const request = nativeFetch(input, init);
+          const url = typeof input === 'string' ? input : input?.url || '';
+          if (cartWrite.test(url)) {
+            request
+              .then(() => document.dispatchEvent(new CustomEvent('sock-bundle:cart-write')))
+              .catch(() => {});
+          }
+          return request;
+        };
+      }
+
+      /** The shop's root, with Shopify's locale prefix (e.g. /en-us/) when there is one. */
+      cartRoot() {
+        return (window.theme?.routes?.home || window.Shopify?.routes?.root || '/').replace(/\/?$/, '/');
+      }
+
+      /** The cart's pairs from a [data-sock-bundle-cart] JSON block under root. */
+      readCartLines(root) {
+        try {
+          return JSON.parse(root.querySelector('[data-sock-bundle-cart]')?.textContent || '[]');
+        } catch (error) {
+          return [];
+        }
+      }
+
+      /** One slot per pair, oldest line first. */
+      slotsFromCart(lines) {
+        const slots = [];
+        lines.forEach((line) => {
+          for (let i = 0; i < (line.quantity || 0); i += 1) {
+            slots.push({
+              key: line.key,
+              variantId: String(line.variantId),
+              productId: String(line.productId),
+              title: line.title || '',
+              variantTitle: (line.variantTitle || '').replace(/^Default Title$/, ''),
+              image: line.image ? `${line.image}`.replace(/^\/\//, 'https://') : '',
+              price: line.price || 0,
+              variants: [],
+            });
+          }
+        });
+        return this.maxSocks ? slots.slice(0, this.maxSocks) : slots;
+      }
+
+      /**
+       * Writes to the cart one at a time (Shopify can refuse two at once). The
+       * pack has already changed on screen; once the last write lands it re-reads
+       * the cart, which also undoes anything the cart refused.
+       */
+      cartWrite(action, payload) {
+        this.cartWrites += 1;
+        const run = async () => {
+          try {
+            // A function works out its payload from the cart as it is by now.
+            const body = typeof payload === 'function' ? await payload() : payload;
+            if (!body) return;
+            const response = await fetch(`${this.cartRoot()}cart/${action}.js`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify(body),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || data.status) {
+              this.setError(data.description || data.message || 'Could not update the cart.');
+            }
+          } catch (error) {
+            console.error(error);
+            this.setError('Something went wrong. Please try again.');
+          } finally {
+            this.cartWrites -= 1;
+            if (this.cartWrites === 0) this.refreshFromCart({ own: true });
+          }
+        };
+        this.cartQueue = this.cartQueue.then(run);
+        return this.cartQueue;
+      }
+
+      /**
+       * Takes one of this pair out of the cart. A line's key changes whenever
+       * its quantity does (and buy 6 get 3 free can split a sock over two lines),
+       * so the line is looked up in the cart just before the write.
+       */
+      removeFromCart(slot) {
+        this.cartWrite('change', async () => {
+          const response = await fetch(`${this.cartRoot()}cart.js`, { headers: { Accept: 'application/json' } });
+          const cart = await response.json();
+          const lines = (cart.items || []).filter((item) => String(item.variant_id) === String(slot.variantId));
+          if (!lines.length) return null;
+          const line = lines.find((item) => item.key === slot.key) || lines[lines.length - 1];
+          return { id: line.key, quantity: line.quantity - 1 };
+        });
+      }
+
+      onCartWrite() {
+        // The pack's own writes re-read the cart once the last one lands.
+        if (this.cartWrites > 0) return;
+        clearTimeout(this.cartRefreshTimer);
+        this.cartRefreshTimer = setTimeout(() => this.refreshFromCart(), 250);
+      }
+
+      /**
+       * Re-reads the cart's pairs into the pack, moves the cart onto the pack
+       * code its pairs now earn, and has Impulse redraw its drawer (items,
+       * count, subtotal, pack bar) without opening it.
+       */
+      async refreshFromCart({ own = false } = {}) {
+        if (this.cartWrites > 0) return;
+        try {
+          const response = await fetch(`${this.cartRoot()}?sections=sock-bundle-cart`, {
+            headers: { Accept: 'application/json' },
+          });
+          if (!response.ok) return;
+          const sections = await response.json();
+          if (this.cartWrites > 0) return;
+
+          const holder = document.createElement('div');
+          holder.innerHTML = sections['sock-bundle-cart'] || '';
+          const fromCart = this.slotsFromCart(this.readCartLines(holder));
+          const shown = this.slots.filter(Boolean);
+          const sameSocks = (list) => list.map((slot) => slot.variantId).sort().join('|');
+          // The cart already matches the pack on screen: keep its order, take
+          // the cart's line keys, and leave the boxes alone.
+          const unchanged = sameSocks(fromCart) === sameSocks(shown);
+          if (unchanged) {
+            const keys = {};
+            fromCart.forEach((slot) => {
+              keys[slot.variantId] = slot.key;
+            });
+            shown.forEach((slot) => {
+              slot.key = keys[slot.variantId] || slot.key;
+            });
+          } else {
+            this.slots = fromCart;
+          }
+
+          const codeChanged = await this.syncPackCode(fromCart.length);
+          // The drawer's own + and − already rebuild it; the pack's writes and
+          // a new code do not.
+          if (own || codeChanged) document.dispatchEvent(new CustomEvent('cart:build'));
+
+          if (unchanged) return;
+          if (!this.slots.some(Boolean) && this.packing && !this.staysOpen && !this.popup) {
+            this.exitPacking();
+          } else {
+            this.render();
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      /**
+       * Bible Socks' pack discounts are codes, so the cart carries the one its
+       * pairs earn: 2 pairs the 10% code, 3 the 15%, 4 and up the 20%, none for
+       * 1, and none at an automatic pack (9 pairs, 3 free), where a code would
+       * stand in the automatic discount's way. A code the shopper typed is left
+       * alone. Returns true if the cart's code changed.
+       */
+      async syncPackCode(pairs) {
+        const packCodes = this.tiers.map((tier) => (tier.code || '').trim().toLowerCase()).filter(Boolean);
+        if (!packCodes.length) return false;
+
+        // Its own writes must not set off another re-read.
+        this.cartWrites += 1;
+        try {
+          const cart = await fetch(`${this.cartRoot()}cart.js`, { headers: { Accept: 'application/json' } }).then(
+            (response) => response.json()
+          );
+          const current = (cart.discount_codes || []).map((entry) => String(entry.code).toLowerCase());
+          if (current.some((code) => !packCodes.includes(code))) return false;
+
+          // Best first, stepping down until Shopify says one applies.
+          const candidates = [];
+          const reached = this.tierFor(pairs);
+          if (reached && !reached.automatic) {
+            this.tiers
+              .filter((tier) => tier.qty <= pairs && (tier.code || '').trim())
+              .reverse()
+              .forEach((tier) => candidates.push(tier.code.trim()));
+          }
+          const wanted = [...new Set(candidates)];
+
+          if (wanted.length && current.length === 1 && current[0] === wanted[0].toLowerCase()) return false;
+          if (!wanted.length && !current.length) return false;
+
+          for (const code of wanted) {
+            if (await this.applyDiscountCode(code)) return true;
+          }
+          // None applies (or none is earned): take the pack code off.
+          await fetch(`${this.cartRoot()}cart/update.js`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ discount: '' }),
+          });
+          return current.length > 0;
+        } catch (error) {
+          console.error(error);
+          return false;
+        } finally {
+          this.cartWrites -= 1;
+        }
+      }
+
+      /** The pack's button: the pairs are already in the cart, so show it. */
+      async openLiveCart() {
+        if (!this.slots.some(Boolean)) {
+          this.setError('Pick at least one sock to continue.');
+          return;
+        }
+        this.atcButton.disabled = true;
+        this.atcButton.classList.add('btn--loading');
+        try {
+          await this.cartQueue;
+          await this.syncPackCode(this.slots.filter(Boolean).length);
+          if (!document.querySelector('#CartDrawer')) {
+            window.location.href = this.cartUrl;
+            return;
+          }
+          // The popup sits above the drawer, so it closes first.
+          if (this.popup && this.packing) this.exitPacking();
+          document.dispatchEvent(new CustomEvent('cart:build'));
+          document.dispatchEvent(new CustomEvent('cart:open'));
+        } catch (error) {
+          console.error(error);
+          this.setError('Something went wrong. Please try again.');
+        } finally {
+          this.atcButton.classList.remove('btn--loading');
+          this.atcButton.disabled = false;
         }
       }
 

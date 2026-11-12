@@ -1,0 +1,57 @@
+{% comment %}
+  The pairs in the cart, as JSON for <sock-bundle> when its pack is the cart
+  (After adding a pack: Keep the pack in the cart). One entry per cart line,
+  oldest first, counting the same socks as the cart drawer's pack bar
+  (snippets/cart-pack-progress.liquid): Theme settings → Cart → Socks that
+  count, or, when that is empty, everything except gift cards and Redo's
+  protection line.
+
+  Rendered inside the block (snippets/sock-bundle.liquid) and on its own by
+  sections/sock-bundle-cart.liquid, which the pack re-reads after every cart
+  change.
+
+  Usage:
+  {% render 'sock-bundle-cart-lines' %}
+{% endcomment %}
+
+{%- assign tier_collection = settings.cart_tiers_collection -%}
+{%- assign lines = cart.items | reverse -%}
+{%- assign first = true -%}
+<script type="application/json" data-sock-bundle-cart>
+  [
+  {%- for item in lines -%}
+    {%- liquid
+      assign counts = true
+      if tier_collection != blank
+        assign counts = false
+        for item_collection in item.product.collections
+          if item_collection.id == tier_collection.id
+            assign counts = true
+            break
+          endif
+        endfor
+      else
+        assign item_vendor = item.vendor | downcase
+        assign item_title = item.product.title | downcase
+        if item.gift_card or item_vendor contains 'redo' or item_title contains 'protection'
+          assign counts = false
+        endif
+      endif
+    -%}
+    {%- if counts -%}
+      {%- unless first -%},{%- endunless -%}
+      {%- assign first = false -%}
+      {
+        "key": {{ item.key | json }},
+        "variantId": {{ item.variant_id | json }},
+        "productId": {{ item.product_id | json }},
+        "quantity": {{ item.quantity }},
+        "title": {{ item.product.title | json }},
+        "variantTitle": {{ item.variant.title | json }},
+        "image": {% if item.image %}{{ item.image | image_url: width: 300 | json }}{% else %}""{% endif %},
+        "price": {{ item.original_price }}
+      }
+    {%- endif -%}
+  {%- endfor -%}
+  ]
+</script>

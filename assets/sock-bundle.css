@@ -1246,7 +1246,7 @@ sock-bundle {
 }
 
 body.sock-bundle-packing .sock-bundle__teaser,
-.sock-bundle--build-own .sock-bundle__teaser {
+.sock-bundle--stays-open .sock-bundle__teaser {
   border-style: solid;
 }
 
@@ -1356,6 +1356,10 @@ button.sock-bundle__teaser-tile:hover {
 .sock-bundle__teaser-slot.is-filled {
   border: 1.5px solid var(--colorTextBody);
   background: var(--colorBody);
+}
+
+/* Only a pair just added pops in; the rest stay put when the pack redraws. */
+.sock-bundle__teaser-slot.is-new {
   animation: sock-bundle-slot-in 0.25s ease;
 }
 
@@ -1535,7 +1539,7 @@ button.sock-bundle__teaser-tile:hover {
 /* Before a pack is started, the builder is just where it stands and its
    Mix & match button, under the theme's own Add to cart. A build-your-own
    product opens packing, so it always shows the pack. */
-body:not(.sock-bundle-packing) .sock-bundle--teaser:not(.sock-bundle--build-own, .has-pairs) :is(.sock-bundle__teaser-progress, .sock-bundle__teaser-slots) {
+body:not(.sock-bundle-packing) .sock-bundle--teaser:not(.sock-bundle--stays-open, .has-pairs) :is(.sock-bundle__teaser-progress, .sock-bundle__teaser-slots) {
   display: none;
 }
 
@@ -1557,9 +1561,24 @@ body:not(.sock-bundle-packing) .sock-bundle--teaser:not(.sock-bundle--build-own,
 
 /* Once there is a pack, its empty boxes open the picker instead. */
 body.sock-bundle-packing .sock-bundle__teaser-open,
-.sock-bundle--build-own .sock-bundle__teaser-open,
+.sock-bundle--stays-open .sock-bundle__teaser-open,
 .sock-bundle--teaser.has-pairs .sock-bundle__teaser-open {
   display: none;
+}
+
+/* "Picker opens: From Add to cart": a plain sock page until Add to cart
+   starts a pack; from then on the pack shows, even back on the photos. */
+body:not(.sock-bundle-packing) .product-block--sock-bundle:has(.sock-bundle--opens-on-atc:not(.has-pairs)) {
+  display: none;
+}
+
+/* While the picker shows in the photos' place, the pack is all there is to
+   do: everything above it in the buy column (title, reviews, price, sizes,
+   quantity, Add to cart) steps aside, and comes back once the pack is
+   emptied or the shopper goes back to the photos. */
+body.sock-bundle-packing .product-single__meta--product-first:has(.sock-bundle--opens-on-atc) > .product-block--header,
+body.sock-bundle-packing .product-single__meta--product-first:has(.sock-bundle--opens-on-atc) [data-product-blocks] > :has(~ .product-block--sock-bundle) {
+  display: none !important;
 }
 
 /* ---------- Picker, product first ---------- */
@@ -1928,7 +1947,7 @@ html.sock-bundle-qv-open {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sock-bundle__teaser-slot.is-filled,
+  .sock-bundle__teaser-slot.is-new,
   .sock-bundle-qv__overlay,
   .sock-bundle-qv__box,
   .sock-bundle-lb__overlay,

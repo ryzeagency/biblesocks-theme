@@ -922,7 +922,7 @@
       "id": "after_add_to_cart",
       "label": "After adding a pack",
       "default": "cart",
-      "info": "\"Open the cart drawer\" applies the pack's discount code without leaving the page. It falls back to the cart page if the theme's cart type is not the drawer.",
+      "info": "\"Open the cart drawer\" applies the pack's discount code without leaving the page. It falls back to the cart page if the theme's cart type is not the drawer. \"Keep the pack in the cart\" (Product first only): every pair picked goes straight into the cart with the pack code it earns, cart changes show in the pack, and its button opens the drawer.",
       "options": [
         {
           "value": "cart",
@@ -935,6 +935,10 @@
         {
           "value": "stay",
           "label": "Open the cart drawer"
+        },
+        {
+          "value": "live",
+          "label": "Keep the pack in the cart"
         }
       ]
     },
@@ -961,6 +965,17 @@
       "id": "teaser_open_text",
       "label": "Open the picker button",
       "default": "Mix & match designs"
+    },
+    {
+      "type": "select",
+      "id": "teaser_opens",
+      "label": "Picker opens",
+      "default": "button",
+      "options": [
+        { "value": "button", "label": "From its button" },
+        { "value": "add_to_cart", "label": "From Add to cart, with this sock" }
+      ],
+      "info": "From Add to cart: the page looks like a plain sock page until Add to cart, which puts the sock in the pack and opens the picker in the photos' place (no button or popup)."
     },
     {
       "type": "checkbox",

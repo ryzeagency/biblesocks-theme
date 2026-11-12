@@ -1,0 +1,208 @@
+{%- comment -%}
+  Image banner: one picture for desktop, another for phones (749px and
+  narrower), and an optional link around it. Each picture shows at its own
+  shape, never cropped, so the banner art appears exactly as designed.
+  Without a phone picture the desktop one is used on phones too.
+{%- endcomment -%}
+{%- liquid
+  assign desktop_image = section.settings.image | default: section.settings.mobile_image
+  assign mobile_image = section.settings.mobile_image | default: desktop_image
+  assign link = section.settings.link
+  assign alt = section.settings.alt | default: desktop_image.alt
+  if section.index <= 2
+    assign loading = 'eager'
+    assign priority = 'high'
+  else
+    assign loading = 'lazy'
+    assign priority = 'auto'
+  endif
+-%}
+
+<style>
+  #ImageBanner-{{ section.id }} {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+  #ImageBanner-{{ section.id }} .image-banner__link,
+  #ImageBanner-{{ section.id }} .image-banner__frame {
+    display: block;
+    border-radius: {{ section.settings.radius }}px;
+    overflow: hidden;
+  }
+  #ImageBanner-{{ section.id }} picture,
+  #ImageBanner-{{ section.id }} img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  #ImageBanner-{{ section.id }} .image-banner__placeholder {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 1;
+    background: rgba(127, 127, 127, 0.15);
+  }
+  @media (max-width: 749px) {
+    #ImageBanner-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top_mobile }}px;
+      padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+    }
+    #ImageBanner-{{ section.id }} .image-banner__placeholder {
+      aspect-ratio: 1 / 1;
+    }
+  }
+</style>
+
+<div id="ImageBanner-{{ section.id }}" class="image-banner">
+  <div class="{% unless section.settings.full_width %}page-width{% endunless %}">
+    {%- if link != blank -%}
+      <a
+        href="{{ link }}"
+        class="image-banner__link"
+        {% if section.settings.new_tab %}target="_blank" rel="noopener"{% endif %}
+        {% if desktop_image == blank %}aria-label="Banner"{% endif %}
+      >
+    {%- else -%}
+      <div class="image-banner__frame">
+    {%- endif -%}
+
+    {%- if desktop_image != blank -%}
+      <picture>
+        <source
+          media="(max-width: 749px)"
+          srcset="
+            {{ mobile_image | image_url: width: 600 }} 600w,
+            {{ mobile_image | image_url: width: 900 }} 900w,
+            {{ mobile_image | image_url: width: 1200 }} 1200w
+          "
+          sizes="100vw"
+          width="{{ mobile_image.width }}"
+          height="{{ mobile_image.height }}"
+        >
+        {{
+          desktop_image
+          | image_url: width: 3000
+          | image_tag:
+            widths: '750, 1100, 1500, 2000, 2400, 3000',
+            sizes: '100vw',
+            loading: loading,
+            fetchpriority: priority,
+            alt: alt
+        }}
+      </picture>
+    {%- else -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'image-banner__placeholder' }}
+    {%- endif -%}
+
+    {%- if link != blank -%}
+      </a>
+    {%- else -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Image banner",
+  "class": "image-banner-section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Desktop image",
+      "info": "Shown at its own shape, never cropped. Wide art works best, e.g. 2400 × 800 px."
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "info": "Shown on screens 749 px wide and smaller. Leave empty to use the desktop image. Square or tall art works best, e.g. 1080 × 1080 px."
+    },
+    {
+      "type": "text",
+      "id": "alt",
+      "label": "Image description (alt text)",
+      "info": "For screen readers and search. Leave empty to use the image's own alt text."
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link",
+      "info": "Leave empty for a banner that isn't clickable."
+    },
+    {
+      "type": "checkbox",
+      "id": "new_tab",
+      "label": "Open link in a new tab",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full page width",
+      "info": "Off keeps the banner inside the page margins.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "radius",
+      "label": "Corner rounding",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Space above (desktop)",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Space below (desktop)",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Space above (mobile)",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Space below (mobile)",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image banner"
+    }
+  ]
+}
+{% endschema %}

@@ -126,10 +126,11 @@ pack: Keep the pack in the cart**:
   − or Remove show in the pack a moment later. The drawer redraws without opening; the
   pack's button (**Pack button text**: "View cart") opens it. Emptying the pack goes back
   to the plain page.
-- After every change the cart moves onto the pack code its pairs earn (2 pairs
-  BIBLESOCKSMIXANDMATCH10, 3 the 15, 4 and up the 20), the code comes off at 1 pair and at
-  9 (the automatic buy 6 get 3 free takes over), and a code the shopper typed is left
-  alone.
+- The 10/15/20% discounts are Shopify **automatic** discounts now (titled
+  BIBLESOCKSMIXANDMATCH10/15/20, seen on 2026-11-12), so they apply however the pairs reach
+  the cart, and the tiers' **Discount code** fields are empty in both templates. If a tier
+  is given a code again, the pack moves the cart onto the code its pairs earn after every
+  change (none at 1 pair or at 9), leaving a code the shopper typed alone.
 - Files: `sections/sock-bundle-cart.liquid` and `snippets/sock-bundle-cart-lines.liquid`
   (the cart's pairs as JSON), and the "pack is the cart" part of `assets/sock-bundle.js`.
 
@@ -148,8 +149,9 @@ folded. Closing puts the picker and the pack back on the page, with the pack as 
 
 ## Discounts
 
-Packs use the discount codes `BIBLESOCKSMIXANDMATCH10/15/20`, set on each tier in both
-product templates and in **Theme settings → Cart → Pack discount codes**. The popup
+The 10/15/20% pack discounts are Shopify automatic discounts (BIBLESOCKSMIXANDMATCH10/15/20),
+so the tiers' code fields are empty in both product templates. **Theme settings → Cart →
+Pack discount codes** still lists the old codes. The popup
 before the pack goes in (**Cart popup**) is switched off for now.
 
 ## 9 socks: 3 free (automatic discount)

@@ -14,7 +14,7 @@
       "name": "Image banner",
       "settings": {
         "image": "shopify://shop_images/image_7.webp",
-        "mobile_image": "shopify://shop_images/image_7.webp",
+        "mobile_image": "shopify://shop_images/bible-socks-black-friday-mobile.webp",
         "alt": "",
         "link": "shopify://collections/all-socks",
         "new_tab": false,

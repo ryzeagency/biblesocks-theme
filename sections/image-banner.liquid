@@ -13,7 +13,7 @@
     the banner is on (or near) the screen, and only the video for the current
     screen size (desktop or phone) is downloaded.
   - No video is loaded with reduced motion, Data Saver or a 2G connection.
-  - It pauses off screen and in background tabs, and has a pause button.
+  - It loops with no controls, and pauses off screen and in background tabs.
   - It fills the picture's shape (object-fit: cover), so nothing shifts when
     it starts. Leave the picture empty to use the video's own first frame.
 {%- endcomment -%}
@@ -132,38 +132,6 @@
   #ImageBanner-{{ section.id }} .image-banner__video.is-playing {
     opacity: 1;
   }
-  #ImageBanner-{{ section.id }} .image-banner__toggle {
-    position: absolute;
-    right: 12px;
-    bottom: 12px;
-    z-index: 1;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.45);
-    color: #fff;
-    cursor: pointer;
-  }
-  #ImageBanner-{{ section.id }}.has-playable-video .image-banner__toggle {
-    display: flex;
-  }
-  #ImageBanner-{{ section.id }} .image-banner__toggle svg {
-    width: 14px;
-    height: 14px;
-    fill: currentColor;
-  }
-  #ImageBanner-{{ section.id }} .image-banner__toggle .icon-play,
-  #ImageBanner-{{ section.id }}.is-paused .image-banner__toggle .icon-pause {
-    display: none;
-  }
-  #ImageBanner-{{ section.id }}.is-paused .image-banner__toggle .icon-play {
-    display: block;
-  }
   #ImageBanner-{{ section.id }} .image-banner__placeholder {
     display: block;
     width: 100%;
@@ -247,12 +215,6 @@
         </a>
       {%- endif -%}
 
-      {%- if has_video -%}
-        <button type="button" class="image-banner__toggle" aria-label="Pause video" data-label-pause="Pause video" data-label-play="Play video">
-          <svg class="icon-pause" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><rect x="2" y="1" width="3.5" height="12" rx="1"/><rect x="8.5" y="1" width="3.5" height="12" rx="1"/></svg>
-          <svg class="icon-play" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M3 1.2v11.6c0 .6.7 1 1.2.7l9-5.8c.5-.3.5-1 0-1.4l-9-5.8C3.7.2 3 .6 3 1.2z"/></svg>
-        </button>
-      {%- endif -%}
     </div>
   </div>
 </image-banner>

@@ -1,12 +1,93 @@
 {%- comment -%}
-  Image banner: one picture for desktop, another for phones (749px and
-  narrower), and an optional link around it. Each picture shows at its own
-  shape, never cropped, so the banner art appears exactly as designed.
-  Without a phone picture the desktop one is used on phones too.
+  Image banner: one picture (or video) for desktop, another for phones
+  (749px and narrower), and an optional link around it. Pictures show at
+  their own shape, never cropped. Without a phone version the desktop one is
+  used on phones too.
+
+  Videos are kept off the critical path so they don't slow the page:
+  - The picture is always rendered first, as the video's poster. It is what
+    the browser paints first (and counts as the LCP), and it is all a shopper
+    sees if the video never plays.
+  - The <video> has no src in the HTML and preload="none". assets/image-banner.js
+    gives it one only after the page has fully loaded, the browser is idle and
+    the banner is on (or near) the screen, and only the video for the current
+    screen size (desktop or phone) is downloaded.
+  - No video is loaded with reduced motion, Data Saver or a 2G connection.
+  - It pauses off screen and in background tabs, and has a pause button.
+  - It fills the picture's shape (object-fit: cover), so nothing shifts when
+    it starts. Leave the picture empty to use the video's own first frame.
 {%- endcomment -%}
 {%- liquid
-  assign desktop_image = section.settings.image | default: section.settings.mobile_image
-  assign mobile_image = section.settings.mobile_image | default: desktop_image
+  assign d_image = section.settings.image
+  assign m_image = section.settings.mobile_image
+
+  assign d_video = section.settings.video
+  if d_video == blank and d_image == blank
+    assign d_video = section.settings.mobile_video
+  endif
+  assign m_video = section.settings.mobile_video
+  if m_video == blank and m_image == blank
+    assign m_video = d_video
+  endif
+
+  assign desktop_image = d_image | default: d_video.preview_image | default: m_image | default: section.settings.mobile_video.preview_image
+  assign mobile_image = m_image | default: section.settings.mobile_video.preview_image | default: desktop_image
+
+  comment
+    Pick the MP4 rendition for each screen: the sharpest one whose short side
+    is at most 1080px on desktop and 720px on phones.
+  endcomment
+  assign d_src = ''
+  assign best = 0
+  for source in d_video.sources
+    if source.format == 'mp4'
+      assign short = source.height
+      if source.width < source.height
+        assign short = source.width
+      endif
+      if short <= 1080 and short > best
+        assign best = short
+        assign d_src = source.url
+      endif
+    endif
+  endfor
+  if d_src == blank
+    for source in d_video.sources
+      if source.format == 'mp4'
+        assign d_src = source.url
+        break
+      endif
+    endfor
+  endif
+
+  assign m_src = ''
+  assign best = 0
+  for source in m_video.sources
+    if source.format == 'mp4'
+      assign short = source.height
+      if source.width < source.height
+        assign short = source.width
+      endif
+      if short <= 720 and short > best
+        assign best = short
+        assign m_src = source.url
+      endif
+    endif
+  endfor
+  if m_src == blank
+    for source in m_video.sources
+      if source.format == 'mp4'
+        assign m_src = source.url
+        break
+      endif
+    endfor
+  endif
+
+  assign has_video = false
+  if d_src != blank or m_src != blank
+    assign has_video = true
+  endif
+
   assign link = section.settings.link
   assign alt = section.settings.alt | default: desktop_image.alt
   if section.index <= 2
@@ -20,20 +101,68 @@
 
 <style>
   #ImageBanner-{{ section.id }} {
+    display: block;
     padding-top: {{ section.settings.padding_top }}px;
     padding-bottom: {{ section.settings.padding_bottom }}px;
   }
-  #ImageBanner-{{ section.id }} .image-banner__link,
   #ImageBanner-{{ section.id }} .image-banner__frame {
-    display: block;
+    position: relative;
     border-radius: {{ section.settings.radius }}px;
     overflow: hidden;
+  }
+  #ImageBanner-{{ section.id }} .image-banner__link {
+    display: block;
   }
   #ImageBanner-{{ section.id }} picture,
   #ImageBanner-{{ section.id }} img {
     display: block;
     width: 100%;
     height: auto;
+  }
+  #ImageBanner-{{ section.id }} .image-banner__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  #ImageBanner-{{ section.id }} .image-banner__video.is-playing {
+    opacity: 1;
+  }
+  #ImageBanner-{{ section.id }} .image-banner__toggle {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 1;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    cursor: pointer;
+  }
+  #ImageBanner-{{ section.id }}.has-playable-video .image-banner__toggle {
+    display: flex;
+  }
+  #ImageBanner-{{ section.id }} .image-banner__toggle svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+  #ImageBanner-{{ section.id }} .image-banner__toggle .icon-play,
+  #ImageBanner-{{ section.id }}.is-paused .image-banner__toggle .icon-pause {
+    display: none;
+  }
+  #ImageBanner-{{ section.id }}.is-paused .image-banner__toggle .icon-play {
+    display: block;
   }
   #ImageBanner-{{ section.id }} .image-banner__placeholder {
     display: block;
@@ -51,56 +180,86 @@
       aspect-ratio: 1 / 1;
     }
   }
+  @media (prefers-reduced-motion: reduce) {
+    #ImageBanner-{{ section.id }} .image-banner__video {
+      display: none;
+    }
+  }
 </style>
 
-<div id="ImageBanner-{{ section.id }}" class="image-banner">
+<image-banner id="ImageBanner-{{ section.id }}" class="image-banner">
   <div class="{% unless section.settings.full_width %}page-width{% endunless %}">
-    {%- if link != blank -%}
-      <a
-        href="{{ link }}"
-        class="image-banner__link"
-        {% if section.settings.new_tab %}target="_blank" rel="noopener"{% endif %}
-        {% if desktop_image == blank %}aria-label="Banner"{% endif %}
-      >
-    {%- else -%}
-      <div class="image-banner__frame">
-    {%- endif -%}
-
-    {%- if desktop_image != blank -%}
-      <picture>
-        <source
-          media="(max-width: 749px)"
-          srcset="
-            {{ mobile_image | image_url: width: 600 }} 600w,
-            {{ mobile_image | image_url: width: 900 }} 900w,
-            {{ mobile_image | image_url: width: 1200 }} 1200w
-          "
-          sizes="100vw"
-          width="{{ mobile_image.width }}"
-          height="{{ mobile_image.height }}"
+    <div class="image-banner__frame">
+      {%- if link != blank -%}
+        <a
+          href="{{ link }}"
+          class="image-banner__link"
+          {% if section.settings.new_tab %}target="_blank" rel="noopener"{% endif %}
+          {% if desktop_image == blank %}aria-label="Banner"{% endif %}
         >
-        {{
-          desktop_image
-          | image_url: width: 3000
-          | image_tag:
-            widths: '750, 1100, 1500, 2000, 2400, 3000',
-            sizes: '100vw',
-            loading: loading,
-            fetchpriority: priority,
-            alt: alt
-        }}
-      </picture>
-    {%- else -%}
-      {{ 'lifestyle-1' | placeholder_svg_tag: 'image-banner__placeholder' }}
-    {%- endif -%}
+      {%- endif -%}
 
-    {%- if link != blank -%}
-      </a>
-    {%- else -%}
-      </div>
-    {%- endif -%}
+      {%- if desktop_image != blank -%}
+        <picture>
+          <source
+            media="(max-width: 749px)"
+            srcset="
+              {{ mobile_image | image_url: width: 600 }} 600w,
+              {{ mobile_image | image_url: width: 900 }} 900w,
+              {{ mobile_image | image_url: width: 1200 }} 1200w
+            "
+            sizes="100vw"
+            width="{{ mobile_image.width }}"
+            height="{{ mobile_image.height }}"
+          >
+          {{
+            desktop_image
+            | image_url: width: 3000
+            | image_tag:
+              widths: '750, 1100, 1500, 2000, 2400, 3000',
+              sizes: '100vw',
+              loading: loading,
+              fetchpriority: priority,
+              alt: alt
+          }}
+        </picture>
+      {%- else -%}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'image-banner__placeholder' }}
+      {%- endif -%}
+
+      {%- if has_video -%}
+        <video
+          class="image-banner__video"
+          data-src-desktop="{{ d_src }}"
+          data-src-mobile="{{ m_src }}"
+          muted
+          loop
+          playsinline
+          preload="none"
+          disablepictureinpicture
+          disableremoteplayback
+          aria-hidden="true"
+          tabindex="-1"
+        ></video>
+      {%- endif -%}
+
+      {%- if link != blank -%}
+        </a>
+      {%- endif -%}
+
+      {%- if has_video -%}
+        <button type="button" class="image-banner__toggle" aria-label="Pause video" data-label-pause="Pause video" data-label-play="Play video">
+          <svg class="icon-pause" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><rect x="2" y="1" width="3.5" height="12" rx="1"/><rect x="8.5" y="1" width="3.5" height="12" rx="1"/></svg>
+          <svg class="icon-play" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M3 1.2v11.6c0 .6.7 1 1.2.7l9-5.8c.5-.3.5-1 0-1.4l-9-5.8C3.7.2 3 .6 3 1.2z"/></svg>
+        </button>
+      {%- endif -%}
+    </div>
   </div>
-</div>
+</image-banner>
+
+{%- if has_video or request.design_mode -%}
+  <script src="{{ 'image-banner.js' | asset_url }}" defer></script>
+{%- endif -%}
 
 {% schema %}
 {
@@ -111,13 +270,36 @@
       "type": "image_picker",
       "id": "image",
       "label": "Desktop image",
-      "info": "Shown at its own shape, never cropped. Wide art works best, e.g. 2400 × 800 px."
+      "info": "Shown at its own shape, never cropped. Wide art works best, e.g. 2400 × 800 px. With a desktop video, this is the still shown before the video plays."
     },
     {
       "type": "image_picker",
       "id": "mobile_image",
       "label": "Mobile image",
-      "info": "Shown on screens 749 px wide and smaller. Leave empty to use the desktop image. Square or tall art works best, e.g. 1080 × 1080 px."
+      "info": "Shown on screens 749 px wide and smaller. Leave empty to use the desktop image. Square or tall art works best, e.g. 1080 × 1080 px. With a mobile video, this is the still shown before the video plays."
+    },
+    {
+      "type": "header",
+      "content": "Video (optional)"
+    },
+    {
+      "type": "paragraph",
+      "content": "A video plays muted and on a loop in place of the image. It only starts downloading once the page has finished loading, so the image shows first. Keep videos short (5–15 seconds) and small (under 5 MB). The video fills the image's shape, so use an image of the same shape, or leave the image empty to use the video's first frame."
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Desktop video"
+    },
+    {
+      "type": "video",
+      "id": "mobile_video",
+      "label": "Mobile video",
+      "info": "Leave empty to use the desktop video on phones too (unless a mobile image is set, in which case phones show that image)."
+    },
+    {
+      "type": "header",
+      "content": "Link"
     },
     {
       "type": "text",

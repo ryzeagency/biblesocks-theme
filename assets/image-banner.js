@@ -6,8 +6,8 @@
   - the page has fully loaded and the browser is idle,
   - the banner is on or near the screen,
   - the shopper hasn't asked for reduced motion, Data Saver, or is on 2G.
-  Only the video for the current screen size is downloaded. It pauses when
-  scrolled away or the tab is hidden, and the pause button stops it for good.
+  Only the video for the current screen size is downloaded. It loops with no
+  controls, and pauses while scrolled away or while the tab is hidden.
 */
 (() => {
   if (customElements.get('image-banner')) return;
@@ -37,27 +37,15 @@
   class ImageBanner extends HTMLElement {
     connectedCallback() {
       this.video = this.querySelector('.image-banner__video');
-      this.toggle = this.querySelector('.image-banner__toggle');
       if (!this.video || REDUCED_MOTION.matches || slowConnection()) return;
 
       this.visible = false;
-      this.pausedByShopper = false;
 
       this.onBreakpoint = () => this.update();
       this.onVisibility = () => this.update();
-      // Pauses a playing video, or plays a paused one (including one whose
-      // autoplay the browser blocked: a tap is allowed to start it).
-      this.onToggle = () => {
-        this.pausedByShopper = !this.video.paused;
-        this.update();
-      };
-      this.onPlaying = () => {
-        this.video.classList.add('is-playing');
-        this.setPausedState(false);
-      };
+      this.onPlaying = () => this.video.classList.add('is-playing');
 
       this.video.addEventListener('playing', this.onPlaying);
-      if (this.toggle) this.toggle.addEventListener('click', this.onToggle);
 
       pageSettled.then(() => {
         if (!this.isConnected) return;
@@ -80,7 +68,6 @@
       MOBILE.removeEventListener('change', this.onBreakpoint);
       document.removeEventListener('visibilitychange', this.onVisibility);
       this.video.removeEventListener('playing', this.onPlaying);
-      if (this.toggle) this.toggle.removeEventListener('click', this.onToggle);
       this.video.pause();
     }
 
@@ -95,7 +82,6 @@
 
       // This screen size has no video (e.g. a phone with only a mobile image):
       // show the picture and stop any video that was running.
-      this.classList.toggle('has-playable-video', Boolean(src));
       if (!src) {
         video.pause();
         video.classList.remove('is-playing');
@@ -104,9 +90,8 @@
 
       // Not on screen yet: don't download anything. Off screen or hidden tab: pause.
       if (!this.visible && !video.getAttribute('src')) return;
-      if (!this.visible || document.hidden || this.pausedByShopper) {
+      if (!this.visible || document.hidden) {
         video.pause();
-        this.setPausedState(this.pausedByShopper);
         return;
       }
 
@@ -118,19 +103,8 @@
 
       video.muted = true;
       const playing = video.play();
-      if (playing && playing.catch) {
-        // Autoplay blocked (e.g. iOS Low Power Mode): keep the picture.
-        playing.catch(() => this.setPausedState(true));
-      }
-    }
-
-    setPausedState(paused) {
-      this.classList.toggle('is-paused', paused);
-      if (!this.toggle) return;
-      this.toggle.setAttribute(
-        'aria-label',
-        paused ? this.toggle.dataset.labelPlay : this.toggle.dataset.labelPause
-      );
+      // Autoplay blocked (e.g. iOS Low Power Mode): the picture stays.
+      if (playing && playing.catch) playing.catch(() => {});
     }
   }
 

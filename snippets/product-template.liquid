@@ -104,6 +104,21 @@
 
   {%- render 'product-template-variables', product: product, current_variant: current_variant -%}
 
+  {%- comment -%}
+    Phone layout for the product page (snippets/product-mobile-layout.liquid):
+    thumbnails beside the photo, stars and price on one line, quantity beside
+    Add to cart, size chart under the Shop Pay line, no short text block.
+  {%- endcomment -%}
+  {%- liquid
+    assign mobile_layout_compact = false
+    if context == 'main-product' and isModal != true
+      assign mobile_layout_compact = true
+    endif
+  -%}
+  {%- if mobile_layout_compact -%}
+    {%- render 'product-mobile-layout' -%}
+  {%- endif -%}
+
   <div class="page-content page-content--product">
     <div class="page-width">
 
@@ -185,7 +200,7 @@
               {%- endif -%}
             </div>
 
-            <div data-product-blocks>
+            <div data-product-blocks{% if mobile_layout_compact %} class="product-blocks--mobile-compact"{% endif %}>
               {%- capture form_id -%}AddToCartForm-{{ section_id }}-{{ product.id }}{%- endcapture -%}
               {%- for block in blocks -%}
                 {%- case block.type -%}
@@ -194,7 +209,7 @@
                   {%- when 'separator' -%}
                     <div class="product-block" {{ block.shopify_attributes }}><hr></div>
                   {%- when 'text' -%}
-                    <div class="product-block" {{ block.shopify_attributes }}>
+                    <div class="product-block product-block--text" {{ block.shopify_attributes }}>
                       {{ block.settings.text }}
                     </div>
                   {%- when 'tab' -%}
@@ -333,7 +348,7 @@
                       {%- endif -%}
                     </div>
                   {%- when 'quantity_selector' -%}
-                    <div class="product-block" {{ block.shopify_attributes }}>
+                    <div class="product-block product-block--quantity" {{ block.shopify_attributes }}>
                       <div class="product__quantity">
                         {% assign qty_id = section_id | append: product.id %}
                         <label for="Quantity-{{ qty_id }}">{{ 'products.product.quantity' | t }}</label>
@@ -407,7 +422,7 @@
                       {%- endunless -%}
                     </div>
                   {%- when 'buy_buttons' -%}
-                    <div class="product-block" {{ block.shopify_attributes }}>
+                    <div class="product-block product-block--buy-buttons" {{ block.shopify_attributes }}>
                       {%- unless product.empty? -%}
                         <div class="product-block">
                           {%- render 'product-form',
@@ -419,6 +434,24 @@
                           -%}
                         </div>
                       {%- endunless -%}
+
+                      {%- comment -%}
+                        Phones: the size chart link sits under the Shop Pay line
+                        instead of beside "Size". It opens the same size chart by
+                        clicking the original link, which stays in the page.
+                      {%- endcomment -%}
+                      {%- if mobile_layout_compact and sizechart_index != blank and section.blocks[sizechart_index].settings.size_chart.content != blank -%}
+                        <div class="product-size-chart-mobile">
+                          <button
+                            type="button"
+                            class="product-size-chart-mobile__link"
+                            onclick="event.stopPropagation(); var t=this.closest('.product-single__meta').querySelector('tool-tip-trigger[data-tool-tip=&quot;size-chart&quot;]'); if (t) t.click();"
+                          >
+                            {{ 'products.general.size_chart' | t }}
+                            <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-size-chart" viewBox="0 0 64 64"><path d="M22.39 33.53c-7.46 0-13.5-3.9-13.5-8.72s6-8.72 13.5-8.72 13.5 3.9 13.5 8.72a12 12 0 0 1-.22 1.73"/><ellipse cx="22.39" cy="24.81" rx="3.28" ry="2.12"/><path d="M8.89 24.81V38.5c0 7.9 6.4 9.41 14.3 9.41h31.92V33.53H22.39m24.39 0v7.44m-8.13-7.44v7.44m-8.13-7.44v7.44m-8.13-7.44v7.44"/></svg>
+                          </button>
+                        </div>
+                      {%- endif -%}
 
                       {%- if block.settings.surface_pickup_enable -%}
                         <div data-store-availability-holder

@@ -1,0 +1,187 @@
+{%- comment -%}
+  Product page layout on phones (768px and narrower), modelled on BOM Socks.
+  Rendered once by snippets/product-template.liquid on the main product page.
+  Desktop is unchanged.
+
+  - Gallery: the photo on the left with its thumbnails in a column on the
+    right (instead of a peeking slideshow with dots).
+  - The short text block (product.metafields.custom.value_props) is hidden.
+  - The review stars and the price share one line.
+  - Quantity sits beside Add to cart.
+  - The size chart link moves from beside "Size" to under the Shop Pay line.
+
+  The blocks column becomes a wrapping flex row: every block takes a full line
+  except the stars, the price, the quantity and the Add to cart button. The
+  price and buy buttons blocks use display: contents so their parts (price,
+  shipping note; button, Shop Pay line, size chart) can each take their own
+  place in that row. The sock bundle's "hide while packing" rules still match
+  the same block elements, so nothing changes there.
+{%- endcomment -%}
+<style>
+  @media only screen and (max-width: 768px) {
+    /* ---------- Gallery: photo + thumbnail column ---------- */
+    .product__photos--mobile-thumbs {
+      align-items: stretch;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .product__photos--mobile-thumbs .product__main-photos {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin: 0;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .product__photos--mobile-thumbs .product__main-photos .flickity-page-dots {
+      display: none;
+    }
+    .grid--product-images--partial .product__photos--mobile-thumbs .flickity-slider .product-main-slide {
+      width: 100%;
+      margin-right: 0;
+    }
+    .product__photos--mobile-thumbs .product__thumbs.product__thumbs--beside {
+      flex: 0 0 21%;
+      max-width: 84px;
+      min-height: 0 !important;
+      max-height: none !important;
+      margin: 0;
+      order: 0;
+    }
+    .product__photos--mobile-thumbs .product__thumbs--beside .product__thumb-item {
+      margin-bottom: 8px;
+      border: 0;
+    }
+    .product__photos--mobile-thumbs .product__thumbs--beside .product__thumb-item:last-child {
+      margin-bottom: 0;
+    }
+    .product__photos--mobile-thumbs .product__thumb {
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .product__photos--mobile-thumbs .product__thumb .image-wrap {
+      padding-bottom: 100% !important;
+    }
+    .product__photos--mobile-thumbs .product__thumb > .image-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .product__photos--mobile-thumbs .product__thumb-item a.is-active:before,
+    .product__photos--mobile-thumbs .product__thumb-item a:focus-visible:before {
+      border-radius: 10px;
+      box-shadow: inset 0 0 0 2px #111;
+    }
+    .product__photos--mobile-thumbs .product__thumb-item a:focus:not(.is-active):not(:focus-visible):before {
+      content: none;
+    }
+
+    /* ---------- Blocks: one wrapping row ---------- */
+    .product-blocks--mobile-compact {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      column-gap: 12px;
+    }
+    .product-blocks--mobile-compact > *,
+    .product-blocks--mobile-compact > .product-block--price > *,
+    .product-blocks--mobile-compact .product-block--buy-buttons form > *,
+    .product-blocks--mobile-compact .product-block--buy-buttons > * {
+      flex: 0 0 100%;
+      min-width: 0;
+    }
+
+    /* The short text under the title. */
+    .product-blocks--mobile-compact > .product-block--text {
+      display: none;
+    }
+
+    /* Stars and price on one line. */
+    .product-blocks--mobile-compact > [id*="loox_reviews_loox_rating"] {
+      flex: 0 0 auto;
+    }
+    .product-blocks--mobile-compact > .product-block--price {
+      display: contents;
+    }
+    .product-blocks--mobile-compact > .product-block--price > [data-product-price-wrap],
+    .product-blocks--mobile-compact > .product-block--price > .product__price,
+    .product-blocks--mobile-compact > .product-block--price > .product__price-savings {
+      flex: 0 0 auto;
+    }
+    .product-blocks--mobile-compact > .product-block--price > .product__policies {
+      margin: 4px 0 25px;
+    }
+
+    /* Quantity beside Add to cart. */
+    .product-blocks--mobile-compact > .product-block--quantity {
+      flex: 0 0 auto;
+      align-self: flex-end;
+      margin-bottom: 0;
+      text-align: left;
+    }
+    .product-blocks--mobile-compact .product-block--quantity .product__quantity label {
+      margin-bottom: 8px;
+    }
+    .product-blocks--mobile-compact .product-block--quantity .js-qty__wrapper {
+      display: block;
+      width: 112px;
+      max-width: none;
+    }
+    .product-blocks--mobile-compact .product-block--quantity .js-qty__num {
+      height: 50px;
+    }
+    .product-blocks--mobile-compact > .product-block--buy-buttons,
+    .product-blocks--mobile-compact > .product-block--buy-buttons > .product-block,
+    .product-blocks--mobile-compact > .product-block--buy-buttons form {
+      display: contents;
+    }
+    .product-blocks--mobile-compact .product-block--buy-buttons .add-to-cart {
+      flex: 1 1 0;
+      align-self: flex-end;
+      width: auto;
+      min-height: 50px;
+      margin: 0;
+    }
+    .product-blocks--mobile-compact .product-block--buy-buttons .shopify-payment-terms {
+      margin: 14px 0 0;
+    }
+
+    /* Size chart: under the Shop Pay line, not beside "Size". */
+    .product-blocks--mobile-compact .variant__label-info--size-chart,
+    .product-blocks--mobile-compact > .size-chart__standalone {
+      display: none;
+    }
+    .product-size-chart-mobile {
+      margin: 10px 0 25px;
+      text-align: center;
+    }
+    .product-size-chart-mobile__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font-size: 0.85em;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+    .product-size-chart-mobile__link .icon {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  @media only screen and (min-width: 769px) {
+    .product-size-chart-mobile {
+      display: none;
+    }
+  }
+</style>

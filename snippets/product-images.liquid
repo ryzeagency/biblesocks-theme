@@ -15,6 +15,13 @@
   if context == 'main-product'
     assign loading = 'eager'
   endif
+
+  # Phones: thumbnails stay beside the photo (styled in product-mobile-layout)
+  # instead of being hidden behind slideshow dots.
+  assign mobile_thumbs = false
+  if context == 'main-product' and isModal != true and thumbnail_position == 'beside' and product.media.size > 1
+    assign mobile_thumbs = true
+  endif
 -%}
 
 {%- unless product.empty? -%}
@@ -22,7 +29,7 @@
     data-product-images
     data-zoom="{{ product_zoom_enable }}"
     data-has-slideshow="{% if product.media.size > 1 %}true{% else %}false{% endif %}">
-    <div class="product__photos product__photos-{{ section_id }} product__photos--{{ thumbnail_position }}">
+    <div class="product__photos product__photos-{{ section_id }} product__photos--{{ thumbnail_position }}{% if mobile_thumbs %} product__photos--mobile-thumbs{% endif %}">
 
       <div class="product__main-photos" data-aos data-product-single-media-group>
         <div
@@ -72,7 +79,7 @@
 
       <div
         data-product-thumbs
-        class="product__thumbs product__thumbs--{{ thumbnail_position }} product__thumbs-placement--{{ image_position }}{% if product.media.size == 1 %} medium-up--hide{% endif %} small--hide"
+        class="product__thumbs product__thumbs--{{ thumbnail_position }} product__thumbs-placement--{{ image_position }}{% if product.media.size == 1 %} medium-up--hide{% endif %}{% unless mobile_thumbs %} small--hide{% endunless %}"
         data-position="{{ thumbnail_position }}"
         data-arrows="{{ thumbnail_arrows }}"
         data-aos>

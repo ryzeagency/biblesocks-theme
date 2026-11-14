@@ -19,7 +19,7 @@
     for="ProductSelect-{{ section_id }}-{{ product.id }}-option-{{ forloop.index0 }}">
     {{ option.name }}
     {%- if connect_to_sizechart and is_size -%}
-      <span class="variant__label-info">
+      <span class="variant__label-info variant__label-info--size-chart">
         &mdash;
         {%- render
           'tool-tip-trigger',

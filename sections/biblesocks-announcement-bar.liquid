@@ -17,20 +17,84 @@
     font-family:'Space Mono', monospace; font-size:12.5px;
     letter-spacing:0.05em; font-weight:700;
   }
-  .bs-announce-{{ section.id }} span{ opacity:0.55; margin:0 10px; font-weight:400; }
-  
+  .bs-announce-{{ section.id }} .bs-announce__dot{ opacity:0.55; margin:0 10px; font-weight:400; }
+  .bs-announce-{{ section.id }} .bs-announce__group--copy{ display:none; }
+
+  /*
+    Phones: one line that scrolls sideways instead of wrapping onto two.
+    The messages are printed twice in a row and the row slides left by
+    exactly one copy, so the loop is seamless. The copy is hidden from
+    screen readers. With reduced motion it stays still and wraps as before.
+  */
+  @media screen and (max-width: 768px) {
+    .bs-announce-{{ section.id }}{
+      padding:8px 0;
+      overflow:hidden;
+      white-space:nowrap;
+      text-align:left;
+    }
+    .bs-announce-{{ section.id }} .bs-announce__track{
+      display:inline-flex;
+      width:max-content;
+      animation:bs-announce-scroll-{{ section.id }} {{ section.settings.mobile_speed }}s linear infinite;
+      will-change:transform;
+    }
+    .bs-announce-{{ section.id }} .bs-announce__group,
+    .bs-announce-{{ section.id }} .bs-announce__group--copy{
+      display:block;
+      flex:0 0 auto;
+      padding-right:48px;
+    }
+  }
+  @keyframes bs-announce-scroll-{{ section.id }}{
+    from{ transform:translate3d(0,0,0); }
+    to{ transform:translate3d(-50%,0,0); }
+  }
+  @media screen and (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    .bs-announce-{{ section.id }}{
+      padding:9px 16px;
+      white-space:normal;
+      text-align:center;
+    }
+    .bs-announce-{{ section.id }} .bs-announce__track{
+      display:block;
+      width:auto;
+      animation:none;
+    }
+    .bs-announce-{{ section.id }} .bs-announce__group{ padding-right:0; }
+    .bs-announce-{{ section.id }} .bs-announce__group--copy{ display:none; }
+  }
 </style>
 
-<div class="bs-announce-{{ section.id }}">
+{%- capture bs_announce_messages -%}
   {%- for block in section.blocks -%}
-    {{ block.settings.text }}{% unless forloop.last %}<span>·</span>{% endunless %}
+    <span {{ block.shopify_attributes }}>{{ block.settings.text }}</span>{% unless forloop.last %}<span class="bs-announce__dot">·</span>{% endunless %}
   {%- endfor -%}
+{%- endcapture -%}
+
+<div class="bs-announce-{{ section.id }}">
+  <div class="bs-announce__track">
+    <div class="bs-announce__group">{{ bs_announce_messages }}</div>
+    <div class="bs-announce__group bs-announce__group--copy" aria-hidden="true">{{ bs_announce_messages | replace: ' data-shopify-editor-block', ' data-copy' }}</div>
+  </div>
 </div>
 
 {% schema %}
 {
   "name": "BS: Announcement Bar",
-  "settings": [],
+  "settings": [
+    {
+      "type": "range",
+      "id": "mobile_speed",
+      "label": "Mobile scroll time",
+      "info": "Seconds for the messages to scroll past once on phones. Lower is faster.",
+      "min": 6,
+      "max": 40,
+      "step": 1,
+      "unit": "s",
+      "default": 16
+    }
+  ],
   "blocks": [
     {
       "type": "message",

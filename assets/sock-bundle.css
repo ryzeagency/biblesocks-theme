@@ -1980,10 +1980,13 @@ html.sock-bundle-qv-open {
     padding-top: 16px;
   }
 
+  /* Tall enough to reach down to "Back to product photos", which then sits
+     just above the docked (folded) pack: 370px is the header and picker
+     heading above the grid plus the back link and the folded pack below. */
   .sock-bundle-picker--teaser .sock-bundle-picker__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px 8px;
-    max-height: max(280px, calc(100svh - 440px));
+    max-height: max(300px, calc(100svh - 370px));
   }
 
   .sock-bundle-picker--teaser .sock-bundle-picker__card-title,

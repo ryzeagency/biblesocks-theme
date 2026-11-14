@@ -97,6 +97,35 @@
       min-width: 0;
     }
 
+    /*
+      Flex items don't let their children's margins collapse into their own,
+      so a block whose content has margins (e.g. the sales points' list, 25px
+      above and below) would grow by them. Trim the first and last child's
+      outer margins so each block keeps the spacing it had before.
+    */
+    .product-blocks--mobile-compact > .product-block:not(.product-block--price):not(.product-block--buy-buttons) > :first-child {
+      margin-top: 0;
+    }
+    .product-blocks--mobile-compact > .product-block:not(.product-block--price):not(.product-block--buy-buttons) > :last-child {
+      margin-bottom: 0;
+    }
+
+    /*
+      Below the blocks: 25px under the last block, 40px of product section
+      padding and the next section's 40px top margin added up to ~105px
+      before the reviews. Bring that down to 24px.
+    */
+    .product-blocks--mobile-compact > .product-block:last-child,
+    .product-blocks--mobile-compact > .product-block:has(+ .shopify-app-block:last-child) {
+      margin-bottom: 0;
+    }
+    #shopify-section-{{ section_id }} .page-content--product {
+      padding-bottom: 0;
+    }
+    #shopify-section-{{ section_id }} + .shopify-section .index-section:first-child {
+      margin-top: 24px;
+    }
+
     /* The short text under the title. */
     .product-blocks--mobile-compact > .product-block--text {
       display: none;

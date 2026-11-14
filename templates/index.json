@@ -13,8 +13,8 @@
       "type": "image-banner",
       "name": "Image banner",
       "settings": {
-        "video": "shopify://files/videos/BBL_BlackFriday_Banner_Desktop_1920x800.mp4",
-        "mobile_video": "shopify://files/videos/BBL_BlackFriday_Banner_Mobile_715x1350 1.mp4",
+        "image": "shopify://shop_images/image_7.webp",
+        "mobile_image": "shopify://shop_images/bible-socks-black-friday-mobile.webp",
         "alt": "",
         "link": "shopify://collections/all-socks",
         "new_tab": false,

@@ -7,7 +7,8 @@
     right (instead of a peeking slideshow with dots).
   - The short text block (product.metafields.custom.value_props) is hidden.
   - The review stars and the price share one line.
-  - Quantity sits beside Add to cart.
+  - Quantity sits beside Add to cart, with "Shipping calculated at checkout"
+    under them (moved with flex order) and tighter spacing above.
   - The size chart link moves from beside "Size" to under the Shop Pay line.
 
   The blocks column becomes a wrapping flex row: every block takes a full line
@@ -80,6 +81,8 @@
 
     /* ---------- Blocks: one wrapping row ---------- */
     .product-blocks--mobile-compact {
+      /* Pulls the stars up under the title (the header block keeps its 25px). */
+      margin-top: -15px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -102,6 +105,7 @@
     /* Stars and price on one line. */
     .product-blocks--mobile-compact > [id*="loox_reviews_loox_rating"] {
       flex: 0 0 auto;
+      margin-bottom: 16px;
     }
     .product-blocks--mobile-compact > .product-block--price {
       display: contents;
@@ -110,9 +114,23 @@
     .product-blocks--mobile-compact > .product-block--price > .product__price,
     .product-blocks--mobile-compact > .product-block--price > .product__price-savings {
       flex: 0 0 auto;
+      margin-bottom: 16px;
     }
+
+    /*
+      "Shipping calculated at checkout" goes under Add to cart. Everything up
+      to the button keeps order 0, the note gets 1, and whatever follows the
+      button (Shop Pay line, size chart, later blocks) gets 2.
+    */
     .product-blocks--mobile-compact > .product-block--price > .product__policies {
-      margin: 4px 0 25px;
+      order: 1;
+      margin: 10px 0 0;
+    }
+    .product-blocks--mobile-compact .product-block--buy-buttons form > .add-to-cart ~ *,
+    .product-blocks--mobile-compact .product-block--buy-buttons form > .payment-buttons ~ *,
+    .product-blocks--mobile-compact .product-block--buy-buttons > .product-block ~ *,
+    .product-blocks--mobile-compact > .product-block--buy-buttons ~ * {
+      order: 2;
     }
 
     /* Quantity beside Add to cart. */
@@ -146,7 +164,7 @@
       margin: 0;
     }
     .product-blocks--mobile-compact .product-block--buy-buttons .shopify-payment-terms {
-      margin: 14px 0 0;
+      margin: 8px 0 0;
     }
 
     /* Size chart: under the Shop Pay line, not beside "Size". */

@@ -1272,6 +1272,11 @@ body.sock-bundle-packing .sock-bundle__teaser,
   opacity: 0.7;
 }
 
+/* No box of its own outside the phone's docked pack (see the mobile rules). */
+.sock-bundle__teaser-lead {
+  display: contents;
+}
+
 /* Only a phone's docked pack folds; see the mobile rules. */
 .sock-bundle__teaser-toggle {
   display: none;
@@ -2023,13 +2028,46 @@ html.sock-bundle-qv-open {
     padding-bottom: 220px;
   }
 
-  /* The fold button sits at the end of the top row, after the count. */
+  /* The fold button sits at the end of the top row, after the count, and
+     always on the first line. */
   body.sock-bundle-packing .sock-bundle__teaser-top {
+    flex-wrap: nowrap;
     align-items: center;
+  }
+
+  /* Message and count on one clipped line: when both don't fit, the count
+     wraps to a hidden second line, and a message too long on its own ends
+     in an ellipsis. */
+  body.sock-bundle-packing .sock-bundle__teaser-lead {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+    min-width: 0;
+    height: 22px;
+    overflow: hidden;
+  }
+
+  /* Each line exactly the box's 22px, so a wrapped count starts below it
+     and none of it peeks out. */
+  body.sock-bundle-packing .sock-bundle__teaser-msg {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: 22px;
   }
 
   body.sock-bundle-packing .sock-bundle__teaser-note {
     margin-left: auto;
+    white-space: nowrap;
+    line-height: 22px;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-toggle {
+    flex: 0 0 auto;
   }
 
   body.sock-bundle-packing .sock-bundle__teaser-toggle {

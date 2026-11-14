@@ -15,15 +15,22 @@
 
 <div class="sock-bundle__teaser" data-sock-teaser>
   <div class="sock-bundle__teaser-top">
-    {%- comment -%} Leads with where the pack stands: "Add 2 pairs to save 10%". {%- endcomment -%}
-    <div class="sock-bundle__teaser-msg" data-sock-bundle-shipnote aria-live="polite" hidden></div>
-    <span
-      class="sock-bundle__teaser-note"
-      data-sock-teaser-note
-      data-default-text="{{ block.settings.teaser_note | escape }}"
-    >
-      {{- block.settings.teaser_note | escape -}}
-    </span>
+    {%- comment -%}
+      Message and count. On a phone's docked pack they share one clipped line,
+      so a long message pushes the count out of sight instead of pushing the
+      fold button onto a second line. Elsewhere this wrapper adds no box.
+    {%- endcomment -%}
+    <div class="sock-bundle__teaser-lead">
+      {%- comment -%} Leads with where the pack stands: "Add 2 pairs to save 10%". {%- endcomment -%}
+      <div class="sock-bundle__teaser-msg" data-sock-bundle-shipnote aria-live="polite" hidden></div>
+      <span
+        class="sock-bundle__teaser-note"
+        data-sock-teaser-note
+        data-default-text="{{ block.settings.teaser_note | escape }}"
+      >
+        {{- block.settings.teaser_note | escape -}}
+      </span>
+    </div>
     {%- comment -%} Folds the docked pack on a phone down to its bar, subtotal and checkout. {%- endcomment -%}
     <button
       type="button"

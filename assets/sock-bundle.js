@@ -2417,8 +2417,7 @@ if (!customElements.get('sock-bundle')) {
           // A build-your-own page is the picker; it stays open, just emptied.
           if (this.packing && !this.staysOpen) this.exitPacking();
           this.render();
-          document.dispatchEvent(new CustomEvent('cart:build'));
-          document.dispatchEvent(new CustomEvent('cart:open'));
+          this.openCartDrawer();
           return;
         }
 
@@ -2722,8 +2721,7 @@ if (!customElements.get('sock-bundle')) {
           }
           // The popup sits above the drawer, so it closes first.
           if (this.popup && this.packing) this.exitPacking();
-          document.dispatchEvent(new CustomEvent('cart:build'));
-          document.dispatchEvent(new CustomEvent('cart:open'));
+          this.openCartDrawer();
         } catch (error) {
           console.error(error);
           this.setError('Something went wrong. Please try again.');
@@ -2731,6 +2729,18 @@ if (!customElements.get('sock-bundle')) {
           this.atcButton.classList.remove('btn--loading');
           this.atcButton.disabled = false;
         }
+      }
+
+      /**
+       * Rebuild Impulse's cart drawer and open it, once the click that got us
+       * here has finished. Impulse closes its drawer on any click outside it,
+       * and when nothing had to wait on the network (no cart write pending, no
+       * discount code to apply) we would otherwise open the drawer while the
+       * View cart click is still bubbling, and that same click shut it again.
+       */
+      openCartDrawer() {
+        document.dispatchEvent(new CustomEvent('cart:build'));
+        setTimeout(() => document.dispatchEvent(new CustomEvent('cart:open')), 0);
       }
 
       /* ------------------------------------------------------------------ */

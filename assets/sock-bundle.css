@@ -2024,6 +2024,13 @@ html.sock-bundle-qv-open {
     padding-bottom: 300px;
   }
 
+  /* Shopify's theme preview bar (preview links only, never on the live store)
+     is fixed to the bottom of the screen over the docked pack, and its frame
+     takes the taps meant for View cart. Hide it while packing. */
+  body.sock-bundle-packing #PBarNextFrameWrapper {
+    display: none !important;
+  }
+
   body.sock-bundle-packing.sock-bundle-pack-folded {
     padding-bottom: 220px;
   }

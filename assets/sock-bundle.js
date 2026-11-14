@@ -317,6 +317,8 @@ if (!customElements.get('sock-bundle')) {
         this.picker?.removeEventListener('change', this.onPickerVariantChange);
         this.tiersEl?.removeEventListener('scroll', this.updateArrows);
         window.removeEventListener('resize', this.updateArrows);
+        this.dockObserver?.disconnect();
+        if (this.measureDock) window.removeEventListener('resize', this.measureDock);
         this.mobileQuery.removeEventListener('change', this.syncPickerPlacement);
 
         // These live on <body>, so the theme editor re-rendering the section
@@ -1394,6 +1396,13 @@ if (!customElements.get('sock-bundle')) {
         this.teaserToggle?.addEventListener('click', () =>
           this.foldPack(this.teaserToggle.getAttribute('aria-expanded') === 'true')
         );
+        // On a phone the docked pack's height sets how far the list of socks runs.
+        if (this.teaserEl && !this.popup && 'ResizeObserver' in window) {
+          this.measureDock = this.measureDock.bind(this);
+          this.dockObserver = new ResizeObserver(this.measureDock);
+          this.dockObserver.observe(this.teaserEl);
+          window.addEventListener('resize', this.measureDock);
+        }
         this.teaserSlotsEl?.addEventListener('click', (event) => this.onTeaserSlotsClick(event));
         this.querySelector('[data-sock-teaser-open]')?.addEventListener('click', () => this.enterPacking());
         this.picker?.addEventListener('keydown', (event) => {
@@ -1459,7 +1468,23 @@ if (!customElements.get('sock-bundle')) {
         this.render();
         // On a phone the docked pack opens folded, leaving the picker the screen.
         if (opening && this.mobileQuery.matches) this.foldPack(true);
+        if (opening && !this.popup) this.measureDock();
         if (opening && scroll && !this.popup) this.scrollToTop(this.picker);
+      }
+
+      /**
+       * On a phone, the list of socks runs down to the docked pack: where the
+       * list starts on the page and how tall the pack is go on <body>, and
+       * sock-bundle.css takes both off the screen's height.
+       */
+      measureDock() {
+        if (!this.packing || this.popup || !this.teaserEl || !this.mobileQuery.matches) return;
+        const style = document.body.style;
+        style.setProperty('--sock-bundle-dock', `${Math.ceil(this.teaserEl.getBoundingClientRect().height)}px`);
+        const grid = this.picker?.querySelector('.sock-bundle-picker__grid');
+        if (grid) {
+          style.setProperty('--sock-bundle-grid-top', `${Math.round(grid.getBoundingClientRect().top + window.scrollY)}px`);
+        }
       }
 
       /**

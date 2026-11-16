@@ -71,6 +71,8 @@
     "cart_notes_enable": false,
     "cart_terms_conditions_enable": false,
     "cart_pack_codes": "2:BIBLESOCKSMIXANDMATCH10, 3:BIBLESOCKSMIXANDMATCH15, 4:BIBLESOCKSMIXANDMATCH20, 9:automatic",
+    "cart_tiers": "2:10, 3:15, 4:20, 9:3 free",
+    "cart_tiers_ship_threshold": 70,
     "cart_drawer_recs_enable": false,
     "cart_drawer_recs_heading": "You might also like",
     "cart_drawer_recs_collections": [
@@ -183,10 +185,13 @@
         "type": "shopify://apps/klaviyo-email-marketing-sms/blocks/klaviyo-onsite-embed/2632fe16-c075-4321-a88b-50b567f42507",
         "disabled": false,
         "settings": {}
+      },
+      "2567389343055140935": {
+        "type": "shopify://apps/microsoft-clarity/blocks/clarity_js/31c3d126-8116-4b4a-8ba1-baeda7c4aeea",
+        "disabled": false,
+        "settings": {}
       }
-    },
-    "cart_tiers": "2:10, 3:15, 4:20, 9:3 free",
-    "cart_tiers_ship_threshold": 70
+    }
   },
   "presets": {
     "Modern": {

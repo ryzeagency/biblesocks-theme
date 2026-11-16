@@ -26,6 +26,28 @@
 {{ 'sock-bundle.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'sock-bundle.js' | asset_url }}" defer="defer"></script>
 
+{%- comment -%}
+  Page-only header trims. This section is only on page.sock-bundle, so these
+  rules never reach the rest of the site. The phone menu (hamburger) stays.
+{%- endcomment -%}
+{%- if section.settings.hide_announcement_bar or section.settings.hide_desktop_menu -%}
+  <style>
+    {%- if section.settings.hide_announcement_bar %}
+      [class^="bs-announce-"],
+      .announcement-bar {
+        display: none !important;
+      }
+    {%- endif -%}
+    {%- if section.settings.hide_desktop_menu %}
+      @media screen and (min-width: 769px) {
+        #SiteHeader .site-navigation {
+          display: none !important;
+        }
+      }
+    {%- endif %}
+  </style>
+{%- endif -%}
+
 {%- capture picker_column -%}
   <div
     class="grid__item {{ picker_width }} product-single__sticky sock-bundle-gallery-hidden sock-bundle-gallery-hidden-mobile"
@@ -105,6 +127,24 @@
       "id": "heading",
       "label": "Pack name for screen readers",
       "default": "Pack size"
+    },
+    {
+      "type": "header",
+      "content": "Page header"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_desktop_menu",
+      "label": "Hide the menu on desktop",
+      "default": false,
+      "info": "Hides the main menu links in the header on this page. The logo, search and cart stay, and phones keep their menu."
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_announcement_bar",
+      "label": "Hide the announcement bar",
+      "default": false,
+      "info": "Hides the announcement bar on this page, on every screen size."
     },
     {
       "type": "header",

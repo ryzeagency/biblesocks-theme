@@ -128,6 +128,11 @@ if (!customElements.get('sock-bundle')) {
         this.sockWordPlural = this.dataset.sockWordPlural || 'socks';
         this.rewardFreeSocksText = this.dataset.rewardFreeSocksText || '[count] socks free';
         this.freeSockTag = this.dataset.freeSockTag || 'Free';
+        // The page version (sections/sock-bundle-page.liquid): no product, so no
+        // price for the one-sock box, and boxes before the first offer have no
+        // reward to name, so they read "+ Add" rather than "+ sock".
+        this.isStatic = this.dataset.static === 'true';
+        this.addText = this.dataset.addText || 'Add';
 
         this.discountPercent = 0;
         this.tierFreeShipping = false;
@@ -1714,7 +1719,7 @@ if (!customElements.get('sock-bundle')) {
             let main;
             let extra = '';
             if (tier.qty <= 1) {
-              main = this.formatMoney(price);
+              main = this.isStatic && !price ? '' : this.formatMoney(price);
             } else if (tier.freeSocks > 0) {
               main = this.freeSocksText(tier);
             } else if (tier.percent > 0) {
@@ -1780,7 +1785,9 @@ if (!customElements.get('sock-bundle')) {
           if (!filled) return `<li class="${classes}"><span class="sock-bundle__teaser-tile">${lines}</span></li>`;
           return `<li class="${classes}"><button type="button" class="sock-bundle__teaser-tile" data-teaser-open><span>${this.escape(
             rung.top
-          )}</span><strong>+ ${this.escape(rung.main || this.sockWordSingular)}</strong>${extra}</button></li>`;
+          )}</span><strong>+ ${this.escape(
+            rung.main || (this.isStatic ? this.addText : this.sockWordSingular)
+          )}</strong>${extra}</button></li>`;
         };
 
         // Only pairs that were not in the pack last time pop in; redrawing the

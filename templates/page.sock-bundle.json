@@ -49,7 +49,7 @@
         "tier5_badge": "1 free",
         "tier5_discount_percent": 0,
         "tier5_free_shipping": true,
-        "tier5_code": "",
+        "tier5_code": "BUY4GET1FREE",
         "tier6_enable": false,
         "tier6_label": "6 Pack",
         "tier6_badge": "3 free",
@@ -124,7 +124,9 @@
         "big_pack_qty": 9,
         "big_pack_code": "",
         "big_pack_free_socks": 3,
-        "tier5_free_socks": 1
+        "tier5_free_socks": 1,
+        "hide_desktop_menu": true,
+        "hide_announcement_bar": true
       }
     }
   },

@@ -87,6 +87,10 @@
   data-big-pack-free-socks="{{ block.settings.big_pack_free_socks }}"
   data-reward-free-socks-text="{{ block.settings.reward_free_socks_text | escape }}"
   data-free-sock-tag="{{ block.settings.free_sock_tag | default: 'Free' | escape }}"
+  {% if static %}
+    data-static="true"
+    data-add-text="{{ block.settings.picker_add_text | default: 'Add' | escape }}"
+  {% endif %}
   data-sock-word-singular="{{ block.settings.sock_word_singular | escape }}"
   data-sock-word-plural="{{ block.settings.sock_word_plural | escape }}"
   data-close-text="Close"

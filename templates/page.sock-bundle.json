@@ -11,6 +11,7 @@
   "sections": {
     "main": {
       "type": "main-page",
+      "disabled": true,
       "settings": {}
     },
     "sock_bundle": {
@@ -20,6 +21,26 @@
         "picker_width": "medium",
         "heading": "Pack size",
         "bundle_collection": "all-socks",
+        "picker_product_type": "Socks",
+        "picker_filter_collections": [
+          "all-socks",
+          "new-releases",
+          "men",
+          "youth",
+          "children",
+          "bible-stories-kids-love",
+          "hope",
+          "courage",
+          "daily-faith",
+          "patriotic",
+          "baptism",
+          "easter",
+          "christmas",
+          "fathers-day",
+          "mothers-day"
+        ],
+        "picker_filter_style": "pills",
+        "picker_filter_label": "Filter by",
         "picker_heading": "Pick your socks",
         "picker_add_text": "Add",
         "products_limit": 48,
@@ -55,6 +76,9 @@
         "tier6_free_socks": 3,
         "tier6_free_shipping": true,
         "tier6_code": "",
+        "big_pack_qty": 9,
+        "big_pack_code": "",
+        "big_pack_free_socks": 3,
         "reward_free_socks_text": "[count] socks free",
         "free_sock_tag": "Free",
         "show_progress_bar": true,
@@ -91,26 +115,6 @@
         "savings_text": "You save [amount]",
         "clear_cart_on_add": false,
         "after_add_to_cart": "live",
-        "picker_product_type": "Socks",
-        "picker_filter_collections": [
-          "all-socks",
-          "new-releases",
-          "men",
-          "youth",
-          "children",
-          "bible-stories-kids-love",
-          "hope",
-          "courage",
-          "daily-faith",
-          "patriotic",
-          "baptism",
-          "easter",
-          "christmas",
-          "fathers-day",
-          "mothers-day"
-        ],
-        "picker_filter_style": "pills",
-        "picker_filter_label": "Filter by",
         "teaser_note": "Mix & match any designs",
         "teaser_discount_text": "[percent]% off",
         "teaser_shipping_text": "Free ship",
@@ -119,10 +123,7 @@
         "picker_added_text": "Added",
         "quick_view_add_text": "Add to my pack",
         "quick_view_unlock_text": "Adding this unlocks [reward] on your pack",
-        "unlocked_toast_text": "[reward] unlocked!",
-        "big_pack_qty": 9,
-        "big_pack_code": "",
-        "big_pack_free_socks": 3
+        "unlocked_toast_text": "[reward] unlocked!"
       }
     }
   },

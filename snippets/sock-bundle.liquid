@@ -4,7 +4,10 @@
   Accepts:
   - block: the `sock_bundle` block from sections/main-product.liquid
   - section_id: the main-product section id
-  - product: the current product
+  - product: the current product (optional when static)
+  - static: true on a page (sections/sock-bundle-page.liquid): always the
+    Product first layout, open on load with the picker and the pack, never
+    started from an Add to cart button or a popup. Default false.
 
   Usage:
   {% render 'sock-bundle', block: block, section_id: section_id, product: product %}
@@ -12,8 +15,9 @@
 
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
+  assign static = static | default: false
   assign teaser = false
-  if block.settings.layout == 'teaser'
+  if block.settings.layout == 'teaser' or static
     assign teaser = true
   endif
 
@@ -21,6 +25,9 @@
   # the page opens on the picker and the pack, and stays there.
   assign build_own = false
   if teaser and block.settings.single_uses_picker
+    assign build_own = true
+  endif
+  if static
     assign build_own = true
   endif
   # With "Picker opens: From Add to cart", a sock page has no Mix & match
@@ -40,19 +47,19 @@
   data-product-id="{{ product.id }}"
   data-variant-id="{{ current_variant.id }}"
   data-product-title="{{ product.title | escape }}"
-  data-product-image="{{ product.featured_image | image_url: width: 200 }}"
+  data-product-image="{% if product.featured_image %}{{ product.featured_image | image_url: width: 200 }}{% endif %}"
   data-product-price="{{ current_variant.price }}"
-  data-picker-replaces-gallery="{{ block.settings.picker_replaces_gallery }}"
-  data-prefill-current="{{ block.settings.prefill_current_product }}"
-  data-single-uses-picker="{{ block.settings.single_uses_picker }}"
+  data-picker-replaces-gallery="{% if static %}true{% else %}{{ block.settings.picker_replaces_gallery }}{% endif %}"
+  data-prefill-current="{% if static %}false{% else %}{{ block.settings.prefill_current_product }}{% endif %}"
+  data-single-uses-picker="{% if static %}true{% else %}{{ block.settings.single_uses_picker }}{% endif %}"
   data-picker-on-load="{{ stays_open }}"
   data-opens-on-atc="{{ opens_on_atc }}"
-  data-hide-default-atc="{{ block.settings.hide_default_buy_buttons }}"
+  data-hide-default-atc="{% if static %}true{% else %}{{ block.settings.hide_default_buy_buttons }}{% endif %}"
   data-after-add="{{ block.settings.after_add_to_cart }}"
   data-cart-url="{{ routes.cart_url }}"
   data-cart-clear-url="{{ routes.cart_clear_url }}"
   data-clear-cart="{{ block.settings.clear_cart_on_add }}"
-  data-show-tiles="{{ block.settings.show_pack_tiles }}"
+  data-show-tiles="{% if static %}false{% else %}{{ block.settings.show_pack_tiles }}{% endif %}"
   data-slots-heading="{{ block.settings.slots_heading | default: 'Your socks' | escape }}"
   data-money-format="{{ shop.money_format | strip_html | escape }}"
   data-free-shipping="{{ block.settings.free_shipping_enable }}"
@@ -73,13 +80,18 @@
   data-free-shipping-icon="{{ block.settings.free_shipping_icon | escape }}"
   data-min-slots="{{ block.settings.min_slots | default: 5 }}"
   data-max-socks="{{ block.settings.max_socks }}"
-  data-pack-popup="{{ block.settings.teaser_popup }}"
+  data-pack-popup="{% if static %}false{% else %}{{ block.settings.teaser_popup }}{% endif %}"
   data-popup-title="{{ block.settings.teaser_open_text | default: 'Mix & match designs' | escape }}"
   data-big-pack-qty="{{ block.settings.big_pack_qty }}"
   data-big-pack-code="{{ block.settings.big_pack_code | strip | escape }}"
   data-big-pack-free-socks="{{ block.settings.big_pack_free_socks }}"
   data-reward-free-socks-text="{{ block.settings.reward_free_socks_text | escape }}"
   data-free-sock-tag="{{ block.settings.free_sock_tag | default: 'Free' | escape }}"
+  {% if static %}
+    data-static="true"
+    data-add-text="{{ block.settings.picker_add_text | default: 'Add' | escape }}"
+    data-top-box-text="{{ block.settings.top_box_text | escape }}"
+  {% endif %}
   data-sock-word-singular="{{ block.settings.sock_word_singular | escape }}"
   data-sock-word-plural="{{ block.settings.sock_word_plural | escape }}"
   data-close-text="Close"
@@ -254,6 +266,11 @@
           assign t_free = 0
           if i == 6
             assign t_free = block.settings.tier6_free_socks
+          endif
+          # Only the page section (sections/sock-bundle-page.liquid) has this
+          # setting, for "buy 4 get 1"; on the product page it is blank, so 0.
+          if i == 5
+            assign t_free = block.settings.tier5_free_socks | default: 0
           endif
 
           capture t_fallback

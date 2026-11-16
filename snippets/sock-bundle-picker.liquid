@@ -4,7 +4,8 @@
   Accepts:
   - block: the `sock_bundle` block from sections/main-product.liquid
   - section_id: the main-product section id (shared with the <sock-bundle> element)
-  - product: the product being viewed, pinned as the first card
+  - product: the product being viewed, pinned as the first card (blank on a page)
+  - static: true on a page (sections/sock-bundle-page.liquid): open on load, no back button
 
   Usage:
   {% render 'sock-bundle-picker', block: sock_bundle_block, section_id: section_id, product: product %}
@@ -30,13 +31,13 @@
 -%}
 
 <div
-  class="sock-bundle-picker{% if block.settings.single_uses_picker %} sock-bundle-picker--open-on-load{% endif %}{% if block.settings.layout == 'teaser' %} sock-bundle-picker--teaser{% endif %}"
+  class="sock-bundle-picker{% if block.settings.single_uses_picker or static %} sock-bundle-picker--open-on-load{% endif %}{% if block.settings.layout == 'teaser' or static %} sock-bundle-picker--teaser{% endif %}"
   id="SockBundlePicker-{{ section_id }}"
   data-sock-bundle-picker="{{ section_id }}"
 >
   <div class="sock-bundle-picker__head">
     <h3 class="sock-bundle-picker__title">
-      {%- if block.settings.show_step_number and block.settings.layout != 'teaser' -%}
+      {%- if block.settings.show_step_number and block.settings.layout != 'teaser' and static != true -%}
         <span class="sock-bundle__step">{{ block.settings.picker_step_number | default: 2 }}</span>
       {%- endif -%}
       {{ block.settings.picker_heading | escape }}
@@ -156,6 +157,9 @@
   {%- liquid
     assign show_back = block.settings.picker_replaces_gallery
     if block.settings.layout == 'teaser' and block.settings.single_uses_picker
+      assign show_back = false
+    endif
+    if static
       assign show_back = false
     endif
   -%}

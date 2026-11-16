@@ -262,6 +262,11 @@
           if i == 6
             assign t_free = block.settings.tier6_free_socks
           endif
+          # Only the page section (sections/sock-bundle-page.liquid) has this
+          # setting, for "buy 4 get 1"; on the product page it is blank, so 0.
+          if i == 5
+            assign t_free = block.settings.tier5_free_socks | default: 0
+          endif
 
           capture t_fallback
             echo i

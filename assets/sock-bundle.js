@@ -38,6 +38,8 @@ if (!customElements.get('sock-bundle')) {
             freeShipping: button.dataset.freeShip === 'true',
             // Socks the pack makes free outright, e.g. a 6-pack where 3 go free.
             freeSocks: parseInt(button.dataset.freeSocks, 10) || 0,
+            // The pack's name from the editor, e.g. "Buy 4 get 1".
+            label: button.querySelector('.sock-bundle__tier-label')?.textContent.trim() || '',
           }))
           .sort((a, b) => a.qty - b.qty);
 
@@ -1723,7 +1725,8 @@ if (!customElements.get('sock-bundle')) {
             if (tier.qty <= 1) {
               main = this.isStatic && !price ? '' : this.formatMoney(price);
             } else if (tier.freeSocks > 0) {
-              main = this.freeSocksText(tier);
+              // The page version names a free-sock pack by its label ("Buy 4 get 1").
+              main = this.isStatic && tier.label ? tier.label : this.freeSocksText(tier);
             } else if (tier.percent > 0) {
               main = this.teaserDiscountText.replace('[percent]', tier.percent);
               // "20% off" over "Free ship" on the pack that first ships free.

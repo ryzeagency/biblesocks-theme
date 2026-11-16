@@ -90,6 +90,7 @@
   {% if static %}
     data-static="true"
     data-add-text="{{ block.settings.picker_add_text | default: 'Add' | escape }}"
+    data-top-box-text="{{ block.settings.top_box_text | escape }}"
   {% endif %}
   data-sock-word-singular="{{ block.settings.sock_word_singular | escape }}"
   data-sock-word-plural="{{ block.settings.sock_word_plural | escape }}"

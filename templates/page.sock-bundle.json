@@ -126,7 +126,8 @@
         "big_pack_free_socks": 3,
         "tier5_free_socks": 1,
         "hide_desktop_menu": true,
-        "hide_announcement_bar": true
+        "hide_announcement_bar": true,
+        "top_box_text": "Add [count] more and get [free] more free"
       }
     }
   },

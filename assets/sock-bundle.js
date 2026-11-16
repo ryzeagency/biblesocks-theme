@@ -133,6 +133,8 @@ if (!customElements.get('sock-bundle')) {
         // reward to name, so they read "+ Add" rather than "+ sock".
         this.isStatic = this.dataset.static === 'true';
         this.addText = this.dataset.addText || 'Add';
+        // The last box once a pack is under way: "Add 2 more and get 2 more free".
+        this.topBoxText = this.dataset.topBoxText || '';
 
         this.discountPercent = 0;
         this.tierFreeShipping = false;
@@ -1729,7 +1731,7 @@ if (!customElements.get('sock-bundle')) {
             } else {
               main = tier.freeShipping ? this.teaserShippingText : '';
             }
-            return { qty: tier.qty, top: this.pairsText(tier.qty), main, extra, best: false };
+            return { qty: tier.qty, top: this.pairsText(tier.qty), main, extra, best: false, free: tier.freeSocks || 0 };
           });
 
         const last = rungs[rungs.length - 1];
@@ -1773,11 +1775,30 @@ if (!customElements.get('sock-bundle')) {
           const own = ladder.find((rung) => rung.qty === count);
           if (own) return own;
           if (count > top.qty) return top;
+          // The page version: a box past an offer adds nothing new, so it reads "+ Add".
+          if (this.isStatic) return { qty: count, top: this.pairsText(count), main: '', extra: '' };
           const held = ladder.filter((rung) => rung.qty > 1 && rung.qty < count).pop();
           return { qty: count, top: this.pairsText(count), main: held?.main || '', extra: held?.extra || '' };
         };
 
+        // The page version's last box counts down to the top offer from where the
+        // pack stands: "Add 2 more and get 2 more free".
+        const nowFree = this.tierFor(filled)?.freeSocks || 0;
+        const topCountdown = (rung) => {
+          if (!this.isStatic || !this.topBoxText || !rung.best || !filled || filled >= rung.qty) return '';
+          const moreFree = (rung.free || 0) - nowFree;
+          if (moreFree <= 0) return '';
+          return this.topBoxText.replace('[count]', rung.qty - filled).replace('[free]', moreFree);
+        };
+
         const emptyMarkup = (rung) => {
+          const countdown = topCountdown(rung);
+          if (countdown) {
+            const classes = `sock-bundle__teaser-slot${rung.best ? ' is-best' : ''}`;
+            return `<li class="${classes}"><button type="button" class="sock-bundle__teaser-tile" data-teaser-open><span>${this.escape(
+              rung.top
+            )}</span><strong>${this.escape(countdown)}</strong></button></li>`;
+          }
           const classes = `sock-bundle__teaser-slot${rung.best ? ' is-best' : ''}`;
           const extra = rung.extra ? `<strong>${this.escape(rung.extra)}</strong>` : '';
           const lines = `<span>${this.escape(rung.top)}</span><strong>${this.escape(rung.main)}</strong>${extra}`;

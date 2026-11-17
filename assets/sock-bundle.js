@@ -137,6 +137,8 @@ if (!customElements.get('sock-bundle')) {
         this.addText = this.dataset.addText || 'Add';
         // The last box once a pack is under way: "Add 2 more and get 2 more free".
         this.topBoxText = this.dataset.topBoxText || '';
+        // One pair short of a free one: the next pair picked is the free one.
+        this.selectFreeText = this.dataset.selectFreeText || '';
 
         this.discountPercent = 0;
         this.tierFreeShipping = false;
@@ -1256,6 +1258,11 @@ if (!customElements.get('sock-bundle')) {
             .replace('[socks]', more === 1 ? this.sockWordSingular : this.sockWordPlural)
             .replace('[reward]', reward);
           // The page version opens on the offer itself: "Buy 4 get 1 free + free shipping".
+          // Page version, one pair from a single free pair: "Select free".
+          const nextGain = (this.nextRung.freeSocks || 0) - (this.earnedTier?.freeSocks || 0);
+          if (this.isStatic && this.selectFreeText && !this.nextRung.bonus && more === 1 && nextGain === 1) {
+            message = this.selectFreeText;
+          }
           const buyGet = filled === 0 ? this.buyGetText(this.nextRung) : null;
           if (buyGet) {
             message = `${buyGet.buy} ${buyGet.get.charAt(0).toLowerCase()}${buyGet.get.slice(1)}`;

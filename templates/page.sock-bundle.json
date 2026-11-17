@@ -129,10 +129,46 @@
         "quick_view_unlock_text": "Adding this unlocks [reward] on your pack",
         "unlocked_toast_text": "[reward] unlocked!"
       }
+    },
+    "tv_offer_banner": {
+      "type": "tv-offer-banner",
+      "blocks": {
+        "offer_tv": {
+          "type": "offer",
+          "settings": {
+            "badge": "Special TV offer",
+            "lead": "Buy 4,",
+            "highlight": "Get 1 free"
+          }
+        },
+        "offer_bf": {
+          "type": "offer",
+          "settings": {
+            "badge": "Black Friday",
+            "lead": "Buy 6,",
+            "highlight": "Get 3 free"
+          }
+        }
+      },
+      "block_order": [
+        "offer_tv",
+        "offer_bf"
+      ],
+      "settings": {
+        "background": "#000000",
+        "text_color": "#ffffff",
+        "accent_color": "#fdd12a",
+        "badge_text_color": "#000000",
+        "show_bottom_bar": true,
+        "bottom_bar_height": 10,
+        "padding_desktop": 40,
+        "padding_mobile": 28
+      }
     }
   },
   "order": [
     "main",
+    "tv_offer_banner",
     "sock_bundle"
   ]
 }

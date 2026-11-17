@@ -135,8 +135,6 @@ if (!customElements.get('sock-bundle')) {
         // reward to name, so they read "+ Add" rather than "+ sock".
         this.isStatic = this.dataset.static === 'true';
         this.addText = this.dataset.addText || 'Add';
-        // The last box once a pack is under way: "Add 2 more and get 2 more free".
-        this.topBoxText = this.dataset.topBoxText || '';
         // One pair short of a free one: the next pair picked is the free one.
         this.selectFreeText = this.dataset.selectFreeText || '';
 
@@ -1811,26 +1809,24 @@ if (!customElements.get('sock-bundle')) {
           return { qty: count, top: this.pairsText(count), main: held?.main || '', extra: held?.extra || '' };
         };
 
-        // The page version's last box counts down to the top offer from where the
-        // pack stands: "Add 2 more and get 2 more free".
-        const nowFree = this.tierFor(filled)?.freeSocks || 0;
-        const topCountdown = (rung) => {
-          if (!this.isStatic || !this.topBoxText || !rung.best || !filled || filled >= rung.qty) return '';
-          const moreFree = (rung.free || 0) - nowFree;
-          if (moreFree <= 0) return '';
-          // Pairs still to pay for; once none are left the next pair is free.
-          const paid = rung.qty - filled - moreFree;
-          if (paid <= 0) return this.selectFreeText || '';
-          return this.topBoxText.replace('[count]', paid).replace('[free]', moreFree);
-        };
+        // The page version marks the pairs a free-sock pack gives away, the last
+        // ones in it: 7, 8 and 9 of a 9 pair pack with 3 free read "Free". A pack
+        // with its own buy-get wording (5th box, "Buy 4 / Get 1 free") keeps it.
+        const freeBoxes = new Set();
+        if (this.isStatic) {
+          this.ladderTiers
+            .filter((tier) => tier.freeSocks > 0 && !this.buyGetText(tier))
+            .forEach((tier) => {
+              for (let n = tier.qty - tier.freeSocks + 1; n <= tier.qty; n += 1) freeBoxes.add(n);
+            });
+        }
 
-        const emptyMarkup = (rung) => {
-          const countdown = topCountdown(rung);
-          if (countdown) {
+        const emptyMarkup = (rung, count) => {
+          if (freeBoxes.has(count)) {
             const classes = `sock-bundle__teaser-slot${rung.best ? ' is-best' : ''}`;
-            return `<li class="${classes}"><button type="button" class="sock-bundle__teaser-tile" data-teaser-open><span>${this.escape(
-              rung.top
-            )}</span><strong>${this.escape(countdown)}</strong></button></li>`;
+            const lines = `<span>${this.escape(rung.top)}</span><strong>${this.escape(this.freeSockTag)}</strong>`;
+            if (!filled) return `<li class="${classes}"><span class="sock-bundle__teaser-tile">${lines}</span></li>`;
+            return `<li class="${classes}"><button type="button" class="sock-bundle__teaser-tile" data-teaser-open>${lines}</button></li>`;
           }
           const classes = `sock-bundle__teaser-slot${rung.best ? ' is-best' : ''}`;
           const extra = rung.extra ? `<strong>${this.escape(rung.extra)}</strong>` : '';
@@ -1871,7 +1867,7 @@ if (!customElements.get('sock-bundle')) {
         const boxes = [];
         for (let i = 0; i < Math.max(top.qty, filled); i += 1) {
           const rung = rungAt(i + 1);
-          boxes.push(i < filled ? filledMarkup(this.slots[i], i) : emptyMarkup(rung));
+          boxes.push(i < filled ? filledMarkup(this.slots[i], i) : emptyMarkup(rung, i + 1));
         }
         this.teaserSlotsEl.innerHTML = boxes.join('');
         this.teaserCounts = now;

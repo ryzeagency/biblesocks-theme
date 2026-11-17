@@ -82,7 +82,6 @@
         "big_pack_qty": 9,
         "big_pack_code": "",
         "big_pack_free_socks": 3,
-        "top_box_text": "Add [count] more and get [free] more free",
         "reward_free_socks_text": "[count] free",
         "free_sock_tag": "Free",
         "show_progress_bar": true,

@@ -1,8 +1,9 @@
 {%- comment -%}
   TV offer banner: black band with one column per offer, each a yellow badge
   ("Special TV offer") over a headline ("Buy 4," in white, "Get 1 free" in the
-  accent colour). Side by side with a thin vertical rule on desktop; stacked
-  with a short horizontal rule on phones. A yellow bar runs along the bottom.
+  accent colour). Side by side with a thin vertical rule between them, on
+  phones too, where each headline breaks after the comma. A yellow bar runs
+  along the bottom.
   Built for templates/page.sock-bundle.json, above the sock bundle.
 {%- endcomment -%}
 
@@ -84,44 +85,37 @@
     margin-left: 0.3em;
   }
 
+  /* Phones: offers stay side by side; the headline breaks after the comma
+     ("Buy 4," over "Get 1 free") so each half fits its narrow column. */
   @media screen and (max-width: 768px) {
     #TvOfferBanner-{{ section.id }} .tvo__inner {
-      flex-direction: column;
-      align-items: center;
-      padding: {{ section.settings.padding_mobile }}px 16px;
+      padding: {{ section.settings.padding_mobile }}px 8px;
     }
 
     #TvOfferBanner-{{ section.id }} .tvo__offer {
-      padding: 0;
-      width: 100%;
-    }
-
-    /* Stacked: a short horizontal rule instead of the vertical one. */
-    #TvOfferBanner-{{ section.id }} .tvo__offer + .tvo__offer {
-      border-left: 0;
-      margin-top: 16px;
-      padding-top: 16px;
-      position: relative;
-    }
-
-    #TvOfferBanner-{{ section.id }} .tvo__offer + .tvo__offer::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: min(210px, 55%);
-      height: 1px;
-      background: var(--tvo-accent);
-      transform: translateX(-50%);
+      padding: 0 8px;
     }
 
     #TvOfferBanner-{{ section.id }} .tvo__badge {
-      min-width: min(220px, 100%);
-      font-size: clamp(18px, 5.6vw, 24px);
+      min-width: 0;
+      width: 100%;
+      padding: 0.15em 0.5em 0.05em;
+      font-size: clamp(14px, 4.2vw, 24px);
     }
 
     #TvOfferBanner-{{ section.id }} .tvo__headline {
-      font-size: clamp(36px, 12.5vw, 56px);
+      margin-top: 0.15em;
+      font-size: clamp(30px, 9.5vw, 56px);
+      line-height: 0.95;
+    }
+
+    #TvOfferBanner-{{ section.id }} .tvo__lead,
+    #TvOfferBanner-{{ section.id }} .tvo__highlight {
+      display: block;
+    }
+
+    #TvOfferBanner-{{ section.id }} .tvo__lead + .tvo__highlight {
+      margin-left: 0;
     }
   }
 </style>

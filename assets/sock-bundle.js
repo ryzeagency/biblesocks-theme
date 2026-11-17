@@ -1155,6 +1155,16 @@ if (!customElements.get('sock-bundle')) {
         );
       }
 
+      /**
+       * The page version's buy-X-get-Y wording for a free-sock pack from the
+       * editor (5 pairs, 1 free: "Buy 4" / "Get 1 free"). Null elsewhere, and
+       * for the bigger pack, which has no label.
+       */
+      buyGetText(tier) {
+        if (!this.isStatic || !tier || !tier.label || !(tier.freeSocks > 0)) return null;
+        return { buy: `Buy ${tier.qty - tier.freeSocks}`, get: `Get ${tier.freeSocks} free` };
+      }
+
       freeSocksText(tier) {
         return this.rewardFreeSocksText.replace('[count]', tier.freeSocks);
       }
@@ -1245,6 +1255,12 @@ if (!customElements.get('sock-bundle')) {
             .replace('[count]', more)
             .replace('[socks]', more === 1 ? this.sockWordSingular : this.sockWordPlural)
             .replace('[reward]', reward);
+          // The page version opens on the offer itself: "Buy 4 get 1 free + free shipping".
+          const buyGet = filled === 0 ? this.buyGetText(this.nextRung) : null;
+          if (buyGet) {
+            message = `${buyGet.buy} ${buyGet.get.charAt(0).toLowerCase()}${buyGet.get.slice(1)}`;
+            if (this.nextRung.freeShipping && !this.tierFreeShipping) message += ` + ${this.rewardShippingText}`;
+          }
         } else if (this.earnedTier?.freeShipping && this.earnedTier.percent > 0) {
           shippingUnlocked = true;
           message = this.progressShippingUnlockedText
@@ -1726,7 +1742,7 @@ if (!customElements.get('sock-bundle')) {
               main = this.isStatic && !price ? '' : this.formatMoney(price);
             } else if (tier.freeSocks > 0) {
               // The page version names a free-sock pack by its label ("Buy 4 get 1").
-              main = this.isStatic && tier.label ? tier.label : this.freeSocksText(tier);
+              main = this.buyGetText(tier)?.get || this.freeSocksText(tier);
             } else if (tier.percent > 0) {
               main = this.teaserDiscountText.replace('[percent]', tier.percent);
               // "20% off" over "Free ship" on the pack that first ships free.
@@ -1734,7 +1750,8 @@ if (!customElements.get('sock-bundle')) {
             } else {
               main = tier.freeShipping ? this.teaserShippingText : '';
             }
-            return { qty: tier.qty, top: this.pairsText(tier.qty), main, extra, best: false, free: tier.freeSocks || 0 };
+            const top = this.buyGetText(tier)?.buy || this.pairsText(tier.qty);
+            return { qty: tier.qty, top, main, extra, best: false, free: tier.freeSocks || 0 };
           });
 
         const last = rungs[rungs.length - 1];

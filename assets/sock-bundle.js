@@ -1240,7 +1240,11 @@ if (!customElements.get('sock-bundle')) {
         let shippingUnlocked = false;
         if (this.nextRung) {
           // Point at the next rung: "Buy one more, save 15%" or "...get a gift box".
-          const more = this.nextRung.qty - filled;
+          // Page version: count only the pairs still to pay for, since the
+          // free ones come last (at 2 pairs on buy 4 get 1, "Add 2 more").
+          const nextGain = (this.nextRung.freeSocks || 0) - (this.earnedTier?.freeSocks || 0);
+          const paidOnly = this.isStatic && !this.nextRung.bonus && nextGain > 0;
+          const more = this.nextRung.qty - filled - (paidOnly ? nextGain : 0);
           const reward = this.rewardFor(this.nextRung, this.tierFreeShipping);
           let template;
           if (filled === 0) {
@@ -1257,12 +1261,11 @@ if (!customElements.get('sock-bundle')) {
             .replace('[count]', more)
             .replace('[socks]', more === 1 ? this.sockWordSingular : this.sockWordPlural)
             .replace('[reward]', reward);
-          // The page version opens on the offer itself: "Buy 4 get 1 free + free shipping".
-          // Page version, one pair from a single free pair: "Select free".
-          const nextGain = (this.nextRung.freeSocks || 0) - (this.earnedTier?.freeSocks || 0);
-          if (this.isStatic && this.selectFreeText && !this.nextRung.bonus && more === 1 && nextGain === 1) {
+          // Page version, nothing left to pay for: the next pair is free.
+          if (paidOnly && more <= 0 && this.selectFreeText) {
             message = this.selectFreeText;
           }
+          // The page version opens on the offer itself: "Buy 4 get 1 free + free shipping".
           const buyGet = filled === 0 ? this.buyGetText(this.nextRung) : null;
           if (buyGet) {
             message = `${buyGet.buy} ${buyGet.get.charAt(0).toLowerCase()}${buyGet.get.slice(1)}`;
@@ -1815,7 +1818,10 @@ if (!customElements.get('sock-bundle')) {
           if (!this.isStatic || !this.topBoxText || !rung.best || !filled || filled >= rung.qty) return '';
           const moreFree = (rung.free || 0) - nowFree;
           if (moreFree <= 0) return '';
-          return this.topBoxText.replace('[count]', rung.qty - filled).replace('[free]', moreFree);
+          // Pairs still to pay for; once none are left the next pair is free.
+          const paid = rung.qty - filled - moreFree;
+          if (paid <= 0) return this.selectFreeText || '';
+          return this.topBoxText.replace('[count]', paid).replace('[free]', moreFree);
         };
 
         const emptyMarkup = (rung) => {

@@ -79,6 +79,11 @@
     color: var(--tvo-accent);
   }
 
+  /* Bebas Neue's word space is narrow; the artwork has a full gap after the comma. */
+  #TvOfferBanner-{{ section.id }} .tvo__lead + .tvo__highlight {
+    margin-left: 0.3em;
+  }
+
   @media screen and (max-width: 768px) {
     #TvOfferBanner-{{ section.id }} .tvo__inner {
       flex-direction: column;
@@ -129,8 +134,9 @@
           <span class="tvo__badge">{{ block.settings.badge | escape }}</span>
         {%- endif -%}
         <h2 class="tvo__headline">
-          {%- if block.settings.lead != blank -%}{{ block.settings.lead | escape }}{%- endif -%}
-          {%- if block.settings.lead != blank and block.settings.highlight != blank %} {% endif -%}
+          {%- if block.settings.lead != blank -%}
+            <span class="tvo__lead">{{ block.settings.lead | escape }}</span>
+          {%- endif -%}
           {%- if block.settings.highlight != blank -%}
             <span class="tvo__highlight">{{ block.settings.highlight | escape }}</span>
           {%- endif -%}

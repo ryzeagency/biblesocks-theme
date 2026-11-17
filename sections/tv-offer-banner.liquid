@@ -1,0 +1,263 @@
+{%- comment -%}
+  TV offer banner: black band with one column per offer, each a yellow badge
+  ("Special TV offer") over a headline ("Buy 4," in white, "Get 1 free" in the
+  accent colour). Side by side with a thin vertical rule on desktop; stacked
+  with a short horizontal rule on phones. A yellow bar runs along the bottom.
+  Built for templates/page.sock-bundle.json, above the sock bundle.
+{%- endcomment -%}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+<style>
+  #TvOfferBanner-{{ section.id }} {
+    --tvo-bg: {{ section.settings.background }};
+    --tvo-text: {{ section.settings.text_color }};
+    --tvo-accent: {{ section.settings.accent_color }};
+    --tvo-badge-text: {{ section.settings.badge_text_color }};
+    background: var(--tvo-bg);
+    color: var(--tvo-text);
+    font-family: 'Bebas Neue', 'Oswald', 'Arial Narrow', Impact, sans-serif;
+    {%- if section.settings.show_bottom_bar %}
+      border-bottom: {{ section.settings.bottom_bar_height }}px solid var(--tvo-accent);
+    {%- endif %}
+  }
+
+  #TvOfferBanner-{{ section.id }} .tvo__inner {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: {{ section.settings.padding_desktop }}px 24px;
+  }
+
+  #TvOfferBanner-{{ section.id }} .tvo__offer {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+    min-width: 0;
+  }
+
+  /* Thin rule between offers. */
+  #TvOfferBanner-{{ section.id }} .tvo__offer + .tvo__offer {
+    border-left: 1px solid var(--tvo-accent);
+  }
+
+  #TvOfferBanner-{{ section.id }} .tvo__badge {
+    display: inline-block;
+    min-width: min(345px, 100%);
+    padding: 0.12em 1.2em 0.02em;
+    background: var(--tvo-accent);
+    color: var(--tvo-badge-text);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 0.28em;
+    font-size: clamp(22px, 2.1vw, 40px);
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    box-sizing: border-box;
+  }
+
+  #TvOfferBanner-{{ section.id }} .tvo__headline {
+    margin: 0.08em 0 0;
+    font-family: inherit;
+    font-weight: 400;
+    font-size: clamp(44px, 5vw, 96px);
+    line-height: 1;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    color: var(--tvo-text);
+  }
+
+  #TvOfferBanner-{{ section.id }} .tvo__highlight {
+    color: var(--tvo-accent);
+  }
+
+  @media screen and (max-width: 768px) {
+    #TvOfferBanner-{{ section.id }} .tvo__inner {
+      flex-direction: column;
+      align-items: center;
+      padding: {{ section.settings.padding_mobile }}px 16px;
+    }
+
+    #TvOfferBanner-{{ section.id }} .tvo__offer {
+      padding: 0;
+      width: 100%;
+    }
+
+    /* Stacked: a short horizontal rule instead of the vertical one. */
+    #TvOfferBanner-{{ section.id }} .tvo__offer + .tvo__offer {
+      border-left: 0;
+      margin-top: 16px;
+      padding-top: 16px;
+      position: relative;
+    }
+
+    #TvOfferBanner-{{ section.id }} .tvo__offer + .tvo__offer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: min(210px, 55%);
+      height: 1px;
+      background: var(--tvo-accent);
+      transform: translateX(-50%);
+    }
+
+    #TvOfferBanner-{{ section.id }} .tvo__badge {
+      min-width: min(220px, 100%);
+      font-size: clamp(18px, 5.6vw, 24px);
+    }
+
+    #TvOfferBanner-{{ section.id }} .tvo__headline {
+      font-size: clamp(36px, 12.5vw, 56px);
+    }
+  }
+</style>
+
+<div id="TvOfferBanner-{{ section.id }}" class="tvo">
+  <div class="tvo__inner">
+    {%- for block in section.blocks -%}
+      <div class="tvo__offer" {{ block.shopify_attributes }}>
+        {%- if block.settings.badge != blank -%}
+          <span class="tvo__badge">{{ block.settings.badge | escape }}</span>
+        {%- endif -%}
+        <h2 class="tvo__headline">
+          {%- if block.settings.lead != blank -%}{{ block.settings.lead | escape }}{%- endif -%}
+          {%- if block.settings.lead != blank and block.settings.highlight != blank %} {% endif -%}
+          {%- if block.settings.highlight != blank -%}
+            <span class="tvo__highlight">{{ block.settings.highlight | escape }}</span>
+          {%- endif -%}
+        </h2>
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "TV offer banner",
+  "class": "tv-offer-banner-section",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Headline text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent (badges, highlight, lines)",
+      "default": "#fdd12a"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text",
+      "default": "#000000"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bottom_bar",
+      "label": "Show bottom bar",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "bottom_bar_height",
+      "label": "Bottom bar height",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "padding_desktop",
+      "label": "Top and bottom space, desktop",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_mobile",
+      "label": "Top and bottom space, mobile",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "blocks": [
+    {
+      "type": "offer",
+      "name": "Offer",
+      "settings": [
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge",
+          "default": "Special TV offer"
+        },
+        {
+          "type": "text",
+          "id": "lead",
+          "label": "Headline, white part",
+          "default": "Buy 4,"
+        },
+        {
+          "type": "text",
+          "id": "highlight",
+          "label": "Headline, accent part",
+          "default": "Get 1 free"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "TV offer banner",
+      "blocks": [
+        {
+          "type": "offer",
+          "settings": {
+            "badge": "Special TV offer",
+            "lead": "Buy 4,",
+            "highlight": "Get 1 free"
+          }
+        },
+        {
+          "type": "offer",
+          "settings": {
+            "badge": "Black Friday",
+            "lead": "Buy 6,",
+            "highlight": "Get 3 free"
+          }
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["page"]
+  }
+}
+{% endschema %}

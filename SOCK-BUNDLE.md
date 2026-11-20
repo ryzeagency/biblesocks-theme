@@ -97,11 +97,18 @@ save more**, matching BOM Socks' `dev` branch:
   15% code; it steps down to the pack's own code if Shopify will not take it.
 - Socks added only with the normal Add to cart get no code by themselves.
 - Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
-  name opens a quick view, and the photo opens a lightbox.
-- Phones: the list of socks scrolls on its own, running down to the docked pack. On the
-  TV offer / bundle page, where the picker sits under the banner, it's sized for once the
-  shopper has scrolled to it: the screen less the sticky header, the picker's heading and
-  the pack. Before this it shrank to its 240px minimum there.
+  name is plain text (it used to open a quick view), and the photo opens a lightbox.
+- Phones, product pages: the bundle takes over the screen while it's open. The picker
+  jumps to just under the header and the page locks there, so only the list of socks
+  scrolls. The list fills the space down to the docked pack, and "Back to product photos"
+  is the only way out (it unlocks the page). The list is always sized to the *folded*
+  pack, so when the pack opens to show a new sock it slides over the bottom of the list
+  instead of shrinking it, and folds away again on the next scroll. Not the bundle page
+  section or the build-your-own page, where the picker is the page.
+- Phones: on product pages the list of socks scrolls on its own, running down to the
+  docked pack. On the TV offer / bundle page section it doesn't: every sock shows at full
+  length and the page itself scrolls, with room at the bottom so the docked pack never
+  covers the last row.
 - Phones: once a pack is started the picker takes the photos' place and the pack docks
   to the bottom. It opens on its socks when the cart already has some (on page load
   too), and folded to its message, bar, subtotal and checkout when empty. When the first sock
@@ -151,6 +158,24 @@ pack: Keep the pack in the cart**:
 The build-your-own page (`product.bundle-builder.json`) keeps the pack in the cart too.
 With **Picker opens: From its button** and **Open the cart drawer**, a page works as
 before (Mix & match button, Add bundle to cart).
+
+## Picker top on sock pages (add-more tool)
+
+On sock pages, Add to cart opens the picker as an *add-more* tool, on phones and computers.
+The top is kept to one row, and the pack's tracker does the talking:
+
+- **"← Back to product"** on the left, the only way out. It puts the photos back, and the
+  pack and cart are kept. It replaced "Back to product photos" at the bottom of the list.
+  The text is in **"Back to product" link text**. On phones the filter icon sits at the
+  right of the same row.
+- **No heading.** **Picker heading** is empty in `product.json`, since the tracker already
+  says "Add 1 more to save 15%". An empty heading is simply left out. The build-your-own
+  product and the bundle page section keep "Pick your socks".
+- **"Added" toast.** Add to cart pops up "✓ Bible Hero Socks (Men) added" (or "2 × …")
+  with the sock's photo for 3 seconds: at the top of the screen on a phone and the bottom
+  on a computer. If that add also unlocks a discount, one toast says both:
+  "✓ … added · 15% off unlocked!". The wording is in **Sock bundle → "Added" toast**, with
+  `[item]` for the sock, size and quantity.
 
 ## Mix & match popup
 

@@ -1,1 +1,69 @@
-{"sections":{"collection-header":{"type":"collection-header","settings":{"enable":true,"collection_image_enable":true,"parallax":true,"parallax_direction":"top"}},"main-collection":{"type":"main-collection","blocks":{"product_grid":{"type":"product_grid","settings":{"enable_collection_count":true,"per_row":4,"rows_per_page":7,"mobile_flush_grid":false}},"collection_description":{"type":"collection_description","settings":{}},"subcollections_T8q7GL":{"type":"subcollections","settings":{"subcollections_per_row":5}}},"block_order":["product_grid","collection_description","subcollections_T8q7GL"],"settings":{"enable_sidebar":true,"collapsed":false,"filter_style":"sidebar","enable_color_swatches":false,"enable_swatch_labels":true,"enable_sort":true}}},"order":["collection-header","main-collection"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "collection-header": {
+      "type": "collection-header",
+      "settings": {
+        "enable": true,
+        "collection_image_enable": true,
+        "parallax": true,
+        "parallax_direction": "top"
+      }
+    },
+    "main-collection": {
+      "type": "main-collection",
+      "blocks": {
+        "product_grid": {
+          "type": "product_grid",
+          "settings": {
+            "enable_collection_count": true,
+            "per_row": 4,
+            "rows_per_page": 7,
+            "mobile_flush_grid": false,
+            "show_card_add": true,
+            "infinite_scroll": true,
+            "pack_bar": true,
+            "pack_bar_open_drawer": false,
+            "pack_bar_button": "View cart",
+            "pack_bar_label": "Your pack"
+          }
+        },
+        "collection_description": {
+          "type": "collection_description",
+          "settings": {}
+        },
+        "subcollections_T8q7GL": {
+          "type": "subcollections",
+          "settings": {
+            "subcollections_per_row": 5
+          }
+        }
+      },
+      "block_order": [
+        "product_grid",
+        "collection_description",
+        "subcollections_T8q7GL"
+      ],
+      "settings": {
+        "enable_sidebar": false,
+        "collapsed": false,
+        "filter_style": "sidebar",
+        "enable_color_swatches": false,
+        "enable_swatch_labels": true,
+        "enable_sort": false
+      }
+    }
+  },
+  "order": [
+    "collection-header",
+    "main-collection"
+  ]
+}

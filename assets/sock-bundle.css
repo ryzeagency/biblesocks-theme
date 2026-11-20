@@ -1273,21 +1273,36 @@ html.sock-bundle-filter-drawer-open body {
   }
 }
 
+/* "← Back to product", first in the picker's heading row: the way out of the
+   add-more tool, on a computer and a phone. */
 .sock-bundle-picker__back {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 4px;
-  margin-top: 12px;
+  gap: 6px;
+  min-height: 36px;
+  margin: 0;
   padding: 0;
   border: 0;
   background: none;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--colorTextBody);
-  opacity: 0.7;
   cursor: pointer;
+  text-decoration: none;
+}
+
+.sock-bundle-picker__back::before {
+  content: '\2190';
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sock-bundle-picker__back:hover {
   text-decoration: underline;
 }
+
 
 /* ---------- Site-wide overrides ----------
    snippets/biblesocks-tokens.liquid sets `body p { color: #fff !important }` for the
@@ -1782,15 +1797,9 @@ body.sock-bundle-packing .product-single__meta--product-first:has(.sock-bundle--
   cursor: pointer;
 }
 
+/* The name is plain text (it no longer opens the quick view). */
 .sock-bundle-picker--teaser .sock-bundle-picker__card-title {
   font-weight: 700;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  transition: text-decoration-color 0.15s ease;
-}
-
-.sock-bundle-picker--teaser .sock-bundle-picker__card-title:hover {
-  text-decoration-color: currentColor;
 }
 
 .sock-bundle-picker--teaser .sock-bundle-picker__card-add {
@@ -1831,6 +1840,23 @@ body.sock-bundle-packing .product-single__meta--product-first:has(.sock-bundle--
 .sock-bundle__toast.is-visible {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+/* "✓ Bible Hero Socks (Men) added", with the sock's photo. */
+.sock-bundle__toast.has-image {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 18px 6px 6px;
+}
+
+.sock-bundle__toast-image {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--colorBody);
 }
 
 /* ---------- Quick view ---------- */
@@ -2164,10 +2190,9 @@ html.sock-bundle-qv-open {
     padding-top: 16px;
   }
 
-  /* Tall enough to reach down to "Back to product photos", which then sits
-     just above the docked (folded) pack: 370px is the header and picker
-     heading (with the filter icon) above the grid plus the back link and the
-     folded pack below. */
+  /* Before packing: tall enough to leave the docked (folded) pack clear below
+     the list; 370px is the header and the picker's heading row above it, plus
+     the folded pack below. */
   .sock-bundle-picker--teaser .sock-bundle-picker__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px 8px;
@@ -2180,6 +2205,29 @@ html.sock-bundle-qv-open {
      list starts and how tall the pack is (measureDock). */
   body.sock-bundle-packing .sock-bundle-picker--teaser .sock-bundle-picker__grid {
     max-height: max(240px, calc(100svh - var(--sock-bundle-grid-top, 160px) - var(--sock-bundle-dock, 200px)));
+  }
+
+  /* A product page's bundle takes over the screen on a phone (takesOverScreen in
+     sock-bundle.js): the page stays put with the picker under the header, and
+     only the list of socks scrolls, without dragging the page along. */
+  html.sock-bundle-takeover,
+  html.sock-bundle-takeover body {
+    overflow: hidden;
+  }
+
+  html.sock-bundle-takeover .sock-bundle-picker--teaser .sock-bundle-picker__grid {
+    overscroll-behavior: contain;
+  }
+
+  /* The bundle page section (TV offer page) is the page itself: on a phone its
+     socks run at full length and the page scrolls through them, rather than
+     a box of its own. The page's bottom padding keeps the last row clear of
+     the docked pack. */
+  .sock-bundle-picker--static .sock-bundle-picker__grid,
+  body.sock-bundle-packing .sock-bundle-picker--static .sock-bundle-picker__grid {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .sock-bundle-picker--teaser .sock-bundle-picker__card-title,

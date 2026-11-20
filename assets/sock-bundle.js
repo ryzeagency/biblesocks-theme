@@ -340,6 +340,7 @@ if (!customElements.get('sock-bundle')) {
         this.lightbox?.remove();
         this.toastEl?.remove();
         if (this.teaser) document.body.classList.remove('sock-bundle-packing', 'sock-bundle-pack-folded');
+        this.endTakeover();
       }
 
       /* ------------------------------------------------------------------ */
@@ -1639,8 +1640,67 @@ if (!customElements.get('sock-bundle')) {
         // screen. Set before render, so a first sock going in with this opens it.
         if (opening && this.mobileQuery.matches) this.foldPack(!this.slots.some(Boolean));
         this.render();
-        if (opening && !this.popup) this.measureDock();
-        if (opening && scroll && !this.popup) this.scrollToTop(this.picker);
+        if (opening && !this.popup) {
+          if (this.takesOverScreen()) {
+            this.startTakeover();
+          } else {
+            this.measureDock();
+            if (scroll) this.scrollToTop(this.picker);
+          }
+        }
+      }
+
+      /**
+       * On a phone, a product page's bundle takes over the screen while it is
+       * open: the picker sits just under the header, the page is locked there,
+       * and the list of socks fills the space down to the docked pack. "Back to
+       * product photos" is the way out. Not the bundle page section or the
+       * build-your-own page, where the picker is the page itself, nor the popup.
+       */
+      takesOverScreen() {
+        return Boolean(
+          this.teaser &&
+            !this.popup &&
+            !this.isStatic &&
+            !this.staysOpen &&
+            this.mobileQuery.matches &&
+            this.picker?.querySelector('[data-picker-back]')
+        );
+      }
+
+      stickyHeaderHeight() {
+        const header = document.querySelector('.header-sticky-wrapper .site-header, #SiteHeader');
+        return header ? Math.ceil(header.getBoundingClientRect().height) : 0;
+      }
+
+      startTakeover() {
+        const top = this.picker.getBoundingClientRect().top + window.scrollY - this.stickyHeaderHeight();
+        window.scrollTo({ top: Math.max(0, Math.round(top)), behavior: 'auto' });
+        document.documentElement.classList.add('sock-bundle-takeover');
+        this.measureDock();
+        // Again once the sticky header has settled after the jump.
+        requestAnimationFrame(() => this.measureDock());
+      }
+
+      endTakeover() {
+        document.documentElement.classList.remove('sock-bundle-takeover');
+      }
+
+      /**
+       * The docked pack's height when folded. The list of socks is sized to it,
+       * so the pack opening (as a sock goes in) slides over the bottom of the
+       * list rather than squeezing it; scrolling folds the pack away again.
+       */
+      foldedDockHeight() {
+        const height = this.teaserEl.getBoundingClientRect().height;
+        if (this.teaserEl.classList.contains('is-folded')) return height;
+        let open = 0;
+        if (this.teaserSlotsEl) open += this.teaserSlotsEl.getBoundingClientRect().height + 6;
+        const goal = this.querySelector('[data-sock-teaser-goal]');
+        if (goal && !goal.hidden) {
+          open += goal.getBoundingClientRect().height + (parseFloat(getComputedStyle(goal).marginTop) || 0);
+        }
+        return Math.max(0, height - open);
       }
 
       /**
@@ -1649,21 +1709,26 @@ if (!customElements.get('sock-bundle')) {
        * sock-bundle.css takes both off the screen's height.
        */
       measureDock() {
+        if (!this.mobileQuery.matches) this.endTakeover();
         if (!this.packing || this.popup || !this.teaserEl || !this.mobileQuery.matches) return;
         const style = document.body.style;
-        style.setProperty('--sock-bundle-dock', `${Math.ceil(this.teaserEl.getBoundingClientRect().height)}px`);
+        style.setProperty('--sock-bundle-dock', `${Math.ceil(this.foldedDockHeight())}px`);
         const grid = this.picker?.querySelector('.sock-bundle-picker__grid');
-        if (grid) {
+        if (grid && document.documentElement.classList.contains('sock-bundle-takeover')) {
+          // Locked in place: where the list starts on screen, plus anything
+          // that sits under it in the picker.
+          const gridRect = grid.getBoundingClientRect();
+          const below = Math.max(0, this.picker.getBoundingClientRect().bottom - gridRect.bottom);
+          style.setProperty('--sock-bundle-grid-top', `${Math.round(gridRect.top + below)}px`);
+        } else if (grid) {
           let top = grid.getBoundingClientRect().top + window.scrollY;
           // Lower down a page (the TV offer page, under its banner) the list
           // would shrink to its minimum. There it is sized for when the shopper
           // has scrolled to the picker: the screen less the sticky header, the
           // picker's own heading and the pack.
           if (this.isStatic || top > window.innerHeight * 0.6) {
-            const header = document.querySelector('.header-sticky-wrapper .site-header, #SiteHeader');
-            const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
             const pickerTop = this.picker.getBoundingClientRect().top;
-            top = headerHeight + 8 + (grid.getBoundingClientRect().top - pickerTop);
+            top = this.stickyHeaderHeight() + 8 + (grid.getBoundingClientRect().top - pickerTop);
           }
           style.setProperty('--sock-bundle-grid-top', `${Math.round(top)}px`);
         }
@@ -1703,12 +1768,30 @@ if (!customElements.get('sock-bundle')) {
         if (this.liveCart) {
           this.cartWrite('add', { items: [{ id: Number(this.dataset.variantId), quantity: added }] });
         }
+        this.showAdded(this.currentProductSlot(), added);
 
         if (this.packing) {
           this.render();
         } else {
           this.enterPacking();
         }
+      }
+
+      /**
+       * When the buy box's Add to cart puts a sock in the pack: a toast with its
+       * photo, "✓ 2 × Bible Hero Socks (Men) added", so the switch to the
+       * picker makes sense at a glance. Wording: the block's "Added" toast.
+       */
+      showAdded(slot, quantity) {
+        if (!slot) return;
+        const head = this.picker?.querySelector('[data-added-template]');
+        const size = slot.variantTitle && slot.variantTitle !== 'Default Title' ? ` (${slot.variantTitle})` : '';
+        const item = `${quantity > 1 ? `${quantity} × ` : ''}${slot.title || ''}${size}`;
+        const template = head?.dataset.addedTemplate || '✓ [item] added';
+        const message = template.replace('[item]', item);
+        // A discount this add unlocks joins the same toast (announceUnlock).
+        this.addedToast = { message, image: slot.image, at: Date.now() };
+        this.toast(message, { image: slot.image, duration: 3000 });
       }
 
       /** On a phone, folds the docked pack down to its bar, subtotal and checkout. */
@@ -1775,6 +1858,7 @@ if (!customElements.get('sock-bundle')) {
       exitPacking({ fromHistory = false } = {}) {
         if (this.popup) this.closePopup({ fromHistory });
         this.packing = false;
+        this.endTakeover();
         // Next time the pack docks, it opens in full.
         this.foldPack(false);
         document.body.classList.remove('sock-bundle-packing');
@@ -2104,13 +2188,20 @@ if (!customElements.get('sock-bundle')) {
           const reward = this.unlockedReward(this.earnedTier);
           if (reward) {
             const text = this.unlockedToastText.replace('[reward]', reward);
-            this.toast(text.charAt(0).toUpperCase() + text.slice(1));
+            const unlocked = text.charAt(0).toUpperCase() + text.slice(1);
+            // Added from the buy box this moment: one toast says both.
+            const added = this.addedToast && Date.now() - this.addedToast.at < 500 ? this.addedToast : null;
+            if (added) {
+              this.toast(`${added.message} · ${unlocked}`, { image: added.image, duration: 3200 });
+            } else {
+              this.toast(unlocked);
+            }
           }
         }
         this.lastToastQty = qty;
       }
 
-      toast(message) {
+      toast(message, { image = '', duration = 2200 } = {}) {
         if (!this.toastEl) {
           this.toastEl = document.createElement('div');
           this.toastEl.className = `sock-bundle__toast ${this.schemeClass()}`;
@@ -2118,10 +2209,13 @@ if (!customElements.get('sock-bundle')) {
           this.toastEl.style.setProperty('--sb-accent', getComputedStyle(this).getPropertyValue('--sb-accent'));
           document.body.appendChild(this.toastEl);
         }
-        this.toastEl.textContent = message;
+        this.toastEl.innerHTML = image
+          ? `<img class="sock-bundle__toast-image" src="${this.escape(image)}" alt="" width="40" height="40"><span>${this.escape(message)}</span>`
+          : `<span>${this.escape(message)}</span>`;
+        this.toastEl.classList.toggle('has-image', Boolean(image));
         this.toastEl.classList.add('is-visible');
         clearTimeout(this.toastTimer);
-        this.toastTimer = setTimeout(() => this.toastEl.classList.remove('is-visible'), 2200);
+        this.toastTimer = setTimeout(() => this.toastEl.classList.remove('is-visible'), duration);
       }
 
       /**
@@ -2136,12 +2230,8 @@ if (!customElements.get('sock-bundle')) {
           if (!card.dataset.enhanced) {
             card.dataset.enhanced = 'true';
 
-            const title = card.querySelector('.sock-bundle-picker__card-title');
-            if (title) {
-              title.dataset.pickerQuickView = '';
-              title.setAttribute('role', 'button');
-              title.tabIndex = 0;
-            }
+            // The sock's name is plain text: it no longer opens the quick view.
+            // (The photo still opens the lightbox.)
 
             // Sold-out sizes keep their "Sold out"; the rest say what they cost.
             const select = card.querySelector('select[data-picker-variant]');

@@ -102,7 +102,9 @@ save more**, matching BOM Socks' `dev` branch:
   to the bottom, folded to its message, bar, subtotal and checkout. When the first sock
   goes in, the pack opens so the shopper sees it land. As soon as they scroll the page
   or the list of socks, it folds again to give the socks the room. The same happens
-  after opening it with its arrow. This applies to sock pages, the builder product and
+  after opening it with its arrow. While folded, the arrow gives a small upward hop every
+  4 seconds to show the pack can be opened. It stays still for shoppers whose phone is
+  set to reduce motion. This applies to sock pages, the builder product and
   the sock bundle page section.
 
 The builder product (`product.bundle-builder.json`) uses the same Product first picker

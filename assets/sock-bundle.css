@@ -2163,8 +2163,8 @@ html.sock-bundle-qv-open {
      heading (with the filter icon) above the grid plus the back link and the
      folded pack below. */
   .sock-bundle-picker--teaser .sock-bundle-picker__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 12px;
     max-height: max(300px, calc(100svh - 370px));
   }
 
@@ -2188,21 +2188,37 @@ html.sock-bundle-qv-open {
     overscroll-behavior: contain;
   }
 
-  .sock-bundle-picker--teaser .sock-bundle-picker__card-title,
-  .sock-bundle-picker--teaser .sock-bundle-picker__card-price {
-    font-size: 12px;
+  /* Two across on a phone, so the names, sizes and buttons have room to read:
+     a name runs to two lines rather than being cut off. */
+  .sock-bundle-picker--teaser .sock-bundle-picker__card {
+    gap: 6px;
   }
 
-  /* Three across leaves the dropdown narrow; a smaller size keeps "Men - $16.95" whole. */
+  .sock-bundle-picker--teaser .sock-bundle-picker__card-title {
+    display: -webkit-box;
+    font-size: 14px;
+    line-height: 1.3;
+    white-space: normal;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sock-bundle-picker--teaser .sock-bundle-picker__card-price {
+    font-size: 13px;
+  }
+
   .sock-bundle-picker.sock-bundle-picker--teaser .sock-bundle-picker__card-variants {
-    padding: 0 16px 0 4px;
-    font-size: 10px !important;
-    background-position: right 4px center;
+    height: 36px;
+    padding: 0 22px 0 8px;
+    font-size: 13px !important;
+    line-height: 34px;
+    background-position: right 8px center;
   }
 
   .sock-bundle-picker--teaser .sock-bundle-picker__card-add {
-    min-height: 34px;
-    font-size: 11.5px;
+    min-height: 40px;
+    font-size: 13px;
   }
 
   /* While packing, the pack docks to the bottom of the screen. */
@@ -2667,6 +2683,6 @@ html.sock-bundle-popup-open body {
   }
 
   .sock-bundle-popup .sock-bundle-picker.sock-bundle-picker--teaser .sock-bundle-picker__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

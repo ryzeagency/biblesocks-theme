@@ -97,7 +97,14 @@ save more**, matching BOM Socks' `dev` branch:
   15% code; it steps down to the pack's own code if Shopify will not take it.
 - Socks added only with the normal Add to cart get no code by themselves.
 - Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
-  name opens a quick view, and the photo opens a lightbox.
+  name is plain text (it used to open a quick view), and the photo opens a lightbox.
+- Phones, product pages: the bundle takes over the screen while it's open. The picker
+  jumps to just under the header and the page locks there, so only the list of socks
+  scrolls. The list fills the space down to the docked pack, and "Back to product photos"
+  is the only way out (it unlocks the page). The list is always sized to the *folded*
+  pack, so when the pack opens to show a new sock it slides over the bottom of the list
+  instead of shrinking it, and folds away again on the next scroll. Not the bundle page
+  section or the build-your-own page, where the picker is the page.
 - Phones: the list of socks scrolls on its own, running down to the docked pack. On the
   TV offer / bundle page, where the picker sits under the banner, it's sized for once the
   shopper has scrolled to it: the screen less the sticky header, the picker's heading and

@@ -1782,15 +1782,9 @@ body.sock-bundle-packing .product-single__meta--product-first:has(.sock-bundle--
   cursor: pointer;
 }
 
+/* The name is plain text (it no longer opens the quick view). */
 .sock-bundle-picker--teaser .sock-bundle-picker__card-title {
   font-weight: 700;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  transition: text-decoration-color 0.15s ease;
-}
-
-.sock-bundle-picker--teaser .sock-bundle-picker__card-title:hover {
-  text-decoration-color: currentColor;
 }
 
 .sock-bundle-picker--teaser .sock-bundle-picker__card-add {
@@ -2180,6 +2174,18 @@ html.sock-bundle-qv-open {
      list starts and how tall the pack is (measureDock). */
   body.sock-bundle-packing .sock-bundle-picker--teaser .sock-bundle-picker__grid {
     max-height: max(240px, calc(100svh - var(--sock-bundle-grid-top, 160px) - var(--sock-bundle-dock, 200px)));
+  }
+
+  /* A product page's bundle takes over the screen on a phone (takesOverScreen in
+     sock-bundle.js): the page stays put with the picker under the header, and
+     only the list of socks scrolls, without dragging the page along. */
+  html.sock-bundle-takeover,
+  html.sock-bundle-takeover body {
+    overflow: hidden;
+  }
+
+  html.sock-bundle-takeover .sock-bundle-picker--teaser .sock-bundle-picker__grid {
+    overscroll-behavior: contain;
   }
 
   .sock-bundle-picker--teaser .sock-bundle-picker__card-title,

@@ -31,6 +31,7 @@ Standard Shopify theme structure: `layout/`, `templates/` (JSON, plus some `.liq
 | Cart page extras | `assets/cart-extras.{js,css}` (`<cart-extras>`), `snippets/cart-extras-*.liquid`, `sections/main-cart.liquid` |
 | Cart drawer | `snippets/cart-drawer.liquid`, `snippets/cart-item.liquid`, `snippets/cart-pack-progress.liquid` + `sections/cart-drawer-progress.liquid` + `assets/cart-pack-progress.css` (pack progress bar), `sections/cart-drawer-recs-grid.liquid` + `assets/cart-recommendations.js` ("You might also like") |
 | Quick add on product cards | `snippets/product-card-add.liquid`, `assets/product-card-add.{js,css}` |
+| Collection buy more save more bar | `snippets/collection-pack-bar.liquid`, `sections/collection-pack-bar.liquid`, `assets/collection-pack-bar.{js,css}` (`<collection-pack-bar>`), rendered by `sections/main-collection.liquid`; reuses `snippets/cart-pack-progress.liquid` |
 | Brand homepage sections | `sections/biblesocks-*.liquid`, which share `snippets/biblesocks-tokens.liquid` (fonts and global style overrides) |
 | Landing pages | `templates/page.black-friday-2026.liquid`, `templates/page.monthly-lander.liquid` (self-contained; they hide the theme header and footer) |
 | Other | `templates/llms.txt.liquid`, `assets/collection-infinite-scroll.js`, `assets/image-banner.js` |

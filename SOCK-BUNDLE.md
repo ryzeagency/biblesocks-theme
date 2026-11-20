@@ -229,6 +229,27 @@ A code the shopper typed (not a pack code) hides the bar. Files:
 after every cart change by the script at the end of `snippets/cart-drawer.liquid`),
 `assets/cart-pack-progress.css`.
 
+## Buy more save more bar (collection pages)
+
+The pack progress bar from the cart drawer also docks to the bottom of collection pages.
+On a phone it runs full width, like the sock pages' docked pack. On a computer it's a card
+centred at the bottom. It shows the next step, the bar with the free-shipping truck, the
+cart subtotal and **View cart**, which opens the drawer.
+
+- It appears once the cart has socks that count, and comes up after every **Add to cart**
+  under a product card. The drawer stays shut by default. Turn on **Also open the cart
+  drawer after an add to cart** to open both.
+- The drawer opens anyway when the bar has nothing to show, e.g. a gift card was added or
+  the shopper typed their own code.
+- × hides the bar until the next add to cart.
+- Settings: **Collection → Product grid block → Buy more save more bar**. The steps and
+  wording are the drawer's (**Theme settings → Cart → Pack progress bar (cart drawer)**),
+  so the bar always agrees with the drawer.
+- Files: `snippets/collection-pack-bar.liquid` (contents),
+  `sections/collection-pack-bar.liquid` (redraws them after each cart change),
+  `assets/collection-pack-bar.{js,css}`, wired in by `sections/main-collection.liquid`
+  and `assets/product-card-add.js`.
+
 ## Pack codes in the cart
 
 **Theme settings → Cart → Pack discount codes** (`2:CODE, 3:CODE, 4:CODE`). When a sock

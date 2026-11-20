@@ -16,8 +16,42 @@
     {%- if block.settings.infinite_scroll -%}
       <script src="{{ 'collection-infinite-scroll.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+    {%- if block.settings.pack_bar -%}
+      {%- assign pack_bar_block = block -%}
+    {%- endif -%}
   {%- endif -%}
 {%- endfor -%}
+
+{%- comment -%}
+  The buy more save more bar docked to the bottom of the page: shows once the
+  cart holds socks the pack steps count, and comes up after each quick add.
+{%- endcomment -%}
+{%- if pack_bar_block -%}
+  {{ 'cart-pack-progress.css' | asset_url | stylesheet_tag }}
+  {{ 'collection-pack-bar.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'collection-pack-bar.js' | asset_url }}" defer="defer"></script>
+  <collection-pack-bar
+    role="region"
+    aria-label="{{ pack_bar_block.settings.pack_bar_label | escape }}"
+    aria-hidden="true"
+    data-url="{{ routes.cart_url }}"
+    data-open-drawer="{{ pack_bar_block.settings.pack_bar_open_drawer }}"
+  >
+    <div class="collection-pack-bar__inner">
+      <div class="collection-pack-bar__content" data-pack-bar-content aria-live="polite">
+        {%- render 'collection-pack-bar' -%}
+      </div>
+      <a href="{{ routes.cart_url }}" class="btn collection-pack-bar__view" data-pack-bar-view>
+        {{- pack_bar_block.settings.pack_bar_button | default: 'View cart' | escape -}}
+      </a>
+    </div>
+    <button type="button" class="collection-pack-bar__close" data-pack-bar-close aria-label="{{ 'general.accessibility.close' | t }}">
+      <svg viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+        <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </collection-pack-bar>
+{%- endif -%}
 
 <div
   class="collection-content"
@@ -238,6 +272,36 @@
           "label": "Load more as you scroll",
           "info": "The next page's products join the grid as shoppers reach its end, in place of page links.",
           "default": true
+        },
+        {
+          "type": "header",
+          "content": "Buy more save more bar"
+        },
+        {
+          "type": "checkbox",
+          "id": "pack_bar",
+          "label": "Show the buy more save more bar",
+          "info": "Docks to the bottom of the page once the cart has socks, and comes up after each add to cart. Its steps and wording are under Theme settings → Cart → Pack progress bar (cart drawer).",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "pack_bar_open_drawer",
+          "label": "Also open the cart drawer after an add to cart",
+          "info": "Off: the bar comes up and the drawer stays shut. The drawer always opens when the bar has nothing to show (e.g. the product added does not count toward the pack).",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "pack_bar_button",
+          "label": "Bar button text",
+          "default": "View cart"
+        },
+        {
+          "type": "text",
+          "id": "pack_bar_label",
+          "label": "Bar name for screen readers",
+          "default": "Your pack"
         }
       ],
       "limit": 1

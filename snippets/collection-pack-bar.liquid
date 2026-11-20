@@ -1,0 +1,21 @@
+{%- comment -%}
+  What the collection page's pack bar shows, built from the cart: the cart
+  drawer's buy more save more tracker (snippets/cart-pack-progress.liquid) and
+  the cart's subtotal. Nothing at all when the tracker has nothing to say (no
+  socks in the cart, no steps set, or a code the shopper typed), and the bar
+  then stays hidden.
+
+  Rendered inside the bar by sections/main-collection.liquid, and redrawn after
+  every cart change through sections/collection-pack-bar.liquid.
+
+  Usage:
+  {% render 'collection-pack-bar' %}
+{%- endcomment -%}
+{%- capture progress -%}{%- render 'cart-pack-progress' -%}{%- endcapture -%}
+{%- if progress contains 'cart-pack-progress' -%}
+  <div class="collection-pack-bar__progress">{{ progress }}</div>
+  <div class="collection-pack-bar__subtotal">
+    <span>{{ 'cart.general.subtotal' | t }}</span>
+    <strong>{{ cart.total_price | money }}</strong>
+  </div>
+{%- endif -%}

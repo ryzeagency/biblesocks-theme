@@ -1,0 +1,127 @@
+/* The buy more save more bar docked to the bottom of collection pages
+   (sections/main-collection.liquid, assets/collection-pack-bar.js). Drawn like
+   the sock pages' docked pack: the tracker from the cart drawer
+   (cart-pack-progress.css) above the subtotal and View cart. Full width on a
+   phone, a card centred at the bottom on a computer. */
+collection-pack-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20; /* under Impulse's drawers (30) */
+  display: block;
+  padding: 12px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1.5px solid var(--colorDrawerText);
+  border-radius: 16px 16px 0 0;
+  background: var(--colorDrawers);
+  color: var(--colorDrawerText);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(calc(100% + 24px));
+  visibility: hidden;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.35s;
+}
+
+collection-pack-bar.is-visible {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+}
+
+body.has-collection-pack-bar {
+  padding-bottom: var(--collection-pack-bar-height, 140px);
+}
+
+/* The tracker and the subtotal come from Liquid; with the button they share
+   one grid: the tracker across the top, the subtotal and button under it. */
+.collection-pack-bar__inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.collection-pack-bar__content {
+  display: contents;
+}
+
+.collection-pack-bar__progress {
+  grid-column: 1 / -1;
+  padding: 0 28px; /* clear of the × */
+}
+
+.collection-pack-bar .cart-pack-progress__text {
+  margin-bottom: 14px;
+}
+
+.collection-pack-bar .cart-pack-progress__msg {
+  font-size: 14px;
+}
+
+.collection-pack-bar__subtotal {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.collection-pack-bar__subtotal strong {
+  font-size: 18px;
+}
+
+.collection-pack-bar__view.btn {
+  margin: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  white-space: nowrap;
+}
+
+.collection-pack-bar__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--colorDrawerText) 6%, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.collection-pack-bar__close svg {
+  width: 12px;
+  height: 12px;
+}
+
+@media only screen and (min-width: 769px) {
+  collection-pack-bar {
+    left: 50%;
+    right: auto;
+    bottom: 16px;
+    width: min(560px, calc(100% - 32px));
+    padding: 14px 20px;
+    border: 1.5px solid var(--colorDrawerText);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.16);
+    transform: translate(-50%, calc(100% + 40px));
+  }
+
+  collection-pack-bar.is-visible {
+    transform: translateX(-50%);
+  }
+
+  body.has-collection-pack-bar {
+    padding-bottom: calc(var(--collection-pack-bar-height, 140px) + 32px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  collection-pack-bar,
+  collection-pack-bar.is-visible {
+    transition: none;
+  }
+}

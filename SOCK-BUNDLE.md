@@ -201,9 +201,21 @@ title is the **Collection filter label**. Computers keep the pills or the dropdo
 lists. The collection the picker opens on (All Socks) always comes first as the way back
 to every sock, followed by those chosen, e.g. Men, Women, Kids. Leave it empty to list
 every collection filter. It's set separately on each of the three templates, like the
-other settings. It's currently set to Men (`men`) and Kids (`children`) in all three.
-**Women's still needs adding** in the theme editor, because the theme doesn't reference
-a women's collection.
+other settings. It's set to Men (`men`), Youth (`youth`) and Kids (`children`) in all three.
+Women's and Youth socks are the same size, so the Youth collection serves both.
+
+**Filter names** renames a filter in the picker (pills, dropdown, phone drawer and the
+icon's label) without renaming the collection in Shopify, written as `handle:Name`,
+separated by commas. The default is `youth:Women / Youth, children:Kids`, so phones read
+All socks, Men, Women / Youth, Kids.
+
+**Filters pick the size.** Tapping a filter (pill or drawer row) switches every sock's size
+dropdown to the size named like the filter, when that size is in stock, and the card's
+price follows. Men picks "Men" or "Men's" (never "Women's") and Youth picks "Youth". A
+filter that names no size (All socks, Patriotic) leaves the dropdowns as they were. Where
+a collection and its size are named differently, pair them in **Size each filter picks**
+as `handle:Size`, separated by commas. The default is `children:Kids`. Filters match on the
+collection's own title, not its Filter name, so Youth still picks the Youth size.
 
 Only products of type **Socks** appear (**Only show this product type**), since the
 3-pack bundles, gift box, gift card and the builder product share some collections.

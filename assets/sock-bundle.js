@@ -722,6 +722,7 @@ if (!customElements.get('sock-bundle')) {
         this.activeFilter = handle;
         grid.innerHTML = html;
         this.pinViewedSock(grid);
+        this.pickFilterSize(handle, grid);
         grid.scrollTop = 0;
         grid.classList.remove('is-loading');
         grid.removeAttribute('aria-busy');
@@ -863,6 +864,57 @@ if (!customElements.get('sock-bundle')) {
           if (!drawer.classList.contains('is-open')) drawer.hidden = true;
         }, reduce ? 0 : 300);
         if (restoreFocus) this.filterOpenButton?.focus({ preventScroll: true });
+      }
+
+      /**
+       * A filter that names a size (Men, Youth...) switches every sock's size
+       * dropdown to it, where that size is in stock. The size is the one paired
+       * with the collection in "Size each filter picks" (children:Kids), else the
+       * collection's title. Names match loosely: Men = Men's = Mens, never Women.
+       * A filter that names no size (All socks, Patriotic) leaves the defaults.
+       */
+      pickFilterSize(handle, grid) {
+        const size = this.normalizeSize(this.filterSizeFor(handle));
+        if (!size) return;
+        const pattern = new RegExp(`(^|[\\s/(-])${size.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[\\s/)-])`);
+        grid.querySelectorAll('select[data-picker-variant]').forEach((select) => {
+          const match = Array.from(select.options).find(
+            (option) => !option.disabled && pattern.test(this.normalizeSize(option.dataset.variantTitle || option.text))
+          );
+          if (match && select.value !== match.value) select.value = match.value;
+        });
+      }
+
+      filterSizeFor(handle) {
+        const pairs = (this.picker?.dataset.filterSizes || '').split(',');
+        for (const pair of pairs) {
+          const [key, ...rest] = pair.split(':');
+          if (key && key.trim().toLowerCase() === handle.toLowerCase()) return rest.join(':').trim();
+        }
+        // Else the collection's own title ("Youth"), not a name set for it in
+        // "Filter names" ("Women / Youth").
+        const selector = `[data-picker-filter="${CSS.escape(handle)}"]`;
+        const button = this.filterDrawer?.querySelector(selector) || this.picker?.querySelector(selector);
+        if (button) {
+          return (
+            button.dataset.filterTitle ||
+            button.querySelector('.sock-bundle-picker__filter-label')?.textContent.trim() ||
+            ''
+          );
+        }
+        const option = this.filterSelect?.querySelector(`option[value="${CSS.escape(handle)}"]`);
+        return option?.textContent.replace(/\(\d+\)\s*$/, '').trim() || '';
+      }
+
+      /** "Men's" and "Mens" read as "men"; "Kids" as "kid". */
+      normalizeSize(text) {
+        return String(text || '')
+          .toLowerCase()
+          .replace(/[\u2019']/g, '')
+          .split(/\s+/)
+          .map((word) => word.replace(/s$/, ''))
+          .join(' ')
+          .trim();
       }
 
       /** Mark the active filter, on the pills, in the dropdown and in the phone's drawer. */

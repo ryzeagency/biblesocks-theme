@@ -34,6 +34,7 @@
   class="sock-bundle-picker{% if block.settings.single_uses_picker or static %} sock-bundle-picker--open-on-load{% endif %}{% if block.settings.layout == 'teaser' or static %} sock-bundle-picker--teaser{% endif %}"
   id="SockBundlePicker-{{ section_id }}"
   data-sock-bundle-picker="{{ section_id }}"
+  data-filter-sizes="{{ block.settings.picker_filter_sizes | escape }}"
 >
   <div class="sock-bundle-picker__head">
     <h3 class="sock-bundle-picker__title">
@@ -64,7 +65,7 @@
         </svg>
         <span class="visually-hidden">{{ block.settings.picker_filter_label | default: 'Filter by' | escape }}:</span>
         <span class="sock-bundle-picker__filter-current" data-picker-filter-current>
-          {%- render 'sock-bundle-picker-filter-label', collection: bundle_collection, as: 'text' -%}
+          {%- render 'sock-bundle-picker-filter-label', collection: bundle_collection, as: 'text', names: block.settings.picker_filter_names -%}
         </span>
       </button>
     {%- endif -%}
@@ -92,7 +93,7 @@
             {% endif %}
           >
             {%- for filter_collection in filters -%}
-              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'option', selected: forloop.first -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'option', selected: forloop.first, names: block.settings.picker_filter_names -%}
             {%- endfor -%}
           </select>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -124,7 +125,7 @@
             data-picker-filters
           >
             {%- for filter_collection in filters -%}
-              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: forloop.first -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: forloop.first, names: block.settings.picker_filter_names -%}
             {%- endfor -%}
           </div>
           <button
@@ -178,14 +179,14 @@
           {%- endcomment -%}
           {%- assign phone_filters = block.settings.picker_filter_collections_mobile -%}
           {%- if phone_filters != blank and phone_filters.size > 0 -%}
-            {%- render 'sock-bundle-picker-filter-label', collection: bundle_collection, as: 'pill', selected: true -%}
+            {%- render 'sock-bundle-picker-filter-label', collection: bundle_collection, as: 'pill', selected: true, names: block.settings.picker_filter_names -%}
             {%- for filter_collection in phone_filters -%}
               {%- if filter_collection.handle == bundle_collection.handle -%}{%- continue -%}{%- endif -%}
-              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: false -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: false, names: block.settings.picker_filter_names -%}
             {%- endfor -%}
           {%- else -%}
             {%- for filter_collection in filters -%}
-              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: forloop.first -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: forloop.first, names: block.settings.picker_filter_names -%}
             {%- endfor -%}
           {%- endif -%}
         </div>

@@ -105,10 +105,10 @@ save more**, matching BOM Socks' `dev` branch:
   pack, so when the pack opens to show a new sock it slides over the bottom of the list
   instead of shrinking it, and folds away again on the next scroll. Not the bundle page
   section or the build-your-own page, where the picker is the page.
-- Phones: the list of socks scrolls on its own, running down to the docked pack. On the
-  TV offer / bundle page, where the picker sits under the banner, it's sized for once the
-  shopper has scrolled to it: the screen less the sticky header, the picker's heading and
-  the pack. Before this it shrank to its 240px minimum there.
+- Phones: on product pages the list of socks scrolls on its own, running down to the
+  docked pack. On the TV offer / bundle page section it doesn't: every sock shows at full
+  length and the page itself scrolls, with room at the bottom so the docked pack never
+  covers the last row.
 - Phones: once a pack is started the picker takes the photos' place and the pack docks
   to the bottom. It opens on its socks when the cart already has some (on page load
   too), and folded to its message, bar, subtotal and checkout when empty. When the first sock

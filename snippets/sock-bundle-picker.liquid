@@ -31,7 +31,7 @@
 -%}
 
 <div
-  class="sock-bundle-picker{% if block.settings.single_uses_picker or static %} sock-bundle-picker--open-on-load{% endif %}{% if block.settings.layout == 'teaser' or static %} sock-bundle-picker--teaser{% endif %}"
+  class="sock-bundle-picker{% if block.settings.single_uses_picker or static %} sock-bundle-picker--open-on-load{% endif %}{% if block.settings.layout == 'teaser' or static %} sock-bundle-picker--teaser{% endif %}{% if static %} sock-bundle-picker--static{% endif %}"
   id="SockBundlePicker-{{ section_id }}"
   data-sock-bundle-picker="{{ section_id }}"
   data-filter-sizes="{{ block.settings.picker_filter_sizes | escape }}"

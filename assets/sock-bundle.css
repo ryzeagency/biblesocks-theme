@@ -2188,6 +2188,17 @@ html.sock-bundle-qv-open {
     overscroll-behavior: contain;
   }
 
+  /* The bundle page section (TV offer page) is the page itself: on a phone its
+     socks run at full length and the page scrolls through them, rather than
+     a box of its own. The page's bottom padding keeps the last row clear of
+     the docked pack. */
+  .sock-bundle-picker--static .sock-bundle-picker__grid,
+  body.sock-bundle-packing .sock-bundle-picker--static .sock-bundle-picker__grid {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
   .sock-bundle-picker--teaser .sock-bundle-picker__card-title,
   .sock-bundle-picker--teaser .sock-bundle-picker__card-price {
     font-size: 12px;

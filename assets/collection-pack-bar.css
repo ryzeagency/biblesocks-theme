@@ -251,8 +251,26 @@ collection-pack-bar.is-folded .collection-pack-bar__toggle svg {
   16% { transform: rotate(180deg) translateY(2px); }
 }
 
+/* Folding and opening ease the boxes' height, spacing and fade (the -10px takes
+   back the bar's row gap), so the bar glides down rather than snapping shut
+   when a scroll folds it. */
+.collection-pack-bar__boxes {
+  max-height: 160px;
+  transition:
+    max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease;
+}
+
 collection-pack-bar.is-folded .collection-pack-bar__boxes {
-  display: none;
+  max-height: 0;
+  margin-top: -10px;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 @media only screen and (min-width: 769px) {
@@ -287,6 +305,10 @@ collection-pack-bar.is-folded .collection-pack-bar__boxes {
   .collection-pack-bar__box.is-new,
   collection-pack-bar.is-folded .collection-pack-bar__toggle svg {
     animation: none;
+  }
+
+  .collection-pack-bar__boxes {
+    transition: none;
   }
 }
 

@@ -2120,10 +2120,39 @@ html.sock-bundle-qv-open {
   }
 
   /* Folded, the pack keeps its message, bar, subtotal and checkout; the pairs and
-     the free shipping goal go. */
+     the free shipping goal slide away. Folding and opening ease the boxes' height,
+     spacing and fade (the -6px takes back the pack's gap), so the docked pack
+     glides down rather than snapping shut when a scroll folds it. */
+  body.sock-bundle-packing .sock-bundle__teaser-slots,
+  body.sock-bundle-packing .sock-bundle__teaser-goal {
+    max-height: 160px;
+    transition:
+      max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      margin 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.25s ease;
+  }
+
   body.sock-bundle-packing .sock-bundle__teaser.is-folded .sock-bundle__teaser-slots,
   body.sock-bundle-packing .sock-bundle__teaser.is-folded .sock-bundle__teaser-goal {
-    display: none;
+    max-height: 0;
+    margin-top: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser.is-folded .sock-bundle__teaser-slots {
+    margin-top: -6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.sock-bundle-packing .sock-bundle__teaser-slots,
+    body.sock-bundle-packing .sock-bundle__teaser-goal {
+      transition: none;
+    }
   }
 
   /* On a phone the whole docked pack is the accordion's tap target. */

@@ -327,6 +327,7 @@ if (!customElements.get('sock-bundle')) {
         this.tiersEl?.removeEventListener('scroll', this.updateArrows);
         window.removeEventListener('resize', this.updateArrows);
         this.dockObserver?.disconnect();
+        this.disarmAutoFold?.();
         if (this.measureDock) window.removeEventListener('resize', this.measureDock);
         this.mobileQuery.removeEventListener('change', this.syncPickerPlacement);
 
@@ -904,6 +905,13 @@ if (!customElements.get('sock-bundle')) {
         this.growSlots();
         this.saveSlots();
         const filled = this.slots.filter(Boolean).length;
+
+        // On a phone the docked pack opens as the first sock goes in, so the
+        // shopper sees it land; scrolling folds it again (armAutoFold).
+        if (this.prevFilled === 0 && filled > 0 && this.packing && this.mobileQuery.matches) {
+          this.foldPack(false);
+        }
+        this.prevFilled = filled;
 
         // What the pack has actually earned, and what one more sock would earn.
         this.earnedTier = this.tierFor(filled);
@@ -1498,9 +1506,10 @@ if (!customElements.get('sock-bundle')) {
             'sock-bundle-gallery-hidden-mobile'
           );
         }
-        this.render();
         // On a phone the docked pack opens folded, leaving the picker the screen.
+        // Folded before render, so a first sock going in with this opens it.
         if (opening && this.mobileQuery.matches) this.foldPack(true);
+        this.render();
         if (opening && !this.popup) this.measureDock();
         if (opening && scroll && !this.popup) this.scrollToTop(this.picker);
       }
@@ -1567,6 +1576,57 @@ if (!customElements.get('sock-bundle')) {
         this.teaserEl?.classList.toggle('is-folded', folded);
         document.body.classList.toggle('sock-bundle-pack-folded', folded);
         this.teaserToggle?.setAttribute('aria-expanded', String(!folded));
+        if (!folded && this.packing && this.teaserEl && this.mobileQuery.matches) {
+          this.armAutoFold();
+        } else {
+          this.disarmAutoFold?.();
+        }
+      }
+
+      /**
+       * While the docked pack is open on a phone, the shopper scrolling the
+       * page or the list of socks folds it, giving the socks the room. Only a
+       * swipe or wheel counts: the pack's own scrolling (to the picker, a tab
+       * resetting the list) and sideways strips (filter tabs, the pack's boxes)
+       * leave it open.
+       */
+      armAutoFold() {
+        this.disarmAutoFold?.();
+        let startY = null;
+        let swiping = false;
+        const inPack = (target) => target instanceof Node && this.teaserEl?.contains(target);
+
+        const onTouchStart = (event) => {
+          swiping = false;
+          startY = inPack(event.target) ? null : event.touches[0]?.clientY ?? null;
+        };
+        const onTouchMove = (event) => {
+          if (startY === null) return;
+          if (Math.abs((event.touches[0]?.clientY ?? startY) - startY) > 10) swiping = true;
+        };
+        const onWheel = (event) => {
+          swiping = !inPack(event.target) && Math.abs(event.deltaY) > 0;
+        };
+        const onScroll = (event) => {
+          if (!swiping) return;
+          const target = event.target === document ? document.scrollingElement : event.target;
+          if (!target || inPack(target)) return;
+          if (target !== document.scrollingElement && target.scrollHeight <= target.clientHeight) return;
+          this.foldPack(true);
+        };
+
+        const options = { passive: true, capture: true };
+        document.addEventListener('touchstart', onTouchStart, options);
+        document.addEventListener('touchmove', onTouchMove, options);
+        document.addEventListener('wheel', onWheel, options);
+        document.addEventListener('scroll', onScroll, options);
+        this.disarmAutoFold = () => {
+          document.removeEventListener('touchstart', onTouchStart, options);
+          document.removeEventListener('touchmove', onTouchMove, options);
+          document.removeEventListener('wheel', onWheel, options);
+          document.removeEventListener('scroll', onScroll, options);
+          this.disarmAutoFold = null;
+        };
       }
 
       exitPacking({ fromHistory = false } = {}) {

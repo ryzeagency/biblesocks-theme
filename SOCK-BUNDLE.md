@@ -99,7 +99,11 @@ save more**, matching BOM Socks' `dev` branch:
 - Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
   name opens a quick view, and the photo opens a lightbox.
 - Phones: once a pack is started the picker takes the photos' place and the pack docks
-  to the bottom, folded to its message, bar, subtotal and checkout.
+  to the bottom, folded to its message, bar, subtotal and checkout. When the first sock
+  goes in, the pack opens so the shopper sees it land. As soon as they scroll the page
+  or the list of socks, it folds again to give the socks the room. The same happens
+  after opening it with its arrow. This applies to sock pages, the builder product and
+  the sock bundle page section.
 
 The builder product (`product.bundle-builder.json`) uses the same Product first picker
 and pack, opening straight on them (**Single lets the shopper choose any sock** makes it

@@ -1986,12 +1986,13 @@ html.sock-bundle-qv-open {
   }
 
   /* Tall enough to reach down to "Back to product photos", which then sits
-     just above the docked (folded) pack: 370px is the header and picker
-     heading above the grid plus the back link and the folded pack below. */
+     just above the docked (folded) pack: 416px is the header, picker heading
+     and collection tabs above the grid plus the back link and the folded pack
+     below. */
   .sock-bundle-picker--teaser .sock-bundle-picker__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px 8px;
-    max-height: max(300px, calc(100svh - 370px));
+    max-height: max(300px, calc(100svh - 416px));
   }
 
   /* While packing, the list of socks runs right down to the docked pack (as on
@@ -2250,9 +2251,23 @@ html.sock-bundle-qv-open {
     transform: translate(-50%, -16px);
   }
 
-  /* The picker keeps to the socks on a phone; the collection tabs stay on desktop. */
+  /* The collection tabs show on a phone too: one swipeable row of pills (or
+     the dropdown), tall enough for a finger, with "Filter by" kept short. */
   .sock-bundle-picker--teaser .sock-bundle-picker__filter-row {
-    display: none;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .sock-bundle-picker--teaser .sock-bundle-picker__filter-by {
+    font-size: 12px;
+  }
+
+  .sock-bundle-picker__filter {
+    min-height: 36px;
+  }
+
+  .sock-bundle-picker--teaser .sock-bundle-picker__filter-select {
+    max-width: none;
   }
 
   .sock-bundle--teaser {

@@ -188,6 +188,9 @@ pack stay in it, whichever tab they came from, and a sock being viewed leads any
 that holds it. **Collection filter style** switches the pills to a dropdown, and
 **Collection filter label** sets the "Filter by" text.
 
+The tabs show on phones too, as one row of pills you swipe sideways (or the dropdown).
+They were hidden on phones when this was ported from BOM Socks.
+
 Only products of type **Socks** appear (**Only show this product type**), since the
 3-pack bundles, gift box, gift card and the builder product share some collections.
 The grid section has its own copy of that setting, defaulting to Socks.

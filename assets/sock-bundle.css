@@ -850,6 +850,185 @@ sock-bundle {
   opacity: 0.75;
 }
 
+/* ---------- Filter icon and drawer (phones) ---------- */
+
+/* In the picker's heading on a phone: a filter icon and the collection on
+   show. Hidden on a computer, where the tabs are. */
+.sock-bundle-picker__filter-open {
+  display: none;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 55%;
+  min-height: 36px;
+  margin-left: auto;
+  padding: 6px 12px 6px 10px;
+  border: 1px solid var(--colorTextBody);
+  border-radius: 999px;
+  background: var(--colorBody);
+  color: var(--colorTextBody);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.sock-bundle-picker__filter-open svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.sock-bundle-picker__filter-current {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A sheet up from the bottom, over the docked pack and the popup (9990) and
+   under the quick view (10000). */
+.sock-bundle-filter-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 9995;
+}
+
+.sock-bundle-filter-drawer[hidden] {
+  display: none;
+}
+
+.sock-bundle-filter-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sock-bundle-filter-drawer__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 75svh;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-radius: 16px 16px 0 0;
+  background: var(--colorBody);
+  color: var(--colorTextBody);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.16);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sock-bundle-filter-drawer.is-open .sock-bundle-filter-drawer__backdrop {
+  opacity: 1;
+}
+
+.sock-bundle-filter-drawer.is-open .sock-bundle-filter-drawer__panel {
+  transform: none;
+}
+
+.sock-bundle-filter-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--colorTextBody) 12%, transparent);
+}
+
+.sock-bundle-filter-drawer__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.sock-bundle-filter-drawer__close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--colorTextBody) 6%, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.sock-bundle-filter-drawer__close svg {
+  width: 12px;
+  height: 12px;
+}
+
+.sock-bundle-filter-drawer__list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 16px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Each collection as a full-width row: name, sock count, and a tick on the
+   one on show (the pills' own tick, moved to the end). */
+.sock-bundle-filter-drawer .sock-bundle-picker__filter {
+  width: 100%;
+  min-height: 48px;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 12px 2px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--colorTextBody) 10%, transparent);
+  border-radius: 0;
+  background: none;
+  color: var(--colorTextBody);
+  font-size: 15px;
+  text-align: left;
+  white-space: normal;
+}
+
+.sock-bundle-filter-drawer .sock-bundle-picker__filter:last-child {
+  border-bottom: 0;
+}
+
+.sock-bundle-filter-drawer .sock-bundle-picker__filter-label {
+  flex: 1;
+}
+
+.sock-bundle-filter-drawer .sock-bundle-picker__filter-count {
+  font-size: 13px;
+}
+
+.sock-bundle-filter-drawer .sock-bundle-picker__filter[aria-pressed='true'] {
+  background: none;
+  color: var(--colorTextBody);
+  font-weight: 700;
+}
+
+.sock-bundle-filter-drawer .sock-bundle-picker__filter[aria-pressed='true']::before {
+  order: 2;
+  font-size: 14px;
+}
+
+html.sock-bundle-filter-drawer-open,
+html.sock-bundle-filter-drawer-open body {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sock-bundle-filter-drawer__backdrop,
+  .sock-bundle-filter-drawer__panel {
+    transition: none;
+  }
+}
+
 .sock-bundle-picker__grid.is-loading {
   opacity: 0.4;
   pointer-events: none;
@@ -1986,13 +2165,13 @@ html.sock-bundle-qv-open {
   }
 
   /* Tall enough to reach down to "Back to product photos", which then sits
-     just above the docked (folded) pack: 416px is the header, picker heading
-     and collection tabs above the grid plus the back link and the folded pack
-     below. */
+     just above the docked (folded) pack: 370px is the header and picker
+     heading (with the filter icon) above the grid plus the back link and the
+     folded pack below. */
   .sock-bundle-picker--teaser .sock-bundle-picker__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px 8px;
-    max-height: max(300px, calc(100svh - 416px));
+    max-height: max(300px, calc(100svh - 370px));
   }
 
   /* While packing, the list of socks runs right down to the docked pack (as on
@@ -2251,23 +2430,14 @@ html.sock-bundle-qv-open {
     transform: translate(-50%, -16px);
   }
 
-  /* The collection tabs show on a phone too: one swipeable row of pills (or
-     the dropdown), tall enough for a finger, with "Filter by" kept short. */
-  .sock-bundle-picker--teaser .sock-bundle-picker__filter-row {
-    gap: 8px;
-    margin-bottom: 10px;
+  /* On a phone the collection tabs fold into the filter icon in the picker's
+     heading, which opens the filter drawer (see "Filter drawer" below). */
+  .sock-bundle-picker__filter-row {
+    display: none;
   }
 
-  .sock-bundle-picker--teaser .sock-bundle-picker__filter-by {
-    font-size: 12px;
-  }
-
-  .sock-bundle-picker__filter {
-    min-height: 36px;
-  }
-
-  .sock-bundle-picker--teaser .sock-bundle-picker__filter-select {
-    max-width: none;
+  .sock-bundle-picker__filter-open {
+    display: inline-flex;
   }
 
   .sock-bundle--teaser {

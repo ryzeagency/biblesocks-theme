@@ -3,7 +3,7 @@
 
   Accepts:
   - collection: the collection to filter by
-  - as: 'pill' or 'option'
+  - as: 'pill', 'option' or 'text' (the label alone)
   - selected: true for the collection the picker opens on
 
   Usage:
@@ -19,7 +19,9 @@
   endif
 -%}
 
-{%- if as == 'option' -%}
+{%- if as == 'text' -%}
+  {{- label | escape -}}
+{%- elsif as == 'option' -%}
   <option value="{{ collection.handle | escape }}"{% if selected %} selected{% endif %}>
     {{- label | escape }} ({{ collection.products_count }})
   </option>

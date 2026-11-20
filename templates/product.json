@@ -144,7 +144,7 @@
               "christmas",
               "fathers-day",
               "mothers-day"
-            ],
+            ],"picker_filter_collections_mobile":["men","children"],
             "picker_filter_style": "pills",
             "picker_filter_label": "Filter by",
             "layout": "teaser",

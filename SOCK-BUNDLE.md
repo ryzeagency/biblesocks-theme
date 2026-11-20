@@ -188,8 +188,20 @@ pack stay in it, whichever tab they came from, and a sock being viewed leads any
 that holds it. **Collection filter style** switches the pills to a dropdown, and
 **Collection filter label** sets the "Filter by" text.
 
-The tabs show on phones too, as one row of pills you swipe sideways (or the dropdown).
-They were hidden on phones when this was ported from BOM Socks.
+On phones the tabs fold into a **filter icon** on the "Pick your socks" heading, next to
+the name of the collection on show. Tapping it opens a drawer from the bottom listing
+every collection with its sock count, the one on show ticked. Picking one swaps the
+socks and closes the drawer, and ×, the dark backdrop or Escape close it without a
+change. It works the same with either **Collection filter style**, and the drawer's
+title is the **Collection filter label**. Computers keep the pills or the dropdown.
+
+**Phone filters** (under Collection filters) sets which collections the phone's drawer
+lists. The collection the picker opens on (All Socks) always comes first as the way back
+to every sock, followed by those chosen, e.g. Men, Women, Kids. Leave it empty to list
+every collection filter. It's set separately on each of the three templates, like the
+other settings. It's currently set to Men (`men`) and Kids (`children`) in all three.
+**Women's still needs adding** in the theme editor, because the theme doesn't reference
+a women's collection.
 
 Only products of type **Socks** appear (**Only show this product type**), since the
 3-pack bundles, gift box, gift card and the builder product share some collections.

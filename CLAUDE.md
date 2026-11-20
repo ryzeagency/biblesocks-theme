@@ -56,6 +56,7 @@ Standard Shopify theme structure: `layout/`, `templates/` (JSON, plus some `.liq
 - `snippets/biblesocks-tokens.liquid` forces `body p { color: #fff !important }` for the dark homepage sections. Any new `<p>` on a light background needs its colour restated.
 - `theme.css.liquid` hides any `[class*=price]` inside `[class*=bundle]` (for the BYOB app). Avoid that naming combination, or override it as `sock-bundle.css` does.
 - The mobile breakpoint used by the custom code is **769px**, matching Impulse.
+- On iPhone and iPad, `layout/theme.liquid` adds `maximum-scale=1` to the viewport tag so tapping a form field smaller than 16px (the size dropdowns) doesn't zoom the page. Keep it iOS-only: on Android it blocks pinch zoom.
 
 ## Conventions
 

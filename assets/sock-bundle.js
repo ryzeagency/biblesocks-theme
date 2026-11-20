@@ -255,6 +255,7 @@ if (!customElements.get('sock-bundle')) {
           '';
         this.filterCache = {};
         this.filterToken = 0;
+        this.setUpFilterDrawer();
         // The sock being viewed leads any tab whose collection holds it.
         this.pinnedProductId =
           this.picker?.querySelector('[data-picker-grid] [data-picker-pinned]')?.dataset.productId || '';
@@ -334,6 +335,8 @@ if (!customElements.get('sock-bundle')) {
         // These live on <body>, so the theme editor re-rendering the section
         // would otherwise leave them behind.
         this.quickView?.remove();
+        this.closeFilterDrawer({ restoreFocus: false });
+        this.filterDrawer?.remove();
         this.lightbox?.remove();
         this.toastEl?.remove();
         if (this.teaser) document.body.classList.remove('sock-bundle-packing', 'sock-bundle-pack-folded');
@@ -804,9 +807,75 @@ if (!customElements.get('sock-bundle')) {
         if (card && card !== grid.firstElementChild) grid.prepend(card);
       }
 
-      /** Mark the active filter, on the pills or in the dropdown. */
+      /**
+       * On a phone the tabs fold into a filter icon in the picker's heading,
+       * opening a drawer of the collections. The drawer moves to <body> so it
+       * covers the whole page (the docked pack and the popup too); picking one
+       * shows it and closes the drawer.
+       */
+      setUpFilterDrawer() {
+        this.filterOpenButton = this.picker?.querySelector('[data-picker-filter-open]');
+        this.filterCurrentEl = this.picker?.querySelector('[data-picker-filter-current]');
+        this.filterDrawer = this.picker?.querySelector('[data-picker-filter-drawer]');
+        if (!this.filterDrawer || !this.filterOpenButton) return;
+        document.body.appendChild(this.filterDrawer);
+
+        this.filterOpenButton.addEventListener('click', () => this.openFilterDrawer());
+        this.filterDrawer.addEventListener('click', (event) => {
+          if (event.target.closest('[data-picker-filter-close]')) {
+            this.closeFilterDrawer();
+            return;
+          }
+          const option = event.target.closest('[data-picker-filter]');
+          if (!option) return;
+          this.applyFilter(option.dataset.pickerFilter);
+          this.closeFilterDrawer();
+        });
+        this.filterDrawer.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            event.stopPropagation();
+            this.closeFilterDrawer();
+          }
+        });
+      }
+
+      openFilterDrawer() {
+        const drawer = this.filterDrawer;
+        if (!drawer || !drawer.hidden) return;
+        drawer.hidden = false;
+        // Next frame, so the panel slides up rather than appearing.
+        requestAnimationFrame(() => drawer.classList.add('is-open'));
+        document.documentElement.classList.add('sock-bundle-filter-drawer-open');
+        this.filterOpenButton.setAttribute('aria-expanded', 'true');
+        (drawer.querySelector('[data-picker-filter][aria-pressed="true"]') ||
+          drawer.querySelector('[data-picker-filter-close]'))?.focus({ preventScroll: true });
+      }
+
+      closeFilterDrawer({ restoreFocus = true } = {}) {
+        const drawer = this.filterDrawer;
+        if (!drawer || drawer.hidden) return;
+        drawer.classList.remove('is-open');
+        document.documentElement.classList.remove('sock-bundle-filter-drawer-open');
+        this.filterOpenButton?.setAttribute('aria-expanded', 'false');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        clearTimeout(this.filterDrawerTimer);
+        this.filterDrawerTimer = setTimeout(() => {
+          if (!drawer.classList.contains('is-open')) drawer.hidden = true;
+        }, reduce ? 0 : 300);
+        if (restoreFocus) this.filterOpenButton?.focus({ preventScroll: true });
+      }
+
+      /** Mark the active filter, on the pills, in the dropdown and in the phone's drawer. */
       setFilterPressed(handle) {
         if (this.filterSelect && this.filterSelect.value !== handle) this.filterSelect.value = handle;
+        this.filterDrawer?.querySelectorAll('[data-picker-filter]').forEach((option) => {
+          const on = option.dataset.pickerFilter === handle;
+          option.setAttribute('aria-pressed', String(on));
+          if (on && this.filterCurrentEl) {
+            this.filterCurrentEl.textContent =
+              option.querySelector('.sock-bundle-picker__filter-label')?.textContent.trim() || '';
+          }
+        });
         if (!this.filtersEl) return;
         this.filtersEl.querySelectorAll('[data-picker-filter]').forEach((tab) => {
           const on = tab.dataset.pickerFilter === handle;
@@ -1602,7 +1671,10 @@ if (!customElements.get('sock-bundle')) {
         this.disarmAutoFold?.();
         let startY = null;
         let swiping = false;
-        const inPack = (target) => target instanceof Node && this.teaserEl?.contains(target);
+        // Swipes in the pack or in the filter drawer leave the pack as it is.
+        const inPack = (target) =>
+          target instanceof Node &&
+          Boolean(this.teaserEl?.contains(target) || this.filterDrawer?.contains(target));
 
         const onTouchStart = (event) => {
           swiping = false;

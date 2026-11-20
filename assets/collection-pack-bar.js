@@ -11,8 +11,9 @@
  *    add, or the drawer's + and − and Remove.
  *  - Each pair in the pack is a box with a × that takes it out of the cart.
  *  - An accordion: folded, only the tracker, subtotal and View cart show. It
- *    starts folded, opens after a quick add so the pair is seen landing, and
- *    folds again once the shopper scrolls (as the sock pages' docked pack does).
+ *    comes up open (on page load with socks in the cart too), opens again after
+ *    a quick add so the pair is seen landing, and folds once the shopper
+ *    scrolls (as the sock pages' docked pack does).
  *  - "View cart" opens Impulse's cart drawer (or goes to the cart page).
  */
 
@@ -26,6 +27,12 @@ if (!customElements.get('collection-pack-bar')) {
         this.ticket = 0;
 
         this.toggle?.addEventListener('click', () => this.fold(!this.classList.contains('is-folded')));
+        // The whole bar opens and closes it, not just the arrow; its buttons,
+        // links and boxes keep their own taps.
+        this.addEventListener('click', (event) => {
+          if (event.target.closest('a, button, input, select, textarea, label, .collection-pack-bar__boxes')) return;
+          this.fold(!this.classList.contains('is-folded'));
+        });
         this.content?.addEventListener('click', (event) => {
           const remove = event.target.closest('[data-pack-remove]');
           if (remove) this.removePair(remove);
@@ -193,12 +200,15 @@ if (!customElements.get('collection-pack-bar')) {
 
       sync() {
         const show = Boolean(this.content?.querySelector('.cart-pack-progress'));
+        const wasVisible = this.classList.contains('is-visible');
         this.classList.toggle('is-visible', show);
         this.setAttribute('aria-hidden', String(!show));
         this.inert = !show;
         document.body.classList.toggle('has-collection-pack-bar', show);
-        // Hidden, it starts folded next time it comes up.
-        if (!show && !this.classList.contains('is-folded')) this.fold(true);
+        // Coming up (on page load with socks in the cart, or as the first sock
+        // goes in), it opens on the pack; scrolling folds it.
+        if (show && !wasVisible) this.fold(false);
+        if (!show) this.disarmAutoFold?.();
         this.measure();
       }
 

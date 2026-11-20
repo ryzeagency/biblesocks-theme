@@ -289,3 +289,13 @@ collection-pack-bar.is-folded .collection-pack-bar__boxes {
     animation: none;
   }
 }
+
+/* The whole bar is the accordion's tap target, not just the arrow. */
+collection-pack-bar {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.collection-pack-bar__boxes {
+  cursor: auto;
+}

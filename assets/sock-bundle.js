@@ -1437,6 +1437,13 @@ if (!customElements.get('sock-bundle')) {
         this.teaserToggle?.addEventListener('click', () =>
           this.foldPack(this.teaserToggle.getAttribute('aria-expanded') === 'true')
         );
+        // On a phone the whole docked pack opens and closes it, not just the
+        // arrow; its buttons, links and boxes keep their own taps.
+        this.teaserEl?.addEventListener('click', (event) => {
+          if (!this.packing || !this.mobileQuery.matches || !this.teaserToggle) return;
+          if (event.target.closest('a, button, input, select, textarea, label, [data-sock-teaser-slots]')) return;
+          this.foldPack(this.teaserToggle.getAttribute('aria-expanded') === 'true');
+        });
         // On a phone the docked pack's height sets how far the list of socks runs.
         if (this.teaserEl && !this.popup && 'ResizeObserver' in window) {
           this.measureDock = this.measureDock.bind(this);
@@ -1506,9 +1513,10 @@ if (!customElements.get('sock-bundle')) {
             'sock-bundle-gallery-hidden-mobile'
           );
         }
-        // On a phone the docked pack opens folded, leaving the picker the screen.
-        // Folded before render, so a first sock going in with this opens it.
-        if (opening && this.mobileQuery.matches) this.foldPack(true);
+        // On a phone the docked pack opens on its socks when it has some (the
+        // cart's, on page load), and folded when empty, leaving the picker the
+        // screen. Set before render, so a first sock going in with this opens it.
+        if (opening && this.mobileQuery.matches) this.foldPack(!this.slots.some(Boolean));
         this.render();
         if (opening && !this.popup) this.measureDock();
         if (opening && scroll && !this.popup) this.scrollToTop(this.picker);

@@ -99,10 +99,12 @@ save more**, matching BOM Socks' `dev` branch:
 - Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
   name opens a quick view, and the photo opens a lightbox.
 - Phones: once a pack is started the picker takes the photos' place and the pack docks
-  to the bottom, folded to its message, bar, subtotal and checkout. When the first sock
+  to the bottom. It opens on its socks when the cart already has some (on page load
+  too), and folded to its message, bar, subtotal and checkout when empty. When the first sock
   goes in, the pack opens so the shopper sees it land. As soon as they scroll the page
   or the list of socks, it folds again to give the socks the room. The same happens
-  after opening it with its arrow. While folded, the arrow gives a small upward hop every
+  after opening it. The whole pack opens and closes it, not just its arrow (its buttons,
+  links and boxes keep their own taps). While folded, the arrow gives a small upward hop every
   4 seconds to show the pack can be opened. It stays still for shoppers whose phone is
   set to reduce motion. This applies to sock pages, the builder product and
   the sock bundle page section.
@@ -251,9 +253,11 @@ pack as boxes, the cart subtotal and **View cart**, which opens the drawer.
 - The drawer opens anyway when the bar has nothing to show, e.g. a gift card was added or
   the shopper typed their own code.
 - **It's an accordion.** Folded, it keeps the next step, the tracker, the subtotal and
-  View cart, and the boxes tuck away. It starts folded and opens after each add to cart,
-  so the shopper sees the pair land. It folds again as soon as they scroll the page, like
-  the sock pages' docked pack. The arrow opens and closes it by hand, and while folded it
+  View cart, and the boxes tuck away. It comes up open, including on page load with socks
+  already in the cart, and opens again after each add to cart, so the shopper sees the
+  pair land. It folds again as soon as they scroll the page, like
+  the sock pages' docked pack. Tapping anywhere on the bar (or its arrow) opens and closes it by hand, apart from its
+  buttons, links and boxes, and while folded it
   gives a small hop every 4 seconds (still for shoppers set to reduce motion).
 - Settings: **Collection → Product grid block → Buy more save more bar**. The steps and
   wording are the drawer's (**Theme settings → Cart → Pack progress bar (cart drawer)**),

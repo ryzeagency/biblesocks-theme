@@ -2126,6 +2126,16 @@ html.sock-bundle-qv-open {
     display: none;
   }
 
+  /* On a phone the whole docked pack is the accordion's tap target. */
+  body.sock-bundle-packing .sock-bundle__teaser {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.sock-bundle-packing .sock-bundle__teaser-slots {
+    cursor: auto;
+  }
+
   body.sock-bundle-packing .sock-bundle__teaser {
     position: fixed;
     left: 0;

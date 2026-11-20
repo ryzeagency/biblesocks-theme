@@ -56,7 +56,7 @@
     heading (left out when empty, as on sock pages, where the pack's tracker
     already says what to do), and the phone's filter icon.
   {%- endcomment -%}
-  <div class="sock-bundle-picker__head" data-added-template="{{ block.settings.picker_added_text | default: '✓ [item] added' | escape }}">
+  <div class="sock-bundle-picker__head" data-added-template="{{ block.settings.picker_added_toast | default: '✓ [item] added' | escape }}">
     {%- if show_back -%}
       {%- assign back_text = block.settings.picker_back_text | default: 'Back to product' -%}
       <button

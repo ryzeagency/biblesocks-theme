@@ -174,7 +174,8 @@ The top is kept to one row, and the pack's tracker does the talking:
 - **"Added" toast.** Add to cart pops up "✓ Bible Hero Socks (Men) added" (or "2 × …")
   with the sock's photo for 3 seconds: at the top of the screen on a phone and the bottom
   on a computer. If that add also unlocks a discount, one toast says both:
-  "✓ … added · 15% off unlocked!". The wording is in **Sock bundle → "Added" toast**, with
+  "✓ … added · 15% off unlocked!". The wording is in **Sock bundle → "Added" toast** (`picker_added_toast`; not
+  `picker_added_text`, which is the card button's "Added"), with
   `[item]` for the sock, size and quantity.
 
 ## Mix & match popup

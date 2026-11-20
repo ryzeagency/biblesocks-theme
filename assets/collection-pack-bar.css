@@ -1,0 +1,323 @@
+/* The buy more save more bar docked to the bottom of collection pages
+   (sections/main-collection.liquid, assets/collection-pack-bar.js). Drawn like
+   the sock pages' docked pack: the tracker from the cart drawer
+   (cart-pack-progress.css) above the subtotal and View cart. Full width on a
+   phone, a card centred at the bottom on a computer. */
+collection-pack-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20; /* under Impulse's drawers (30) */
+  display: block;
+  padding: 12px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1.5px solid var(--colorDrawerText);
+  border-radius: 16px 16px 0 0;
+  background: var(--colorDrawers);
+  color: var(--colorDrawerText);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(calc(100% + 24px));
+  visibility: hidden;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.35s;
+}
+
+collection-pack-bar.is-visible {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+}
+
+body.has-collection-pack-bar {
+  padding-bottom: var(--collection-pack-bar-height, 140px);
+}
+
+/* The tracker and the subtotal come from Liquid; with the button they share
+   one grid: the tracker across the top, the subtotal and button under it. */
+.collection-pack-bar__inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.collection-pack-bar__content {
+  display: contents;
+}
+
+.collection-pack-bar__progress {
+  grid-column: 1 / -1;
+  padding: 0 34px; /* clear of the arrow */
+}
+
+.collection-pack-bar .cart-pack-progress__text {
+  margin-bottom: 14px;
+}
+
+.collection-pack-bar .cart-pack-progress__msg {
+  font-size: 14px;
+}
+
+/* The pack as boxes, drawn like the sock pages' docked pack: the pairs in the
+   cart, each with a × to take it out, then what the next counts earn, the last
+   box (the best deal) in the accent colour. Five in view on a phone and seven
+   on a computer, sliding sideways for more, with room above for the ×s. */
+collection-pack-bar {
+  --cpb-accent: #ffcf24;
+  --cpb-tile-bg: color-mix(in srgb, var(--colorDrawerText) 5%, transparent);
+  --cpb-in-view: 5;
+}
+
+.collection-pack-bar__boxes {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 12px - (var(--cpb-in-view) - 1) * 6px) / var(--cpb-in-view));
+  gap: 6px;
+  margin: 0;
+  padding: 10px 10px 2px 2px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.collection-pack-bar__boxes::-webkit-scrollbar {
+  display: none;
+}
+
+.collection-pack-bar__box {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background: var(--cpb-tile-bg);
+  scroll-snap-align: start;
+}
+
+.collection-pack-bar__box.is-best {
+  background: var(--cpb-accent);
+}
+
+.collection-pack-bar__box.is-filled {
+  border: 1.5px solid var(--colorDrawerText);
+  background: var(--colorDrawers);
+}
+
+.collection-pack-bar__box.is-new {
+  animation: collection-pack-bar-box-in 0.25s ease;
+}
+
+.collection-pack-bar__box.is-removing {
+  opacity: 0.4;
+}
+
+@keyframes collection-pack-bar-box-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+.collection-pack-bar__box img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px 6px 0 0;
+}
+
+.collection-pack-bar__cap {
+  padding: 4px 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.collection-pack-bar__tile {
+  flex: 1 0 auto;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px;
+  text-align: center;
+}
+
+.collection-pack-bar__tile span {
+  font-size: 10px;
+  line-height: 1.2;
+  opacity: 0.7;
+}
+
+.collection-pack-bar__box.is-best .collection-pack-bar__tile span {
+  opacity: 1;
+}
+
+.collection-pack-bar__tile strong {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.collection-pack-bar__remove {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--colorDrawerText);
+  color: var(--colorDrawers);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* A bigger target for a finger than the circle shows. */
+.collection-pack-bar__remove::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+collection-pack-bar.is-busy .collection-pack-bar__remove {
+  pointer-events: none;
+}
+
+.collection-pack-bar__subtotal {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.collection-pack-bar__subtotal strong {
+  font-size: 18px;
+}
+
+.collection-pack-bar__view.btn {
+  margin: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  white-space: nowrap;
+}
+
+/* The accordion: folded, the bar keeps its message, tracker, subtotal and
+   View cart, and the boxes go. The arrow points up while folded and hops every
+   few seconds to show the bar opens. */
+.collection-pack-bar__toggle {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--colorDrawerText) 6%, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.collection-pack-bar__toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+collection-pack-bar.is-folded .collection-pack-bar__toggle svg {
+  transform: rotate(180deg);
+  animation: collection-pack-bar-toggle-bounce 4s ease-in-out 1.5s infinite;
+}
+
+@keyframes collection-pack-bar-toggle-bounce {
+  0%, 20%, 100% { transform: rotate(180deg) translateY(0); }
+  6% { transform: rotate(180deg) translateY(5px); }
+  12% { transform: rotate(180deg) translateY(0); }
+  16% { transform: rotate(180deg) translateY(2px); }
+}
+
+/* Folding and opening ease the boxes' height, spacing and fade (the -10px takes
+   back the bar's row gap), so the bar glides down rather than snapping shut
+   when a scroll folds it. */
+.collection-pack-bar__boxes {
+  max-height: 160px;
+  transition:
+    max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease;
+}
+
+collection-pack-bar.is-folded .collection-pack-bar__boxes {
+  max-height: 0;
+  margin-top: -10px;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+@media only screen and (min-width: 769px) {
+  collection-pack-bar {
+    left: 50%;
+    right: auto;
+    bottom: 16px;
+    --cpb-in-view: 7;
+    width: min(640px, calc(100% - 32px));
+    padding: 14px 20px;
+    border: 1.5px solid var(--colorDrawerText);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.16);
+    transform: translate(-50%, calc(100% + 40px));
+  }
+
+  collection-pack-bar.is-visible {
+    transform: translateX(-50%);
+  }
+
+  body.has-collection-pack-bar {
+    padding-bottom: calc(var(--collection-pack-bar-height, 140px) + 32px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  collection-pack-bar,
+  collection-pack-bar.is-visible {
+    transition: none;
+  }
+
+  .collection-pack-bar__box.is-new,
+  collection-pack-bar.is-folded .collection-pack-bar__toggle svg {
+    animation: none;
+  }
+
+  .collection-pack-bar__boxes {
+    transition: none;
+  }
+}
+
+/* The whole bar is the accordion's tap target, not just the arrow. */
+collection-pack-bar {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.collection-pack-bar__boxes {
+  cursor: auto;
+}

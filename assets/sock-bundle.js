@@ -255,6 +255,7 @@ if (!customElements.get('sock-bundle')) {
           '';
         this.filterCache = {};
         this.filterToken = 0;
+        this.setUpFilterDrawer();
         // The sock being viewed leads any tab whose collection holds it.
         this.pinnedProductId =
           this.picker?.querySelector('[data-picker-grid] [data-picker-pinned]')?.dataset.productId || '';
@@ -327,12 +328,15 @@ if (!customElements.get('sock-bundle')) {
         this.tiersEl?.removeEventListener('scroll', this.updateArrows);
         window.removeEventListener('resize', this.updateArrows);
         this.dockObserver?.disconnect();
+        this.disarmAutoFold?.();
         if (this.measureDock) window.removeEventListener('resize', this.measureDock);
         this.mobileQuery.removeEventListener('change', this.syncPickerPlacement);
 
         // These live on <body>, so the theme editor re-rendering the section
         // would otherwise leave them behind.
         this.quickView?.remove();
+        this.closeFilterDrawer({ restoreFocus: false });
+        this.filterDrawer?.remove();
         this.lightbox?.remove();
         this.toastEl?.remove();
         if (this.teaser) document.body.classList.remove('sock-bundle-packing', 'sock-bundle-pack-folded');
@@ -718,6 +722,7 @@ if (!customElements.get('sock-bundle')) {
         this.activeFilter = handle;
         grid.innerHTML = html;
         this.pinViewedSock(grid);
+        this.pickFilterSize(handle, grid);
         grid.scrollTop = 0;
         grid.classList.remove('is-loading');
         grid.removeAttribute('aria-busy');
@@ -803,9 +808,126 @@ if (!customElements.get('sock-bundle')) {
         if (card && card !== grid.firstElementChild) grid.prepend(card);
       }
 
-      /** Mark the active filter, on the pills or in the dropdown. */
+      /**
+       * On a phone the tabs fold into a filter icon in the picker's heading,
+       * opening a drawer of the collections. The drawer moves to <body> so it
+       * covers the whole page (the docked pack and the popup too); picking one
+       * shows it and closes the drawer.
+       */
+      setUpFilterDrawer() {
+        this.filterOpenButton = this.picker?.querySelector('[data-picker-filter-open]');
+        this.filterCurrentEl = this.picker?.querySelector('[data-picker-filter-current]');
+        this.filterDrawer = this.picker?.querySelector('[data-picker-filter-drawer]');
+        if (!this.filterDrawer || !this.filterOpenButton) return;
+        document.body.appendChild(this.filterDrawer);
+
+        this.filterOpenButton.addEventListener('click', () => this.openFilterDrawer());
+        this.filterDrawer.addEventListener('click', (event) => {
+          if (event.target.closest('[data-picker-filter-close]')) {
+            this.closeFilterDrawer();
+            return;
+          }
+          const option = event.target.closest('[data-picker-filter]');
+          if (!option) return;
+          this.applyFilter(option.dataset.pickerFilter);
+          this.closeFilterDrawer();
+        });
+        this.filterDrawer.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            event.stopPropagation();
+            this.closeFilterDrawer();
+          }
+        });
+      }
+
+      openFilterDrawer() {
+        const drawer = this.filterDrawer;
+        if (!drawer || !drawer.hidden) return;
+        drawer.hidden = false;
+        // Next frame, so the panel slides up rather than appearing.
+        requestAnimationFrame(() => drawer.classList.add('is-open'));
+        document.documentElement.classList.add('sock-bundle-filter-drawer-open');
+        this.filterOpenButton.setAttribute('aria-expanded', 'true');
+        (drawer.querySelector('[data-picker-filter][aria-pressed="true"]') ||
+          drawer.querySelector('[data-picker-filter-close]'))?.focus({ preventScroll: true });
+      }
+
+      closeFilterDrawer({ restoreFocus = true } = {}) {
+        const drawer = this.filterDrawer;
+        if (!drawer || drawer.hidden) return;
+        drawer.classList.remove('is-open');
+        document.documentElement.classList.remove('sock-bundle-filter-drawer-open');
+        this.filterOpenButton?.setAttribute('aria-expanded', 'false');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        clearTimeout(this.filterDrawerTimer);
+        this.filterDrawerTimer = setTimeout(() => {
+          if (!drawer.classList.contains('is-open')) drawer.hidden = true;
+        }, reduce ? 0 : 300);
+        if (restoreFocus) this.filterOpenButton?.focus({ preventScroll: true });
+      }
+
+      /**
+       * A filter that names a size (Men, Youth...) switches every sock's size
+       * dropdown to it, where that size is in stock. The size is the one paired
+       * with the collection in "Size each filter picks" (children:Kids), else the
+       * collection's title. Names match loosely: Men = Men's = Mens, never Women.
+       * A filter that names no size (All socks, Patriotic) leaves the defaults.
+       */
+      pickFilterSize(handle, grid) {
+        const size = this.normalizeSize(this.filterSizeFor(handle));
+        if (!size) return;
+        const pattern = new RegExp(`(^|[\\s/(-])${size.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[\\s/)-])`);
+        grid.querySelectorAll('select[data-picker-variant]').forEach((select) => {
+          const match = Array.from(select.options).find(
+            (option) => !option.disabled && pattern.test(this.normalizeSize(option.dataset.variantTitle || option.text))
+          );
+          if (match && select.value !== match.value) select.value = match.value;
+        });
+      }
+
+      filterSizeFor(handle) {
+        const pairs = (this.picker?.dataset.filterSizes || '').split(',');
+        for (const pair of pairs) {
+          const [key, ...rest] = pair.split(':');
+          if (key && key.trim().toLowerCase() === handle.toLowerCase()) return rest.join(':').trim();
+        }
+        // Else the collection's own title ("Youth"), not a name set for it in
+        // "Filter names" ("Women / Youth").
+        const selector = `[data-picker-filter="${CSS.escape(handle)}"]`;
+        const button = this.filterDrawer?.querySelector(selector) || this.picker?.querySelector(selector);
+        if (button) {
+          return (
+            button.dataset.filterTitle ||
+            button.querySelector('.sock-bundle-picker__filter-label')?.textContent.trim() ||
+            ''
+          );
+        }
+        const option = this.filterSelect?.querySelector(`option[value="${CSS.escape(handle)}"]`);
+        return option?.textContent.replace(/\(\d+\)\s*$/, '').trim() || '';
+      }
+
+      /** "Men's" and "Mens" read as "men"; "Kids" as "kid". */
+      normalizeSize(text) {
+        return String(text || '')
+          .toLowerCase()
+          .replace(/[\u2019']/g, '')
+          .split(/\s+/)
+          .map((word) => word.replace(/s$/, ''))
+          .join(' ')
+          .trim();
+      }
+
+      /** Mark the active filter, on the pills, in the dropdown and in the phone's drawer. */
       setFilterPressed(handle) {
         if (this.filterSelect && this.filterSelect.value !== handle) this.filterSelect.value = handle;
+        this.filterDrawer?.querySelectorAll('[data-picker-filter]').forEach((option) => {
+          const on = option.dataset.pickerFilter === handle;
+          option.setAttribute('aria-pressed', String(on));
+          if (on && this.filterCurrentEl) {
+            this.filterCurrentEl.textContent =
+              option.querySelector('.sock-bundle-picker__filter-label')?.textContent.trim() || '';
+          }
+        });
         if (!this.filtersEl) return;
         this.filtersEl.querySelectorAll('[data-picker-filter]').forEach((tab) => {
           const on = tab.dataset.pickerFilter === handle;
@@ -904,6 +1026,13 @@ if (!customElements.get('sock-bundle')) {
         this.growSlots();
         this.saveSlots();
         const filled = this.slots.filter(Boolean).length;
+
+        // On a phone the docked pack opens as the first sock goes in, so the
+        // shopper sees it land; scrolling folds it again (armAutoFold).
+        if (this.prevFilled === 0 && filled > 0 && this.packing && this.mobileQuery.matches) {
+          this.foldPack(false);
+        }
+        this.prevFilled = filled;
 
         // What the pack has actually earned, and what one more sock would earn.
         this.earnedTier = this.tierFor(filled);
@@ -1429,6 +1558,13 @@ if (!customElements.get('sock-bundle')) {
         this.teaserToggle?.addEventListener('click', () =>
           this.foldPack(this.teaserToggle.getAttribute('aria-expanded') === 'true')
         );
+        // On a phone the whole docked pack opens and closes it, not just the
+        // arrow; its buttons, links and boxes keep their own taps.
+        this.teaserEl?.addEventListener('click', (event) => {
+          if (!this.packing || !this.mobileQuery.matches || !this.teaserToggle) return;
+          if (event.target.closest('a, button, input, select, textarea, label, [data-sock-teaser-slots]')) return;
+          this.foldPack(this.teaserToggle.getAttribute('aria-expanded') === 'true');
+        });
         // On a phone the docked pack's height sets how far the list of socks runs.
         if (this.teaserEl && !this.popup && 'ResizeObserver' in window) {
           this.measureDock = this.measureDock.bind(this);
@@ -1498,9 +1634,11 @@ if (!customElements.get('sock-bundle')) {
             'sock-bundle-gallery-hidden-mobile'
           );
         }
+        // On a phone the docked pack opens on its socks when it has some (the
+        // cart's, on page load), and folded when empty, leaving the picker the
+        // screen. Set before render, so a first sock going in with this opens it.
+        if (opening && this.mobileQuery.matches) this.foldPack(!this.slots.some(Boolean));
         this.render();
-        // On a phone the docked pack opens folded, leaving the picker the screen.
-        if (opening && this.mobileQuery.matches) this.foldPack(true);
         if (opening && !this.popup) this.measureDock();
         if (opening && scroll && !this.popup) this.scrollToTop(this.picker);
       }
@@ -1516,7 +1654,18 @@ if (!customElements.get('sock-bundle')) {
         style.setProperty('--sock-bundle-dock', `${Math.ceil(this.teaserEl.getBoundingClientRect().height)}px`);
         const grid = this.picker?.querySelector('.sock-bundle-picker__grid');
         if (grid) {
-          style.setProperty('--sock-bundle-grid-top', `${Math.round(grid.getBoundingClientRect().top + window.scrollY)}px`);
+          let top = grid.getBoundingClientRect().top + window.scrollY;
+          // Lower down a page (the TV offer page, under its banner) the list
+          // would shrink to its minimum. There it is sized for when the shopper
+          // has scrolled to the picker: the screen less the sticky header, the
+          // picker's own heading and the pack.
+          if (this.isStatic || top > window.innerHeight * 0.6) {
+            const header = document.querySelector('.header-sticky-wrapper .site-header, #SiteHeader');
+            const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
+            const pickerTop = this.picker.getBoundingClientRect().top;
+            top = headerHeight + 8 + (grid.getBoundingClientRect().top - pickerTop);
+          }
+          style.setProperty('--sock-bundle-grid-top', `${Math.round(top)}px`);
         }
       }
 
@@ -1567,6 +1716,60 @@ if (!customElements.get('sock-bundle')) {
         this.teaserEl?.classList.toggle('is-folded', folded);
         document.body.classList.toggle('sock-bundle-pack-folded', folded);
         this.teaserToggle?.setAttribute('aria-expanded', String(!folded));
+        if (!folded && this.packing && this.teaserEl && this.mobileQuery.matches) {
+          this.armAutoFold();
+        } else {
+          this.disarmAutoFold?.();
+        }
+      }
+
+      /**
+       * While the docked pack is open on a phone, the shopper scrolling the
+       * page or the list of socks folds it, giving the socks the room. Only a
+       * swipe or wheel counts: the pack's own scrolling (to the picker, a tab
+       * resetting the list) and sideways strips (filter tabs, the pack's boxes)
+       * leave it open.
+       */
+      armAutoFold() {
+        this.disarmAutoFold?.();
+        let startY = null;
+        let swiping = false;
+        // Swipes in the pack or in the filter drawer leave the pack as it is.
+        const inPack = (target) =>
+          target instanceof Node &&
+          Boolean(this.teaserEl?.contains(target) || this.filterDrawer?.contains(target));
+
+        const onTouchStart = (event) => {
+          swiping = false;
+          startY = inPack(event.target) ? null : event.touches[0]?.clientY ?? null;
+        };
+        const onTouchMove = (event) => {
+          if (startY === null) return;
+          if (Math.abs((event.touches[0]?.clientY ?? startY) - startY) > 10) swiping = true;
+        };
+        const onWheel = (event) => {
+          swiping = !inPack(event.target) && Math.abs(event.deltaY) > 0;
+        };
+        const onScroll = (event) => {
+          if (!swiping) return;
+          const target = event.target === document ? document.scrollingElement : event.target;
+          if (!target || inPack(target)) return;
+          if (target !== document.scrollingElement && target.scrollHeight <= target.clientHeight) return;
+          this.foldPack(true);
+        };
+
+        const options = { passive: true, capture: true };
+        document.addEventListener('touchstart', onTouchStart, options);
+        document.addEventListener('touchmove', onTouchMove, options);
+        document.addEventListener('wheel', onWheel, options);
+        document.addEventListener('scroll', onScroll, options);
+        this.disarmAutoFold = () => {
+          document.removeEventListener('touchstart', onTouchStart, options);
+          document.removeEventListener('touchmove', onTouchMove, options);
+          document.removeEventListener('wheel', onWheel, options);
+          document.removeEventListener('scroll', onScroll, options);
+          this.disarmAutoFold = null;
+        };
       }
 
       exitPacking({ fromHistory = false } = {}) {

@@ -34,6 +34,7 @@
   class="sock-bundle-picker{% if block.settings.single_uses_picker or static %} sock-bundle-picker--open-on-load{% endif %}{% if block.settings.layout == 'teaser' or static %} sock-bundle-picker--teaser{% endif %}"
   id="SockBundlePicker-{{ section_id }}"
   data-sock-bundle-picker="{{ section_id }}"
+  data-filter-sizes="{{ block.settings.picker_filter_sizes | escape }}"
 >
   <div class="sock-bundle-picker__head">
     <h3 class="sock-bundle-picker__title">
@@ -43,6 +44,31 @@
       {{ block.settings.picker_heading | escape }}
     </h3>
     <span class="sock-bundle-picker__progress" data-picker-progress></span>
+    {%- if use_filters -%}
+      {%- comment -%}
+        On a phone the collection tabs fold into this: a filter icon with the
+        collection on show, opening a drawer that lists them (below).
+      {%- endcomment -%}
+      <button
+        type="button"
+        class="sock-bundle-picker__filter-open"
+        data-picker-filter-open
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="SockBundleFilterDrawer-{{ section_id }}"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="16" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="10" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="18" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span class="visually-hidden">{{ block.settings.picker_filter_label | default: 'Filter by' | escape }}:</span>
+        <span class="sock-bundle-picker__filter-current" data-picker-filter-current>
+          {%- render 'sock-bundle-picker-filter-label', collection: bundle_collection, as: 'text', names: block.settings.picker_filter_names -%}
+        </span>
+      </button>
+    {%- endif -%}
   </div>
 
   {%- if use_filters -%}
@@ -67,7 +93,7 @@
             {% endif %}
           >
             {%- for filter_collection in filters -%}
-              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'option', selected: forloop.first -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'option', selected: forloop.first, names: block.settings.picker_filter_names -%}
             {%- endfor -%}
           </select>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -99,7 +125,7 @@
             data-picker-filters
           >
             {%- for filter_collection in filters -%}
-              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: forloop.first -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: forloop.first, names: block.settings.picker_filter_names -%}
             {%- endfor -%}
           </div>
           <button
@@ -116,6 +142,56 @@
         </div>
       </div>
     {%- endif -%}
+
+    {%- comment -%}
+      The phone's filter drawer: every collection as a row, the one on show
+      ticked. sock-bundle.js moves it to the end of <body> so it sits over the
+      whole page, docked pack and popup included.
+    {%- endcomment -%}
+    <div
+      class="sock-bundle-filter-drawer"
+      id="SockBundleFilterDrawer-{{ section_id }}"
+      data-picker-filter-drawer
+      hidden
+    >
+      <div class="sock-bundle-filter-drawer__backdrop" data-picker-filter-close></div>
+      <div
+        class="sock-bundle-filter-drawer__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="SockBundleFilterDrawerTitle-{{ section_id }}"
+      >
+        <div class="sock-bundle-filter-drawer__head">
+          <h4 class="sock-bundle-filter-drawer__title" id="SockBundleFilterDrawerTitle-{{ section_id }}">
+            {{- filter_label | default: 'Filter by' | escape -}}
+          </h4>
+          <button type="button" class="sock-bundle-filter-drawer__close" data-picker-filter-close aria-label="{{ 'general.accessibility.close' | t }}">
+            <svg viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+              <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="sock-bundle-filter-drawer__list">
+          {%- comment -%}
+            With Phone filters set, the drawer lists the collection the picker
+            opens on (the way back to every sock), then just those. Without,
+            every collection filter.
+          {%- endcomment -%}
+          {%- assign phone_filters = block.settings.picker_filter_collections_mobile -%}
+          {%- if phone_filters != blank and phone_filters.size > 0 -%}
+            {%- render 'sock-bundle-picker-filter-label', collection: bundle_collection, as: 'pill', selected: true, names: block.settings.picker_filter_names -%}
+            {%- for filter_collection in phone_filters -%}
+              {%- if filter_collection.handle == bundle_collection.handle -%}{%- continue -%}{%- endif -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: false, names: block.settings.picker_filter_names -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for filter_collection in filters -%}
+              {%- render 'sock-bundle-picker-filter-label', collection: filter_collection, as: 'pill', selected: forloop.first, names: block.settings.picker_filter_names -%}
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
   {%- endif -%}
 
   {%- if bundle_collection == blank or bundle_collection.products_count == 0 -%}

@@ -4,6 +4,18 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script>
+    // iPhone and iPad zoom the page in when a form field with text under 16px is
+    // tapped (the size dropdowns on the sock picker and collection cards) and
+    // leave it zoomed. maximum-scale=1 stops that, and iOS still lets shoppers
+    // pinch to zoom. Not elsewhere: on Android it would block pinch zoom.
+    (function () {
+      var ios = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var viewport = document.querySelector('meta[name="viewport"]');
+      if (ios && viewport) viewport.setAttribute('content', 'width=device-width,initial-scale=1,maximum-scale=1');
+    })();
+  </script>
   <meta name="theme-color" content="{{ settings.color_button }}">
   <link rel="canonical" href="{{ canonical_url }}">
   <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>

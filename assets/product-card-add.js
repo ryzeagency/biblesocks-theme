@@ -3,7 +3,8 @@
  *
  * One listener on the document handles every card, including those that load
  * more as you scroll or that a filter re-renders. The size is posted to
- * /cart/add.js, then Impulse is asked to rebuild its cart drawer and open it.
+ * /cart/add.js, then Impulse is asked to rebuild its cart drawer and open it,
+ * or, with the buy more save more bar on the page, the bar comes up instead.
  * Without script the form posts to /cart/add as usual.
  */
 (function () {
@@ -44,7 +45,13 @@
         return;
       }
       document.dispatchEvent(new CustomEvent('cart:build'));
-      document.dispatchEvent(new CustomEvent('cart:open'));
+      // With the buy more save more bar on the page (assets/collection-pack-bar.js),
+      // the bar comes up in place of the drawer, unless it has nothing to show.
+      const bar = document.querySelector('collection-pack-bar');
+      const barShowing = typeof bar?.afterAdd === 'function' ? await bar.afterAdd() : false;
+      if (!barShowing || bar.dataset.openDrawer === 'true') {
+        document.dispatchEvent(new CustomEvent('cart:open'));
+      }
     } catch (err) {
       console.error(err);
       error.textContent = message;

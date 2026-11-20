@@ -98,8 +98,22 @@ save more**, matching BOM Socks' `dev` branch:
 - Socks added only with the normal Add to cart get no code by themselves.
 - Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
   name opens a quick view, and the photo opens a lightbox.
+- Phones: the list of socks scrolls on its own, running down to the docked pack. On the
+  TV offer / bundle page, where the picker sits under the banner, it's sized for once the
+  shopper has scrolled to it: the screen less the sticky header, the picker's heading and
+  the pack. Before this it shrank to its 240px minimum there.
 - Phones: once a pack is started the picker takes the photos' place and the pack docks
-  to the bottom, folded to its message, bar, subtotal and checkout.
+  to the bottom. It opens on its socks when the cart already has some (on page load
+  too), and folded to its message, bar, subtotal and checkout when empty. When the first sock
+  goes in, the pack opens so the shopper sees it land. As soon as they scroll the page
+  or the list of socks, it folds again to give the socks the room. The same happens
+  after opening it. On phones the number of socks picked isn't shown at the top, either
+  beside "Pick your socks" or on the pack's top line. The subtotal ("(3 socks)") and the
+  cards' "Added ×2" carry it. The whole pack opens and closes it, not just its arrow (its buttons,
+  links and boxes keep their own taps). While folded, the arrow gives a small upward hop every
+  4 seconds to show the pack can be opened. It stays still for shoppers whose phone is
+  set to reduce motion. This applies to sock pages, the builder product and
+  the sock bundle page section.
 
 The builder product (`product.bundle-builder.json`) uses the same Product first picker
 and pack, opening straight on them (**Single lets the shopper choose any sock** makes it
@@ -180,6 +194,33 @@ pack stay in it, whichever tab they came from, and a sock being viewed leads any
 that holds it. **Collection filter style** switches the pills to a dropdown, and
 **Collection filter label** sets the "Filter by" text.
 
+On phones the tabs fold into a **filter icon** on the "Pick your socks" heading, next to
+the name of the collection on show. Tapping it opens a drawer from the bottom listing
+every collection with its sock count, the one on show ticked. Picking one swaps the
+socks and closes the drawer, and ×, the dark backdrop or Escape close it without a
+change. It works the same with either **Collection filter style**, and the drawer's
+title is the **Collection filter label**. Computers keep the pills or the dropdown.
+
+**Phone filters** (under Collection filters) sets which collections the phone's drawer
+lists. The collection the picker opens on (All Socks) always comes first as the way back
+to every sock, followed by those chosen, e.g. Men, Women, Kids. Leave it empty to list
+every collection filter. It's set separately on each of the three templates, like the
+other settings. It's set to Men (`men`), Youth (`youth`) and Kids (`children`) in all three.
+Women's and Youth socks are the same size, so the Youth collection serves both.
+
+**Filter names** renames a filter in the picker (pills, dropdown, phone drawer and the
+icon's label) without renaming the collection in Shopify, written as `handle:Name`,
+separated by commas. The default is `youth:Women / Youth, children:Kids`, so phones read
+All socks, Men, Women / Youth, Kids.
+
+**Filters pick the size.** Tapping a filter (pill or drawer row) switches every sock's size
+dropdown to the size named like the filter, when that size is in stock, and the card's
+price follows. Men picks "Men" or "Men's" (never "Women's") and Youth picks "Youth". A
+filter that names no size (All socks, Patriotic) leaves the dropdowns as they were. Where
+a collection and its size are named differently, pair them in **Size each filter picks**
+as `handle:Size`, separated by commas. The default is `children:Kids`. Filters match on the
+collection's own title, not its Filter name, so Youth still picks the Youth size.
+
 Only products of type **Socks** appear (**Only show this product type**), since the
 3-pack bundles, gift box, gift card and the builder product share some collections.
 The grid section has its own copy of that setting, defaulting to Socks.
@@ -222,6 +263,42 @@ A code the shopper typed (not a pack code) hides the bar. Files:
 `snippets/cart-pack-progress.liquid`, `sections/cart-drawer-progress.liquid` (redrawn
 after every cart change by the script at the end of `snippets/cart-drawer.liquid`),
 `assets/cart-pack-progress.css`.
+
+## Buy more save more bar (collection pages)
+
+The pack progress bar from the cart drawer also docks to the bottom of collection pages.
+On a phone it runs full width, like the sock pages' docked pack. On a computer it's a card
+centred at the bottom. It shows the next step, the bar with the free-shipping truck, the
+pack as boxes, the cart subtotal and **View cart**, which opens the drawer.
+
+- **The boxes** work like the sock pages' docked pack. There's one per pair in the cart,
+  with its photo and size and a × that takes that pair out of the cart. Then come empty
+  boxes up to the top step, each reading what that many socks earns ("3 socks / + 15% off").
+  The last one ("9+ socks / + 3 free") is in yellow. Counts with no step of their own
+  (5 to 8) read as what the pack already has. Five boxes show on a phone and seven on a
+  computer, sliding sideways for more. They're built from the same steps and "Socks that
+  count" as the tracker. Unlike the sock pages, there's no picker here: shoppers fill
+  the boxes with the Add to cart under each product.
+
+- It appears once the cart has socks that count, and comes up after every **Add to cart**
+  under a product card. The drawer stays shut by default. Turn on **Also open the cart
+  drawer after an add to cart** to open both.
+- The drawer opens anyway when the bar has nothing to show, e.g. a gift card was added or
+  the shopper typed their own code.
+- **It's an accordion.** Folded, it keeps the next step, the tracker, the subtotal and
+  View cart, and the boxes tuck away. It comes up open, including on page load with socks
+  already in the cart, and opens again after each add to cart, so the shopper sees the
+  pair land. It folds again as soon as they scroll the page, like
+  the sock pages' docked pack. Tapping anywhere on the bar (or its arrow) opens and closes it by hand, apart from its
+  buttons, links and boxes, and while folded it
+  gives a small hop every 4 seconds (still for shoppers set to reduce motion).
+- Settings: **Collection → Product grid block → Buy more save more bar**. The steps and
+  wording are the drawer's (**Theme settings → Cart → Pack progress bar (cart drawer)**),
+  so the bar always agrees with the drawer.
+- Files: `snippets/collection-pack-bar.liquid` (contents),
+  `sections/collection-pack-bar.liquid` (redraws them after each cart change),
+  `assets/collection-pack-bar.{js,css}`, wired in by `sections/main-collection.liquid`
+  and `assets/product-card-add.js`.
 
 ## Pack codes in the cart
 

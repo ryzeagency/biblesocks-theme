@@ -3,11 +3,13 @@
 
   Accepts:
   - collection: the collection to filter by
-  - as: 'pill' or 'option'
+  - as: 'pill', 'option' or 'text' (the label alone)
   - selected: true for the collection the picker opens on
+  - names: the block's "Filter names" ("youth:Women / Youth, children:Kids"),
+    which rename a filter here without renaming the collection
 
   Usage:
-  {% render 'sock-bundle-picker-filter-label', collection: c, as: 'pill', selected: forloop.first %}
+  {% render 'sock-bundle-picker-filter-label', collection: c, as: 'pill', selected: forloop.first, names: block.settings.picker_filter_names %}
 {% endcomment %}
 
 {%- liquid
@@ -17,9 +19,23 @@
   if collection.title == title_upper
     assign label = collection.title | downcase | capitalize
   endif
+
+  # A name set for this collection in "Filter names" wins.
+  if names != blank
+    assign name_pairs = names | split: ','
+    for name_pair in name_pairs
+      assign name_parts = name_pair | split: ':'
+      assign name_key = name_parts[0] | strip | downcase
+      if name_key == collection.handle and name_parts[1] != blank
+        assign label = name_parts[1] | strip
+      endif
+    endfor
+  endif
 -%}
 
-{%- if as == 'option' -%}
+{%- if as == 'text' -%}
+  {{- label | escape -}}
+{%- elsif as == 'option' -%}
   <option value="{{ collection.handle | escape }}"{% if selected %} selected{% endif %}>
     {{- label | escape }} ({{ collection.products_count }})
   </option>
@@ -28,6 +44,7 @@
     type="button"
     class="sock-bundle-picker__filter"
     data-picker-filter="{{ collection.handle | escape }}"
+    data-filter-title="{{ collection.title | escape }}"
     aria-pressed="{% if selected %}true{% else %}false{% endif %}"
   >
     <span class="sock-bundle-picker__filter-label">{{ label | escape }}</span>

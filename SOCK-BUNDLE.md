@@ -250,7 +250,11 @@ pack as boxes, the cart subtotal and **View cart**, which opens the drawer.
   drawer after an add to cart** to open both.
 - The drawer opens anyway when the bar has nothing to show, e.g. a gift card was added or
   the shopper typed their own code.
-- × hides the bar until the next add to cart.
+- **It's an accordion.** Folded, it keeps the next step, the tracker, the subtotal and
+  View cart, and the boxes tuck away. It starts folded and opens after each add to cart,
+  so the shopper sees the pair land. It folds again as soon as they scroll the page, like
+  the sock pages' docked pack. The arrow opens and closes it by hand, and while folded it
+  gives a small hop every 4 seconds (still for shoppers set to reduce motion).
 - Settings: **Collection → Product grid block → Buy more save more bar**. The steps and
   wording are the drawer's (**Theme settings → Cart → Pack progress bar (cart drawer)**),
   so the bar always agrees with the drawer.

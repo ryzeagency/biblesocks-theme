@@ -31,6 +31,7 @@
   {{ 'collection-pack-bar.css' | asset_url | stylesheet_tag }}
   <script src="{{ 'collection-pack-bar.js' | asset_url }}" defer="defer"></script>
   <collection-pack-bar
+    class="is-folded"
     role="region"
     aria-label="{{ pack_bar_block.settings.pack_bar_label | escape }}"
     aria-hidden="true"
@@ -45,9 +46,15 @@
         {{- pack_bar_block.settings.pack_bar_button | default: 'View cart' | escape -}}
       </a>
     </div>
-    <button type="button" class="collection-pack-bar__close" data-pack-bar-close aria-label="{{ 'general.accessibility.close' | t }}">
-      <svg viewBox="0 0 12 12" aria-hidden="true" focusable="false">
-        <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <button
+      type="button"
+      class="collection-pack-bar__toggle"
+      data-pack-bar-toggle
+      aria-expanded="false"
+      aria-label="{{ pack_bar_block.settings.pack_bar_label | default: 'Your pack' | escape }}"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
   </collection-pack-bar>

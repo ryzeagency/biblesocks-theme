@@ -10,7 +10,9 @@
  *    through ?section_id=collection-pack-bar whenever the cart changes: a quick
  *    add, or the drawer's + and − and Remove.
  *  - Each pair in the pack is a box with a × that takes it out of the cart.
- *  - The bar's own × hides it until the next quick add.
+ *  - An accordion: folded, only the tracker, subtotal and View cart show. It
+ *    starts folded, opens after a quick add so the pair is seen landing, and
+ *    folds again once the shopper scrolls (as the sock pages' docked pack does).
  *  - "View cart" opens Impulse's cart drawer (or goes to the cart page).
  */
 
@@ -20,13 +22,10 @@ if (!customElements.get('collection-pack-bar')) {
     class CollectionPackBar extends HTMLElement {
       connectedCallback() {
         this.content = this.querySelector('[data-pack-bar-content]');
-        this.dismissed = false;
+        this.toggle = this.querySelector('[data-pack-bar-toggle]');
         this.ticket = 0;
 
-        this.querySelector('[data-pack-bar-close]')?.addEventListener('click', () => {
-          this.dismissed = true;
-          this.sync();
-        });
+        this.toggle?.addEventListener('click', () => this.fold(!this.classList.contains('is-folded')));
         this.content?.addEventListener('click', (event) => {
           const remove = event.target.closest('[data-pack-remove]');
           if (remove) this.removePair(remove);
@@ -60,15 +59,71 @@ if (!customElements.get('collection-pack-bar')) {
         this.itemsObserver?.disconnect();
         this.sizeObserver?.disconnect();
         clearTimeout(this.timer);
+        this.disarmAutoFold?.();
         document.body.classList.remove('has-collection-pack-bar');
         document.body.style.removeProperty('--collection-pack-bar-height');
       }
 
-      /** After a quick add: brings the bar back up. True if it is showing. */
+      /** After a quick add: opens the bar on the pack. True if it is showing. */
       async afterAdd() {
-        this.dismissed = false;
         await this.refresh();
-        return this.classList.contains('is-visible');
+        const showing = this.classList.contains('is-visible');
+        if (showing) this.fold(false);
+        return showing;
+      }
+
+      fold(folded) {
+        this.classList.toggle('is-folded', folded);
+        this.toggle?.setAttribute('aria-expanded', String(!folded));
+        if (folded) {
+          this.disarmAutoFold?.();
+        } else {
+          this.armAutoFold();
+        }
+      }
+
+      /**
+       * While open, the shopper scrolling the page folds the bar, giving the
+       * products the room. Only a swipe or wheel counts, not the page's own
+       * scrolling, and not a swipe along the boxes.
+       */
+      armAutoFold() {
+        this.disarmAutoFold?.();
+        let startY = null;
+        let swiping = false;
+        const inBar = (target) => target instanceof Node && this.contains(target);
+
+        const onTouchStart = (event) => {
+          swiping = false;
+          startY = inBar(event.target) ? null : event.touches[0]?.clientY ?? null;
+        };
+        const onTouchMove = (event) => {
+          if (startY === null) return;
+          if (Math.abs((event.touches[0]?.clientY ?? startY) - startY) > 10) swiping = true;
+        };
+        const onWheel = (event) => {
+          swiping = !inBar(event.target) && Math.abs(event.deltaY) > 0;
+        };
+        const onScroll = (event) => {
+          if (!swiping) return;
+          const target = event.target === document ? document.scrollingElement : event.target;
+          if (!target || inBar(target)) return;
+          if (target !== document.scrollingElement && target.scrollHeight <= target.clientHeight) return;
+          this.fold(true);
+        };
+
+        const options = { passive: true, capture: true };
+        document.addEventListener('touchstart', onTouchStart, options);
+        document.addEventListener('touchmove', onTouchMove, options);
+        document.addEventListener('wheel', onWheel, options);
+        document.addEventListener('scroll', onScroll, options);
+        this.disarmAutoFold = () => {
+          document.removeEventListener('touchstart', onTouchStart, options);
+          document.removeEventListener('touchmove', onTouchMove, options);
+          document.removeEventListener('wheel', onWheel, options);
+          document.removeEventListener('scroll', onScroll, options);
+          this.disarmAutoFold = null;
+        };
       }
 
       schedule() {
@@ -137,11 +192,13 @@ if (!customElements.get('collection-pack-bar')) {
       }
 
       sync() {
-        const show = !this.dismissed && Boolean(this.content?.querySelector('.cart-pack-progress'));
+        const show = Boolean(this.content?.querySelector('.cart-pack-progress'));
         this.classList.toggle('is-visible', show);
         this.setAttribute('aria-hidden', String(!show));
         this.inert = !show;
         document.body.classList.toggle('has-collection-pack-bar', show);
+        // Hidden, it starts folded next time it comes up.
+        if (!show && !this.classList.contains('is-folded')) this.fold(true);
         this.measure();
       }
 

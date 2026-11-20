@@ -1715,8 +1715,8 @@ if (!customElements.get('sock-bundle')) {
         style.setProperty('--sock-bundle-dock', `${Math.ceil(this.foldedDockHeight())}px`);
         const grid = this.picker?.querySelector('.sock-bundle-picker__grid');
         if (grid && document.documentElement.classList.contains('sock-bundle-takeover')) {
-          // Locked in place: where the list starts on screen, plus what sits
-          // under it in the picker ("Back to product photos").
+          // Locked in place: where the list starts on screen, plus anything
+          // that sits under it in the picker.
           const gridRect = grid.getBoundingClientRect();
           const below = Math.max(0, this.picker.getBoundingClientRect().bottom - gridRect.bottom);
           style.setProperty('--sock-bundle-grid-top', `${Math.round(gridRect.top + below)}px`);
@@ -1768,12 +1768,32 @@ if (!customElements.get('sock-bundle')) {
         if (this.liveCart) {
           this.cartWrite('add', { items: [{ id: Number(this.dataset.variantId), quantity: added }] });
         }
+        this.showAdded(this.currentProductSlot(), added);
 
         if (this.packing) {
           this.render();
         } else {
           this.enterPacking();
         }
+      }
+
+      /**
+       * "✓ 2 × Bible Hero Socks (Men) added to your cart" above the picker
+       * heading, so the switch from the photos to the picker makes sense.
+       */
+      showAdded(slot, quantity) {
+        const line = this.picker?.querySelector('[data-picker-added]');
+        if (!line || !slot) return;
+        const size = slot.variantTitle && slot.variantTitle !== 'Default Title' ? ` (${slot.variantTitle})` : '';
+        const item = `${quantity > 1 ? `${quantity} × ` : ''}${slot.title || ''}${size}`;
+        const template = line.dataset.template || '✓ [item] added to your cart';
+        line.textContent = template.replace('[item]', item);
+        line.hidden = false;
+      }
+
+      hideAdded() {
+        const line = this.picker?.querySelector('[data-picker-added]');
+        if (line) line.hidden = true;
       }
 
       /** On a phone, folds the docked pack down to its bar, subtotal and checkout. */
@@ -1841,6 +1861,7 @@ if (!customElements.get('sock-bundle')) {
         if (this.popup) this.closePopup({ fromHistory });
         this.packing = false;
         this.endTakeover();
+        this.hideAdded();
         // Next time the pack docks, it opens in full.
         this.foldPack(false);
         document.body.classList.remove('sock-bundle-packing');

@@ -1273,20 +1273,46 @@ html.sock-bundle-filter-drawer-open body {
   }
 }
 
+/* "← Back to product", at the top of the picker: the way out of the add-more
+   tool, on a computer and a phone. */
 .sock-bundle-picker__back {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 12px;
+  gap: 6px;
+  min-height: 32px;
+  margin: 0 0 8px;
   padding: 0;
   border: 0;
   background: none;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--colorTextBody);
-  opacity: 0.7;
   cursor: pointer;
+  text-decoration: none;
+}
+
+.sock-bundle-picker__back::before {
+  content: '\2190';
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sock-bundle-picker__back:hover {
   text-decoration: underline;
+}
+
+/* "✓ Bible Hero Socks (Men) added to your cart", above the heading. */
+.sock-bundle-picker__added {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--colorTextBody);
+}
+
+.sock-bundle-picker__added[hidden] {
+  display: none;
 }
 
 /* ---------- Site-wide overrides ----------
@@ -2158,10 +2184,9 @@ html.sock-bundle-qv-open {
     padding-top: 16px;
   }
 
-  /* Tall enough to reach down to "Back to product photos", which then sits
-     just above the docked (folded) pack: 370px is the header and picker
-     heading (with the filter icon) above the grid plus the back link and the
-     folded pack below. */
+  /* Before packing: tall enough to leave the docked (folded) pack clear below
+     the list; 370px is the header and the picker's back link, "added" line and
+     heading above it, plus the folded pack below. */
   .sock-bundle-picker--teaser .sock-bundle-picker__grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px 8px;

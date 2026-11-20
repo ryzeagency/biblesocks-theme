@@ -36,6 +36,49 @@
   data-sock-bundle-picker="{{ section_id }}"
   data-filter-sizes="{{ block.settings.picker_filter_sizes | escape }}"
 >
+  {%- comment -%}
+    The way back to the product, at the top of the picker: an add-more tool the
+    shopper can leave at any point (the pack and cart are kept). Product first on
+    a build-your-own product, and the bundle page section, have no photos worth
+    going back to.
+  {%- endcomment -%}
+  {%- liquid
+    assign show_back = block.settings.picker_replaces_gallery
+    if block.settings.layout == 'teaser' and block.settings.single_uses_picker
+      assign show_back = false
+    endif
+    if static
+      assign show_back = false
+    endif
+  -%}
+  {%- if show_back -%}
+    {%- assign back_text = block.settings.picker_back_text | default: 'Back to product' -%}
+    <button
+      type="button"
+      class="sock-bundle-picker__back"
+      data-picker-back
+      data-show-text="{{ back_text | escape }}"
+      data-hide-text="Hide product photos"
+    >
+      {{ back_text | escape }}
+    </button>
+  {%- endif -%}
+
+  {%- comment -%}
+    "✓ Bible Hero Socks (Men) added to your cart": shown when the buy box's Add
+    to cart opens the picker, so the switch from the photos makes sense.
+    Filled in by sock-bundle.js.
+  {%- endcomment -%}
+  {%- unless static -%}
+    <div
+      class="sock-bundle-picker__added"
+      data-picker-added
+      data-template="{{ block.settings.picker_added_text | default: '✓ [item] added to your cart' | escape }}"
+      role="status"
+      hidden
+    ></div>
+  {%- endunless -%}
+
   <div class="sock-bundle-picker__head">
     <h3 class="sock-bundle-picker__title">
       {%- if block.settings.show_step_number and block.settings.layout != 'teaser' and static != true -%}
@@ -229,26 +272,4 @@
     </div>
   {%- endif -%}
 
-  {%- comment -%} Product first on a build-your-own product has no photos worth going back to. {%- endcomment -%}
-  {%- liquid
-    assign show_back = block.settings.picker_replaces_gallery
-    if block.settings.layout == 'teaser' and block.settings.single_uses_picker
-      assign show_back = false
-    endif
-    if static
-      assign show_back = false
-    endif
-  -%}
-  {%- if show_back -%}
-    {%- assign back_text = block.settings.picker_back_text | default: 'Back to product photos' -%}
-    <button
-      type="button"
-      class="sock-bundle-picker__back"
-      data-picker-back
-      data-show-text="{{ back_text | escape }}"
-      data-hide-text="Hide product photos"
-    >
-      {{ back_text | escape }}
-    </button>
-  {%- endif -%}
 </div>

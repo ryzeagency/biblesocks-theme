@@ -98,8 +98,6 @@ save more**, matching BOM Socks' `dev` branch:
 - Socks added only with the normal Add to cart get no code by themselves.
 - Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
   name is plain text (it used to open a quick view), and the photo opens a lightbox.
-- Phones: the picker shows socks **two across**, with names up to
-  two lines at 14px and a full-size size dropdown and Add button.
 - Phones, product pages: the bundle takes over the screen while it's open. The picker
   jumps to just under the header and the page locks there, so only the list of socks
   scrolls. The list fills the space down to the docked pack, and "Back to product photos"

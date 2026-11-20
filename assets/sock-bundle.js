@@ -1778,22 +1778,20 @@ if (!customElements.get('sock-bundle')) {
       }
 
       /**
-       * "✓ 2 × Bible Hero Socks (Men) added to your cart" above the picker
-       * heading, so the switch from the photos to the picker makes sense.
+       * When the buy box's Add to cart puts a sock in the pack: a toast with its
+       * photo, "✓ 2 × Bible Hero Socks (Men) added", so the switch to the
+       * picker makes sense at a glance. Wording: the block's "Added" toast.
        */
       showAdded(slot, quantity) {
-        const line = this.picker?.querySelector('[data-picker-added]');
-        if (!line || !slot) return;
+        if (!slot) return;
+        const head = this.picker?.querySelector('[data-added-template]');
         const size = slot.variantTitle && slot.variantTitle !== 'Default Title' ? ` (${slot.variantTitle})` : '';
         const item = `${quantity > 1 ? `${quantity} × ` : ''}${slot.title || ''}${size}`;
-        const template = line.dataset.template || '✓ [item] added to your cart';
-        line.textContent = template.replace('[item]', item);
-        line.hidden = false;
-      }
-
-      hideAdded() {
-        const line = this.picker?.querySelector('[data-picker-added]');
-        if (line) line.hidden = true;
+        const template = head?.dataset.addedTemplate || '✓ [item] added';
+        const message = template.replace('[item]', item);
+        // A discount this add unlocks joins the same toast (announceUnlock).
+        this.addedToast = { message, image: slot.image, at: Date.now() };
+        this.toast(message, { image: slot.image, duration: 3000 });
       }
 
       /** On a phone, folds the docked pack down to its bar, subtotal and checkout. */
@@ -1861,7 +1859,6 @@ if (!customElements.get('sock-bundle')) {
         if (this.popup) this.closePopup({ fromHistory });
         this.packing = false;
         this.endTakeover();
-        this.hideAdded();
         // Next time the pack docks, it opens in full.
         this.foldPack(false);
         document.body.classList.remove('sock-bundle-packing');
@@ -2191,13 +2188,20 @@ if (!customElements.get('sock-bundle')) {
           const reward = this.unlockedReward(this.earnedTier);
           if (reward) {
             const text = this.unlockedToastText.replace('[reward]', reward);
-            this.toast(text.charAt(0).toUpperCase() + text.slice(1));
+            const unlocked = text.charAt(0).toUpperCase() + text.slice(1);
+            // Added from the buy box this moment: one toast says both.
+            const added = this.addedToast && Date.now() - this.addedToast.at < 500 ? this.addedToast : null;
+            if (added) {
+              this.toast(`${added.message} · ${unlocked}`, { image: added.image, duration: 3200 });
+            } else {
+              this.toast(unlocked);
+            }
           }
         }
         this.lastToastQty = qty;
       }
 
-      toast(message) {
+      toast(message, { image = '', duration = 2200 } = {}) {
         if (!this.toastEl) {
           this.toastEl = document.createElement('div');
           this.toastEl.className = `sock-bundle__toast ${this.schemeClass()}`;
@@ -2205,10 +2209,13 @@ if (!customElements.get('sock-bundle')) {
           this.toastEl.style.setProperty('--sb-accent', getComputedStyle(this).getPropertyValue('--sb-accent'));
           document.body.appendChild(this.toastEl);
         }
-        this.toastEl.textContent = message;
+        this.toastEl.innerHTML = image
+          ? `<img class="sock-bundle__toast-image" src="${this.escape(image)}" alt="" width="40" height="40"><span>${this.escape(message)}</span>`
+          : `<span>${this.escape(message)}</span>`;
+        this.toastEl.classList.toggle('has-image', Boolean(image));
         this.toastEl.classList.add('is-visible');
         clearTimeout(this.toastTimer);
-        this.toastTimer = setTimeout(() => this.toastEl.classList.remove('is-visible'), 2200);
+        this.toastTimer = setTimeout(() => this.toastEl.classList.remove('is-visible'), duration);
       }
 
       /**

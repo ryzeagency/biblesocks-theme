@@ -159,22 +159,23 @@ The build-your-own page (`product.bundle-builder.json`) keeps the pack in the ca
 With **Picker opens: From its button** and **Open the cart drawer**, a page works as
 before (Mix & match button, Add bundle to cart).
 
-## Picker wording on sock pages (add-more tool)
+## Picker top on sock pages (add-more tool)
 
-On sock pages, Add to cart opens the picker as an *add-more* tool, on phones and computers:
+On sock pages, Add to cart opens the picker as an *add-more* tool, on phones and computers.
+The top is kept to one row, and the pack's tracker does the talking:
 
-- **"Added" line.** Above the heading, "✓ Bible Hero Socks (Men) added to your cart" (or
-  "2 × …" for more than one) confirms what Add to cart just did, so the switch from the
-  photos makes sense. The wording is in **Sock bundle → "Added" line**, with `[item]` for
-  the sock, size and quantity. It only shows when the buy box's Add to cart opened the
-  picker, and clears when the shopper goes back.
-- **Heading.** "Add more & save up to 20%" (**Picker heading** in `product.json`). The
-  build-your-own product and the bundle page section keep "Pick your socks".
-- **"← Back to product"** sits at the top of the picker, the only way out. It puts the
-  photos back, and the pack and cart are kept. It replaced "Back to product photos" at the
-  bottom. The text is in **"Back to product" link text**. There's none on the
-  build-your-own product, the bundle page section or the full-screen popup (which has its
-  own ×).
+- **"← Back to product"** on the left, the only way out. It puts the photos back, and the
+  pack and cart are kept. It replaced "Back to product photos" at the bottom of the list.
+  The text is in **"Back to product" link text**. On phones the filter icon sits at the
+  right of the same row.
+- **No heading.** **Picker heading** is empty in `product.json`, since the tracker already
+  says "Add 1 more to save 15%". An empty heading is simply left out. The build-your-own
+  product and the bundle page section keep "Pick your socks".
+- **"Added" toast.** Add to cart pops up "✓ Bible Hero Socks (Men) added" (or "2 × …")
+  with the sock's photo for 3 seconds: at the top of the screen on a phone and the bottom
+  on a computer. If that add also unlocks a discount, one toast says both:
+  "✓ … added · 15% off unlocked!". The wording is in **Sock bundle → "Added" toast**, with
+  `[item]` for the sock, size and quantity.
 
 ## Mix & match popup
 

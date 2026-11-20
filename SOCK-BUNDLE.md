@@ -98,6 +98,10 @@ save more**, matching BOM Socks' `dev` branch:
 - Socks added only with the normal Add to cart get no code by themselves.
 - Picker cards: each size carries its price, the Add button counts ("Added ×2"), the
   name opens a quick view, and the photo opens a lightbox.
+- Phones: the list of socks scrolls on its own, running down to the docked pack. On the
+  TV offer / bundle page, where the picker sits under the banner, it's sized for once the
+  shopper has scrolled to it: the screen less the sticky header, the picker's heading and
+  the pack. Before this it shrank to its 240px minimum there.
 - Phones: once a pack is started the picker takes the photos' place and the pack docks
   to the bottom. It opens on its socks when the cart already has some (on page load
   too), and folded to its message, bar, subtotal and checkout when empty. When the first sock

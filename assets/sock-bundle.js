@@ -1654,7 +1654,18 @@ if (!customElements.get('sock-bundle')) {
         style.setProperty('--sock-bundle-dock', `${Math.ceil(this.teaserEl.getBoundingClientRect().height)}px`);
         const grid = this.picker?.querySelector('.sock-bundle-picker__grid');
         if (grid) {
-          style.setProperty('--sock-bundle-grid-top', `${Math.round(grid.getBoundingClientRect().top + window.scrollY)}px`);
+          let top = grid.getBoundingClientRect().top + window.scrollY;
+          // Lower down a page (the TV offer page, under its banner) the list
+          // would shrink to its minimum. There it is sized for when the shopper
+          // has scrolled to the picker: the screen less the sticky header, the
+          // picker's own heading and the pack.
+          if (this.isStatic || top > window.innerHeight * 0.6) {
+            const header = document.querySelector('.header-sticky-wrapper .site-header, #SiteHeader');
+            const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
+            const pickerTop = this.picker.getBoundingClientRect().top;
+            top = headerHeight + 8 + (grid.getBoundingClientRect().top - pickerTop);
+          }
+          style.setProperty('--sock-bundle-grid-top', `${Math.round(top)}px`);
         }
       }
 

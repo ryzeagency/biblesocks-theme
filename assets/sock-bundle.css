@@ -2253,6 +2253,15 @@ html.sock-bundle-qv-open {
     line-height: 22px;
   }
 
+  /* On a phone the number of socks picked stays out of the top: not beside
+     "Pick your socks", and not on the docked pack's top line once it has socks
+     (the message gets the line; the subtotal still says "(3 socks)"). An empty
+     pack keeps its note. */
+  .sock-bundle-picker__progress,
+  body.sock-bundle-packing .has-pairs .sock-bundle__teaser-note {
+    display: none;
+  }
+
   body.sock-bundle-packing .sock-bundle__teaser-toggle {
     flex: 0 0 auto;
   }

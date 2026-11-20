@@ -103,7 +103,9 @@ save more**, matching BOM Socks' `dev` branch:
   too), and folded to its message, bar, subtotal and checkout when empty. When the first sock
   goes in, the pack opens so the shopper sees it land. As soon as they scroll the page
   or the list of socks, it folds again to give the socks the room. The same happens
-  after opening it. The whole pack opens and closes it, not just its arrow (its buttons,
+  after opening it. On phones the number of socks picked isn't shown at the top, either
+  beside "Pick your socks" or on the pack's top line. The subtotal ("(3 socks)") and the
+  cards' "Added ×2" carry it. The whole pack opens and closes it, not just its arrow (its buttons,
   links and boxes keep their own taps). While folded, the arrow gives a small upward hop every
   4 seconds to show the pack can be opened. It stays still for shoppers whose phone is
   set to reduce motion. This applies to sock pages, the builder product and

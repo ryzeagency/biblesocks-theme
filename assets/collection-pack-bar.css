@@ -57,6 +57,144 @@ body.has-collection-pack-bar {
   font-size: 14px;
 }
 
+/* The pack as boxes, drawn like the sock pages' docked pack: the pairs in the
+   cart, each with a × to take it out, then what the next counts earn, the last
+   box (the best deal) in the accent colour. Five in view on a phone and seven
+   on a computer, sliding sideways for more, with room above for the ×s. */
+collection-pack-bar {
+  --cpb-accent: #ffcf24;
+  --cpb-tile-bg: color-mix(in srgb, var(--colorDrawerText) 5%, transparent);
+  --cpb-in-view: 5;
+}
+
+.collection-pack-bar__boxes {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 12px - (var(--cpb-in-view) - 1) * 6px) / var(--cpb-in-view));
+  gap: 6px;
+  margin: 0;
+  padding: 10px 10px 2px 2px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.collection-pack-bar__boxes::-webkit-scrollbar {
+  display: none;
+}
+
+.collection-pack-bar__box {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background: var(--cpb-tile-bg);
+  scroll-snap-align: start;
+}
+
+.collection-pack-bar__box.is-best {
+  background: var(--cpb-accent);
+}
+
+.collection-pack-bar__box.is-filled {
+  border: 1.5px solid var(--colorDrawerText);
+  background: var(--colorDrawers);
+}
+
+.collection-pack-bar__box.is-new {
+  animation: collection-pack-bar-box-in 0.25s ease;
+}
+
+.collection-pack-bar__box.is-removing {
+  opacity: 0.4;
+}
+
+@keyframes collection-pack-bar-box-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+.collection-pack-bar__box img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px 6px 0 0;
+}
+
+.collection-pack-bar__cap {
+  padding: 4px 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.collection-pack-bar__tile {
+  flex: 1 0 auto;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px;
+  text-align: center;
+}
+
+.collection-pack-bar__tile span {
+  font-size: 10px;
+  line-height: 1.2;
+  opacity: 0.7;
+}
+
+.collection-pack-bar__box.is-best .collection-pack-bar__tile span {
+  opacity: 1;
+}
+
+.collection-pack-bar__tile strong {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.collection-pack-bar__remove {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--colorDrawerText);
+  color: var(--colorDrawers);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* A bigger target for a finger than the circle shows. */
+.collection-pack-bar__remove::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+collection-pack-bar.is-busy .collection-pack-bar__remove {
+  pointer-events: none;
+}
+
 .collection-pack-bar__subtotal {
   display: flex;
   align-items: baseline;
@@ -102,7 +240,8 @@ body.has-collection-pack-bar {
     left: 50%;
     right: auto;
     bottom: 16px;
-    width: min(560px, calc(100% - 32px));
+    --cpb-in-view: 7;
+    width: min(640px, calc(100% - 32px));
     padding: 14px 20px;
     border: 1.5px solid var(--colorDrawerText);
     border-radius: 16px;
@@ -123,5 +262,9 @@ body.has-collection-pack-bar {
   collection-pack-bar,
   collection-pack-bar.is-visible {
     transition: none;
+  }
+
+  .collection-pack-bar__box.is-new {
+    animation: none;
   }
 }

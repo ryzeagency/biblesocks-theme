@@ -1,9 +1,16 @@
 {%- comment -%}
-  What the collection page's pack bar shows, built from the cart: the cart
-  drawer's buy more save more tracker (snippets/cart-pack-progress.liquid) and
-  the cart's subtotal. Nothing at all when the tracker has nothing to say (no
-  socks in the cart, no steps set, or a code the shopper typed), and the bar
-  then stays hidden.
+  What the collection page's pack bar shows, built from the cart:
+
+  - The cart drawer's buy more save more tracker (snippets/cart-pack-progress.liquid).
+  - The pack as boxes, like the sock pages' docked pack: one per pair in the
+    cart, each with a × that takes that pair out, then empty boxes up to the
+    top step, each reading what that many socks earns ("3 socks / 15% off",
+    the last "9+ socks / 3 free"). Steps come from Theme settings → Cart →
+    Pack progress bar, as the tracker's do.
+  - The cart's subtotal.
+
+  Nothing at all when the tracker has nothing to say (no socks in the cart, no
+  steps set, or a code the shopper typed), and the bar then stays hidden.
 
   Rendered inside the bar by sections/main-collection.liquid, and redrawn after
   every cart change through sections/collection-pack-bar.liquid.
@@ -12,8 +19,140 @@
   {% render 'collection-pack-bar' %}
 {%- endcomment -%}
 {%- capture progress -%}{%- render 'cart-pack-progress' -%}{%- endcapture -%}
-{%- if progress contains 'cart-pack-progress' -%}
+{%- liquid
+  # The steps, as cart-pack-progress reads them: "2:10" is 10% off at 2 socks,
+  # "9:3 free" is 3 free socks at 9.
+  assign tiers = settings.cart_tiers | split: ','
+  assign top_qty = 0
+  for tier in tiers
+    assign parts = tier | split: ':'
+    assign tier_qty = parts[0] | strip | plus: 0
+    if tier_qty > top_qty
+      assign top_qty = tier_qty
+    endif
+  endfor
+
+  # The pairs that count, as cart-pack-progress counts them: those in "Socks
+  # that count", or everything but gift cards and package protection.
+  assign tier_collection = settings.cart_tiers_collection
+  assign pairs = 0
+  assign pair_lines = ''
+  for item in cart.items
+    assign counts = true
+    if tier_collection != blank
+      assign counts = false
+      for item_collection in item.product.collections
+        if item_collection.id == tier_collection.id
+          assign counts = true
+          break
+        endif
+      endfor
+    else
+      assign item_vendor = item.vendor | downcase
+      assign item_title = item.product.title | downcase
+      if item.gift_card or item_vendor contains 'redo' or item_title contains 'protection'
+        assign counts = false
+      endif
+    endif
+    if counts
+      assign pairs = pairs | plus: item.quantity
+      assign pair_lines = pair_lines | append: forloop.index0 | append: ','
+    endif
+  endfor
+  assign pair_lines = pair_lines | split: ','
+
+  assign word_one = 'sock'
+  assign word_many = 'socks'
+  assign box_count = pairs
+  if top_qty > box_count
+    assign box_count = top_qty
+  endif
+-%}
+{%- if pairs > 0 and progress contains 'cart-pack-progress' -%}
   <div class="collection-pack-bar__progress">{{ progress }}</div>
+
+  <ul class="collection-pack-bar__boxes" role="list" aria-label="Your socks">
+    {%- comment -%} The pairs, one box each, in the cart's order. {%- endcomment -%}
+    {%- for index in pair_lines -%}
+      {%- assign line_index = index | plus: 0 -%}
+      {%- assign item = cart.items[line_index] -%}
+      {%- liquid
+        assign caption = item.variant.title
+        if item.product.has_only_default_variant or caption == 'Default Title'
+          assign caption = ''
+        endif
+        assign label = item.product.title
+        if caption != blank
+          assign label = label | append: ', ' | append: caption
+        endif
+      -%}
+      {%- for n in (1..item.quantity) -%}
+        <li class="collection-pack-bar__box is-filled" title="{{ label | escape }}" data-pack-box="{{ item.key }}">
+          {%- if item.image -%}
+            <img
+              src="{{ item.image | image_url: width: 200 }}"
+              alt="{{ label | escape }}"
+              width="200"
+              height="200"
+              loading="lazy"
+            >
+          {%- endif -%}
+          {%- if caption != blank -%}
+            <span class="collection-pack-bar__cap">{{ caption | escape }}</span>
+          {%- endif -%}
+          <button
+            type="button"
+            class="collection-pack-bar__remove"
+            data-pack-remove="{{ item.key }}"
+            data-pack-quantity="{{ item.quantity }}"
+            aria-label="Remove {{ label | escape }}"
+          >
+            &times;
+          </button>
+        </li>
+      {%- endfor -%}
+    {%- endfor -%}
+
+    {%- comment -%}
+      The boxes still to fill, each reading what that many socks earns. A count
+      with no step of its own (5 to 8 below a 9 sock step) reads as what the
+      pack already has by then; the last box is the deal worth reaching for.
+    {%- endcomment -%}
+    {%- if pairs < box_count -%}
+      {%- assign first_empty = pairs | plus: 1 -%}
+      {%- for count in (first_empty..box_count) -%}
+        {%- liquid
+          assign main = ''
+          for tier in tiers
+            assign parts = tier | split: ':'
+            assign tier_qty = parts[0] | strip | plus: 0
+            if tier_qty > 0 and tier_qty <= count
+              assign reward = parts[1] | downcase
+              if reward contains 'free'
+                assign main = reward | remove: 'free' | strip | append: ' free'
+              else
+                assign main = reward | strip | append: '% off'
+              endif
+            endif
+          endfor
+          if count == 1
+            assign top = '1 ' | append: word_one
+          elsif count == top_qty
+            assign top = count | append: '+ ' | append: word_many
+          else
+            assign top = count | append: ' ' | append: word_many
+          endif
+        -%}
+        <li class="collection-pack-bar__box{% if count == top_qty %} is-best{% endif %}">
+          <span class="collection-pack-bar__tile">
+            <span>{{ top }}</span>
+            <strong>{% if main != blank %}+ {{ main }}{% else %}+ Add{% endif %}</strong>
+          </span>
+        </li>
+      {%- endfor -%}
+    {%- endif -%}
+  </ul>
+
   <div class="collection-pack-bar__subtotal">
     <span>{{ 'cart.general.subtotal' | t }}</span>
     <strong>{{ cart.total_price | money }}</strong>

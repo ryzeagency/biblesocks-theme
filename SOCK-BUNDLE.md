@@ -234,7 +234,16 @@ after every cart change by the script at the end of `snippets/cart-drawer.liquid
 The pack progress bar from the cart drawer also docks to the bottom of collection pages.
 On a phone it runs full width, like the sock pages' docked pack. On a computer it's a card
 centred at the bottom. It shows the next step, the bar with the free-shipping truck, the
-cart subtotal and **View cart**, which opens the drawer.
+pack as boxes, the cart subtotal and **View cart**, which opens the drawer.
+
+- **The boxes** work like the sock pages' docked pack. There's one per pair in the cart,
+  with its photo and size and a × that takes that pair out of the cart. Then come empty
+  boxes up to the top step, each reading what that many socks earns ("3 socks / + 15% off").
+  The last one ("9+ socks / + 3 free") is in yellow. Counts with no step of their own
+  (5 to 8) read as what the pack already has. Five boxes show on a phone and seven on a
+  computer, sliding sideways for more. They're built from the same steps and "Socks that
+  count" as the tracker. Unlike the sock pages, there's no picker here: shoppers fill
+  the boxes with the Add to cart under each product.
 
 - It appears once the cart has socks that count, and comes up after every **Add to cart**
   under a product card. The drawer stays shut by default. Turn on **Also open the cart

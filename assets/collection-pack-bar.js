@@ -9,7 +9,8 @@
  *  - Its contents are Liquid (snippets/collection-pack-bar.liquid), redrawn
  *    through ?section_id=collection-pack-bar whenever the cart changes: a quick
  *    add, or the drawer's + and − and Remove.
- *  - × hides it until the next quick add.
+ *  - Each pair in the pack is a box with a × that takes it out of the cart.
+ *  - The bar's own × hides it until the next quick add.
  *  - "View cart" opens Impulse's cart drawer (or goes to the cart page).
  */
 
@@ -25,6 +26,10 @@ if (!customElements.get('collection-pack-bar')) {
         this.querySelector('[data-pack-bar-close]')?.addEventListener('click', () => {
           this.dismissed = true;
           this.sync();
+        });
+        this.content?.addEventListener('click', (event) => {
+          const remove = event.target.closest('[data-pack-remove]');
+          if (remove) this.removePair(remove);
         });
         this.querySelector('[data-pack-bar-view]')?.addEventListener('click', (event) => {
           if (window.theme?.settings?.cartType === 'page' || !document.getElementById('CartDrawer')) return;
@@ -82,11 +87,53 @@ if (!customElements.get('collection-pack-bar')) {
           holder.innerHTML = await response.text();
           if (ticket !== this.ticket) return;
           const section = holder.querySelector('.shopify-section') || holder;
+          const before = this.boxCounts(this.content);
+          const keepScroll = this.content.querySelector('.collection-pack-bar__boxes')?.scrollLeft || 0;
           this.content.innerHTML = section.innerHTML;
+          // Only pairs that were not in the pack last time pop in.
+          const seen = {};
+          this.content.querySelectorAll('[data-pack-box]').forEach((box) => {
+            const key = box.dataset.packBox;
+            seen[key] = (seen[key] || 0) + 1;
+            if (seen[key] > (before[key] || 0)) box.classList.add('is-new');
+          });
+          const boxes = this.content.querySelector('.collection-pack-bar__boxes');
+          if (boxes) boxes.scrollLeft = keepScroll;
         } catch (error) {
           console.error(error);
         }
         this.sync();
+      }
+
+      boxCounts(root) {
+        const counts = {};
+        root?.querySelectorAll('[data-pack-box]').forEach((box) => {
+          counts[box.dataset.packBox] = (counts[box.dataset.packBox] || 0) + 1;
+        });
+        return counts;
+      }
+
+      /** × on a pair: one fewer of that cart line, then the drawer and the bar redraw. */
+      async removePair(button) {
+        if (this.removing) return;
+        this.removing = true;
+        this.classList.add('is-busy');
+        button.closest('[data-pack-box]')?.classList.add('is-removing');
+        try {
+          const quantity = Math.max(0, (parseInt(button.dataset.packQuantity, 10) || 1) - 1);
+          const response = await fetch(window.theme?.routes?.cartChange || '/cart/change.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ id: button.dataset.packRemove, quantity }),
+          });
+          if (!response.ok) throw new Error(`Cart change failed (${response.status})`);
+          document.dispatchEvent(new CustomEvent('cart:build'));
+        } catch (error) {
+          console.error(error);
+        }
+        await this.refresh();
+        this.removing = false;
+        this.classList.remove('is-busy');
       }
 
       sync() {
